@@ -1,0 +1,32 @@
+{
+  "name": "@marasco/core-passport-api",
+  "version": "1.0.0",
+  "description": "Authorization and authentication api",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec",
+    "testcat": "mocha --reporter nyan"
+  },
+  "engines": {
+    "node": ">=4.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/razorphish/core-passport-api.git"
+  },
+  "keywords": [
+    "authorization",
+    "authentication",
+    "passport"
+  ],
+  "author": "Antonio Marasco <david@maras.co> (http://www.maras.co)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/razorphish/core-passport-api/issues"
+  },
+  "homepage": "https://github.com/razorphish/core-passport-api#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
