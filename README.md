@@ -1,4 +1,4 @@
-Number Formatter
+Passport Api
 =========
 
 A small library that adds commas to numbers
@@ -24,3 +24,13 @@ A small library that adds commas to numbers
 ## Contributing
 
 In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality.  Lint and test your code.
+
+## Assets
+
+update verion numbers
+
+npm version patch -m "Version %s - add sweet badges"
+
+git push && git push --tags
+
+npm publish
