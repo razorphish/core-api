@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/razorphish/core-passport-api.svg?branch=master)](https://travis-ci.org/razorphish/core-passport-api)
+
+[![Coverage Status](https://coveralls.io/repos/github/razorphish/core-passport-api/badge.svg)](https://coveralls.io/github/razorphish/core-passport-api)
+
 Passport Api
 =========
 
