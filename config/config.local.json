@@ -1,0 +1,41 @@
+{
+    "databaseConfig": {
+      "host": "127.0.0.1",
+      "port": "27017",
+      "database": "biddler",
+      "username": "razorphish",
+      "password": "RaC0nt@Ur1+2"
+    },
+    "winstonConfig": {
+      "file": {
+        "level": "silly",
+        "filename": "app.log",
+        "handleExceptions": true,
+        "json": true,
+        "maxsize": 5242880,
+        "maxFiles": 5,
+        "colorize": false,
+        "prettyPrint": true
+      },
+      "console": {
+        "level": "silly",
+        "handleExceptions": false,
+        "json": false,
+        "colorize": true,
+        "prettyPrint": true
+      },
+      "exceptionHandlers": {
+        "file": {
+          "filename": "exceptions.log",
+          "json": true,
+          "prettyPrint": true
+        },
+        "console": {
+          "json": true,
+          "timestamp": true,
+          "prettyPrint": true
+        }
+      }
+    }
+  }
+  
