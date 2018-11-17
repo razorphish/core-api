@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const dbConfig = require('../../lib/config.loader').databaseConfig;
-const connectionString = `mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.database}?authSource=${dbConfig.authSource}`;
+const connectionString = `mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.database}${dbConfig.queryOptions}`;
 const logger = require('../../lib/winston.logger');
 
 let connection = null;
