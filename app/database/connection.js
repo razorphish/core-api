@@ -24,11 +24,12 @@ class Database {
         );
 
         mongoose.set('useCreateIndex', true);
+
         connection = mongoose.connection;
         mongoose.Promise = global.Promise;
 
         mongoose.connection.on('error', (err) => {
-            logger.error('Error connecting to MongoDB: ', err);
+            logger.error('Error connecting to MongoDB: ' + connectionString, err);
             callback(err, false);
         });
 

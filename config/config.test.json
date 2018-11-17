@@ -4,7 +4,7 @@
       "port": "27017",
       "database": "mydb_test",
       "username": "razorphish",
-      "password": "RaC0nt@Ur1+2"
+      "password": "abcd1234"
     },
     "winstonConfig": {
       "file": {
