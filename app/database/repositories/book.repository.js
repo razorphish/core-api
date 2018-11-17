@@ -25,7 +25,7 @@ class BookRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    BookModel.count((err, count) => {
+    BookModel.countDocuments((err, count) => {
       logger.debug(`${this._classInfo}.all()::count`, count);
 
       BookModel.find({}, { password: 0, salt: 0 }, (err, data) => {
@@ -51,7 +51,7 @@ class BookRepository {
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    BookModel.count((err, itemCount) => {
+    BookModel.countDocuments((err, itemCount) => {
       var count = itemCount;
       logger.verbose(
         `${this._classInfo}.allPaged()`,

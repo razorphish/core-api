@@ -97,7 +97,7 @@ class UserRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    UserModel.count((err, count) => {
+    UserModel.countDocuments((err, count) => {
       if (err) {
         logger.error(`${this._classInfo}.all()::count`, err);
         return callback(err);
@@ -174,7 +174,7 @@ class UserRepository {
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    UserModel.count((err, count) => {
+    UserModel.countDocuments((err, count) => {
       if (err) {
         logger.error(
           `${this._classInfo}.allPaged(${skip}, ${top})::count`,
@@ -241,7 +241,7 @@ class UserRepository {
   byRole(role, callback) {
     logger.debug(`${this._classInfo}.byRole(${JSON.stringify(role)})`);
 
-    UserModel.count((err, count) => {
+    UserModel.countDocuments((err, count) => {
       if (err) {
         logger.error(
           `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
@@ -452,7 +452,7 @@ class UserRepository {
   search(skip, top, callback) {
     logger.debug(`${this._classInfo}.search(${skip}, ${top})`);
 
-    UserModel.count((err, count) => {
+    UserModel.countDocuments((err, count) => {
       if (err) {
         logger.error(`${this._classInfo}.search(${skip}, ${top})::count`, err);
         return callback(err);
@@ -503,7 +503,7 @@ class UserRepository {
   summary(skip, top, callback) {
     logger.debug(`${this._classInfo}.summary(${skip}, ${top})`);
 
-    UserModel.count((err, count) => {
+    UserModel.countDocuments((err, count) => {
       if (err) {
         logger.error(
           `${this._classInfo}.summarry(${skip}, ${top})::count`,

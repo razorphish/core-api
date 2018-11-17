@@ -25,7 +25,7 @@ class ClientRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    ClientModel.count((err, count) => {
+    ClientModel.countDocuments((err, count) => {
       logger.debug(`${this._classInfo}.all()::count`, count);
 
       ClientModel.find({}, { password: 0, salt: 0 }, (err, data) => {
@@ -51,7 +51,7 @@ class ClientRepository {
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    ClientModel.count((err, itemCount) => {
+    ClientModel.countDocuments((err, itemCount) => {
       var count = itemCount;
       logger.verbose(
         `${this._classInfo}.allPaged()`,
