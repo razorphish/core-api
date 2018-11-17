@@ -2,7 +2,7 @@
     "databaseConfig": {
       "host": "127.0.0.1",
       "port": "27017",
-      "database": "biddler",
+      "database": "mydb_test",
       "username": "razorphish",
       "password": "RaC0nt@Ur1+2"
     },
