@@ -1,18 +1,15 @@
 'use strict';
 /**
- * Users Api
+ * Books Api
  */
-
-const repo = require('../../../app/database/repositories/account/user.repository');
-const passport = require('passport');
-const utils = require('../../../lib/utils');
+const repo = require('../../../app/database/repositories/book.repository');
 const logger = require('../../../lib/winston.logger');
 
 /**
  * User Api Controller
- * http://.../api/user
+ * http://.../api/book
  */
-class UserController {
+class BookController {
   /**
    * Constructor for User
    * @param {router} router Node router framework
@@ -20,90 +17,38 @@ class UserController {
   constructor(router) {
     router.get(
       '/',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
       this.all.bind(this)
     );
-    router.get('/roles/:roleId', this.byRole.bind(this));
 
     router.get(
       '/page/:skip/:top',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
       this.allPaged.bind(this)
     );
     router.get(
       '/:id',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
       this.get.bind(this)
     );
     router.post(
       '/',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
       this.insert.bind(this)
     );
     router.put(
       '/:id',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
       this.update.bind(this)
-    );
-
-    router.post(
-      '/:id/devices',
-      passport.authenticate('user-bearer', { session: false }),
-      this.addDevice.bind(this)
     );
 
     router.delete(
       '/:id',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
       this.delete.bind(this)
     );
 
     //Logging Info
-    this._classInfo = '*** [User].controller';
-    this._routeName = '/api/user';
+    this._classInfo = '*** [Book].controller';
+    this._routeName = '/api/book';
   }
 
   /**
-   * Adds a [Device]
-   * endpoint [POST] : /:id
-   * @param {any} req Request object
-   * @param {any} res Response object
-   */
-  addDevice(req, res) {
-    logger.info(`${this._classInfo}.addDevice() [${this._routeName}]`);
-
-    if (!req.body) {
-      throw new Error('Device required');
-    }
-
-    repo.addDevice(req.params.id, req.body, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.addDevice() [${this._routeName}]`, err);
-        res.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: err.code,
-            errmsg: err.errmsg,
-            index: err.index
-          },
-          data: null
-        });
-      } else {
-        logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`, resp);
-        res.json({ status: true, msg: null, error: null, data: resp });
-      }
-    });
-  }
-
-  /**
-   * Gets all [User]s
+   * Gets all [Book]s
    * endpoint [GET]: /
    * @param {any} req Request object
    * @param {any} res Response
@@ -123,13 +68,13 @@ class UserController {
   }
 
   /**
-   * Gets all [User]s paged
+   * Gets all [Book]s paged
    * endpoint [GET]: /page/:skip/:top
    * @param {any} req Request object
    * @param {any} res Response
    */
   allPaged(req, res) {
-  logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
+    logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
 
     const topVal = req.params.top,
       skipVal = req.params.skip,
@@ -149,28 +94,7 @@ class UserController {
   }
 
   /**
-   * Gets all [User]s by role
-   * endpoint [GET]: /roles/{roleId}
-   * @param {any} req Request object
-   * @param {any} res Response
-   */
-  byRole(req, res) {
-    const id = req.params.id;
-    logger.info(`${this._classInfo}.byRole(${id}) [${this._routeName}]`);
-
-    repo.byRole(id, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.byRole() [${this._routeName}]`, err);
-        res.json(null);
-      } else {
-        logger.debug(`${this._classInfo}.byRole() [${this._routeName}] OK`, resp);
-        res.json(resp.data);
-      }
-    });
-  }
-
-  /**
-   * Deletes a [User]
+   * Deletes a [Book]
    * endpoint [DELETE]: /:id
    * @param {any} req Request object
    * @param {any} res Response object
@@ -179,19 +103,19 @@ class UserController {
     const id = req.params.id;
     logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
-    repo.delete(id, (err) => {
+    repo.delete(id, (err, result) => {
       if (err) {
         logger.error(`${this._classInfo}.delete() [${this._routeName}]`, err);
         res.json({ status: false });
       } else {
-        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, resp);
-        res.json({ status: true });
+        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+        res.json({ message: 'Book successfully deleted!', result });
       }
     });
   }
 
   /**
-   * Gets a [User] by its id
+   * Gets a [Book] by its id
    * endpoint [GET]: /:id'
    * @param {any} req Request object
    * @param {any} res Response
@@ -212,7 +136,7 @@ class UserController {
   }
 
   /**
-   * Inserts a [User]
+   * Inserts a [Book]
    * endpoint [POST]: /
    * @param {any} req Request object
    * @param {any} res Response
@@ -220,27 +144,19 @@ class UserController {
   insert(req, res) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
 
-    repo.insert(req.body, (err, resp) => {
+    repo.insert(req.body, (err, book) => {
       if (err) {
-        logger.error(`${this._classInfo}.insert() [${this._routeName}]`, err);
-        res.json({
-          status: false,
-          msg:
-            'Insert failed' + err.code === 11000
-              ? ': Username or Email already exist'
-              : '',
-          error: err,
-          data: null
-        });
+        logger.error(`${this._classInfo}.insert() [${this._routeName}]`);
+        res.json(err);
       } else {
-        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, resp);
-        res.json({ status: true, error: null, data: resp });
+        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, book);
+        res.json({message: "Book successfully added!", book });
       }
     });
   }
 
   /**
-   * Updates a [User]
+   * Updates a [Book]
    * endpoint [PUT] : /:id
    * @param {any} req Request object
    * @param {any} res Response object
@@ -253,7 +169,7 @@ class UserController {
       throw new Error('User required');
     }
 
-    repo.update(id, req.body, (err, resp) => {
+    repo.update(id, req.body, (err, book) => {
       if (err) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, err, req.body);
         res.json({
@@ -267,11 +183,11 @@ class UserController {
           data: null
         });
       } else {
-        logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, resp);
-        res.json({ status: true, msg: null, error: null, data: resp });
+        logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, book);
+        res.json({ message: 'Book updated!', book });
       }
     });
   }
 }
 
-module.exports = UserController;
+module.exports = BookController;

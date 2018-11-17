@@ -19,13 +19,14 @@ describe('Books', () => {
             done();
         });
     });
+
     /*
-      * Test the /GET route
-      */
+`    * Test the /GET route
+     */
     describe('/GET book', () => {
         it('it should GET all the books', (done) => {
             chai.request(server)
-                .get('/book')
+                .get('/api/book')
                 .end((err, res) => {
                     res.should.have.status(200);
                     res.body.should.be.a('array');
@@ -46,7 +47,7 @@ describe('Books', () => {
                 year: 1954
             }
             chai.request(server)
-                .post('/book')
+                .post('/api/book')
                 .send(book)
                 .end((err, res) => {
                     res.should.have.status(200);
@@ -65,7 +66,7 @@ describe('Books', () => {
                 pages: 1170
             }
             chai.request(server)
-                .post('/book')
+                .post('/api/book')
                 .send(book)
                 .end((err, res) => {
                     res.should.have.status(200);
@@ -89,7 +90,7 @@ describe('Books', () => {
             let book = new Book({ title: "The Lord of the Rings", author: "J.R.R. Tolkien", year: 1954, pages: 1170 });
             book.save((err, book) => {
                 chai.request(server)
-                    .get('/book/' + book.id)
+                    .get('/api/book/' + book.id)
                     .send(book)
                     .end((err, res) => {
                         res.should.have.status(200);
@@ -107,14 +108,14 @@ describe('Books', () => {
     });
 
     /*
-  * Test the /PUT/:id route
-  */
+    * Test the /PUT/:id route
+    */
     describe('/PUT/:id book', () => {
         it('it should UPDATE a book given the id', (done) => {
             let book = new Book({ title: "The Chronicles of Narnia", author: "C.S. Lewis", year: 1948, pages: 778 })
             book.save((err, book) => {
                 chai.request(server)
-                    .put('/book/' + book.id)
+                    .put('/api/book/' + book.id)
                     .send({ title: "The Chronicles of Narnia", author: "C.S. Lewis", year: 1950, pages: 778 })
                     .end((err, res) => {
                         res.should.have.status(200);
@@ -135,7 +136,7 @@ describe('Books', () => {
             let book = new Book({ title: "The Chronicles of Narnia", author: "C.S. Lewis", year: 1948, pages: 778 })
             book.save((err, book) => {
                 chai.request(server)
-                    .delete('/book/' + book.id)
+                    .delete('/api/book/' + book.id)
                     .end((err, res) => {
                         res.should.have.status(200);
                         res.body.should.be.a('object');

@@ -31,7 +31,7 @@ class Server {
   }
 
   start() {
-    app.listen(port, err => {
+    module.exports = app.listen(port, err => {
       console.log(
         '[%s] Listening on http://localhost:%d',
         process.env.NODE_ENV,

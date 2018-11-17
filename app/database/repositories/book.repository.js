@@ -3,8 +3,8 @@ const mongoose = require('mongoose'),
   Schema = mongoose.Schema,
   BookModel = require('../models/book.model'),
   crypto = require('crypto'),
-  logger = require('../../lib/winston.logger'),
-  utils = require('../../lib/utils');
+  logger = require('../../../lib/winston.logger'),
+  utils = require('../../../lib/utils');
 
 /**
  * Client Repo class
@@ -86,16 +86,16 @@ class BookRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    BookModel.remove(
+    BookModel.deleteOne(
       {
         _id: id
       },
-      (err, data) => {
+      (err, result) => {
         if (err) {
           logger.error(`${this._classInfo}.delete(${id})::remove`, err);
           return callback(err, null);
         }
-        callback(null, data);
+        callback(null, result);
       }
     );
   }
@@ -147,15 +147,10 @@ class BookRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new BookModel();
-    console.log(body);
-
-    model.name = body.name;
-    model.clientId = body.clientId;
-    model.clientSecret = utils.getUid(256);
-    model.isTrusted = body.isTrusted;
+    var model = new BookModel(body);
 
     logger.verbose(`${this._classInfo}.insert()::model`, model);
+    
     model.save((err, data) => {
       if (err) {
         logger.error(`${this._classInfo}.insert()::save`, err);
@@ -214,20 +209,12 @@ class BookRepository {
         return callback(error);
       }
 
-      item.name = body.name;
-      item.clientId = body.clientId;
-      item.clientSecret = body.clientSecret;
-      item.isTrusted = body.isTrusted;
-      item.applicationType = body.applicationType;
-      item.allowedOrigins = body.allowedOrigins;
-      item.tokenLifeTime = body.tokenLifeTime;
-      item.refreshTokenLifeTime = body.refreshTokenLifeTime;
-
-      item.save((err, data) => {
+      Object.assign(item, body).save((err, data) => {
         if (err) {
           logger.error(`${this._classInfo}.update(${id})::save`, err);
           return callback(err);
         }
+
         //returns User data
         callback(null, data);
       });
