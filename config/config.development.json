@@ -3,7 +3,7 @@
       "host": "127.0.0.1",
       "database": "biddler",
       "port": "27017",
-      "authSource": "admin",
+      "authSource": "?authSource=admin",
       "username": "razorphish",
       "password": "RaC0nt@Ur1+2"
     },
