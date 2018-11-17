@@ -4,7 +4,7 @@
       "port": "27017",
       "database": "mydb_test",
       "queryOptions": "",
-      "username": "razorphish",
+      "username": "mydb_user",
       "password": "abcd1234"
     },
     "winstonConfig": {

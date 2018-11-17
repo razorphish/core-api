@@ -6,7 +6,7 @@
   "scripts": {
     "start": "concurrently \"npm run tsc:w\" \"nodemon server.js\"",
     "startdev": "concurrently \"SET NODE_ENV=dev\" \"nodemon server.js\"",
-    "test": "mocha --reporter spec --exit",
+    "test": "mocha --exit --reporter spec",
     "testcat": "mocha --reporter nyan",
     "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*"
   },
