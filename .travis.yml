@@ -9,5 +9,12 @@ install:
 script:
   - npm run cover
 
+services:
+  - mongodb
+
+before_script:
+  - sleep 15
+  - mongo mydb_test --eval 'db.createUser({user:"razorphish",pwd:"RaC0nt@Ur1+2",roles:["readWrite"]});'
+
 # Send coverage data to Coveralls
 after_script: "cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js"
