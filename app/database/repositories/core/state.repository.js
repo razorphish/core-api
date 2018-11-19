@@ -1,18 +1,17 @@
-// Client Repository
-const mongoose = require('mongoose');
-const BookModel = require('../models/book.model');
-const logger = require('../../../lib/winston.logger');
+// State Repository
+const StateModel = require('../../models/core/state.model');
+const logger = require('../../../../lib/winston.logger');
 
 /**
- * Client Repo class
+ * State Repo class
  */
-class BookRepository {
+class StateRepository {
   /**
-   * Constructor for client
+   * Constructor for state
    */
   constructor() {
     //Logging Info
-    this._classInfo = '*** [Book].repository';
+    this._classInfo = '*** [State].repository';
   }
 
   /**
@@ -22,10 +21,10 @@ class BookRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    BookModel.countDocuments((err, count) => {
+    StateModel.countDocuments((err, count) => {
       logger.debug(`${this._classInfo}.all()::count`, count);
 
-      BookModel.find({}, { password: 0, salt: 0 }, (err, data) => {
+      StateModel.find({}, { /**Hide columns */}, (err, data) => {
         if (err) {
           logger.error(`${this._classInfo}.all()::find`, err);
           return callback(err, null);
@@ -40,42 +39,6 @@ class BookRepository {
   }
 
   /**
-   * Gets all clients paged
-   * @param {number} skip Page number
-   * @param {number} top Number of items per page
-   * @param {function} callback Callback function
-   */
-  allPaged(skip, top, callback) {
-    logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
-
-    BookModel.countDocuments((err, itemCount) => {
-      var count = itemCount;
-      logger.verbose(
-        `${this._classInfo}.allPaged()`,
-        `Skip ${skip} Top: ${top} Count: ${count}`
-      );
-
-      BookModel.find({}, { year: 0 })
-        .sort({
-          title: 1
-        })
-        .skip(skip)
-        .limit(top)
-        .exec((err, data) => {
-          if (err) {
-            logger.error(`${this._classInfo}.allPaged()`, err);
-            return callback(err, null);
-          }
-
-          callback(null, {
-            count: count,
-            data: data
-          });
-        });
-    });
-  }
-
-  /**
    * Delete item by id
    * @param {string} id Id of item to delete
    * @param {function} callback function on success/fail
@@ -83,7 +46,7 @@ class BookRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    BookModel.deleteOne(
+    StateModel.deleteOne(
       {
         _id: id
       },
@@ -98,24 +61,6 @@ class BookRepository {
   }
 
   /**
-   * Gets a single item
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
-   */
-  get(id, callback) {
-    logger.debug(`${this._classInfo}.get(${id})`);
-
-    BookModel.findById(id, (err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.get(${id})::findById`, err);
-        return callback(err);
-      }
-      // get client Id
-      callback(null, data);
-    });
-  }
-
-  /**
    * Inserts a User into db
    * @param {object} body Object that contain Users info
    * @param {function} callback Callback function success/fail
@@ -123,7 +68,7 @@ class BookRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new BookModel(body);
+    var model = new StateModel(body);
 
     logger.verbose(`${this._classInfo}.insert()::model`, model);
 
@@ -146,7 +91,7 @@ class BookRepository {
   update(id, body, callback) {
     logger.debug(`${this._classInfo}.update(${id})`);
 
-    BookModel.findById(id, (err, item) => {
+    StateModel.findById(id, (err, item) => {
       if (err) {
         logger.error(`${this._classInfo}.update(${id})::findById`, err);
         return callback(error);
@@ -166,4 +111,4 @@ class BookRepository {
 
 }
 
-module.exports = new BookRepository();
+module.exports = new StateRepository();

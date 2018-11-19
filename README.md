@@ -29,6 +29,10 @@ A small library that manages passport authorization and authentication
 
 In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality.  Lint and test your code.
 
+## Articles
+
+https://www.terlici.com/2014/09/15/node-testing.html
+
 ## Assets
 
 update verion numbers
