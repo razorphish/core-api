@@ -2,7 +2,7 @@
 /**
  * Books Api
  */
-const repo = require('../../../app/database/repositories/book.repository');
+const repo = require('../../../app/database/repositories/book/book.repository');
 const logger = require('../../../lib/winston.logger');
 
 /**

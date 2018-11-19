@@ -1,6 +1,6 @@
 // Module dependencies
 const mongoose = require('mongoose'),
-    Customer = require('./models/customer.model'),
+    Customer = require('./models/customer/customer.model'),
     BookSeeder = require('./seeders/book.seeder'),
     logger = require('../../lib/winston.logger');
 

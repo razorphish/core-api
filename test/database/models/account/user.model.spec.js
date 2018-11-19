@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 
-const Book = require('../../../../app/database/repositories/book/book.repository');
+const User = require('../../../../app/database/repositories/account/user.repository');
 const DB = require('../../../../app/database/connection');
 var fs = require('fs');
 
@@ -13,7 +13,7 @@ var readJson = (path, done) => {
     })
 }
 
-describe('Book Model Tests', () => {
+describe('User Model Tests', () => {
     before((done) => {
         DB.open(done)
     })
@@ -24,7 +24,7 @@ describe('Book Model Tests', () => {
                 return done(err);
             }
             var fixtures;
-            readJson('../../../fixtures/book.model.fixture.json',
+            readJson('../../../fixtures/user.model.fixture.json',
                 (err, data) => {
                     fixtures = data;
                     DB.fixtures(fixtures, done);
@@ -34,57 +34,57 @@ describe('Book Model Tests', () => {
 
 
     it('all', (done) => {
-        Book.all((err, data) => {
+        User.all((err, data) => {
             data.count.should.eql(3)
             done();
         })
     })
 
     it('create', (done) => {
-        Book.insert(
+        User.insert(
             {
                 author: 'Famous Person',
                 title: 'I am so famous!',
                 year: 2018,
                 pages: 100
             },
-            (err, book) => {
-                Book.all((err, books) => {
-                    books.count.should.eql(4);
-                    books.data[3]._id.should.eql(book._id);
-                    books.data[3].author.should.eql('Famous Person');
-                    books.data[3].title.should.eql('I am so famous!');
+            (err, user) => {
+                User.all((err, users) => {
+                    users.count.should.eql(4);
+                    users.data[3]._id.should.eql(user._id);
+                    users.data[3].author.should.eql('Famous Person');
+                    users.data[3].title.should.eql('I am so famous!');
                     done();
                 });
             });
     });
 
     it('allPaged', (done) => {
-        Book.allPaged(0, 2, (err, data) => {
+        User.allPaged(0, 2, (err, data) => {
             data.data.length.should.eql(2);
             done();
         })
     })
 
     it('remove', (done) => {
-        Book.all((err, books) => {
-            Book.delete(books.data[0]._id, (err) => {
-                Book.all((err, result) => {
+        User.all((err, users) => {
+            User.delete(users.data[0]._id, (err) => {
+                User.all((err, result) => {
                     result.count.should.eql(2)
-                    result.data[0]._id.should.not.eql(books.data[0]._id)
-                    result.data[1]._id.should.not.eql(books.data[0]._id)
+                    result.data[0]._id.should.not.eql(users.data[0]._id)
+                    result.data[1]._id.should.not.eql(users.data[0]._id)
                     done()
                 })
             })
         })
     })
 
-    // it('should be invalid if name is missing', (done) => {
-    //     var model = new Book();
+    it('should be invalid if name is missing', (done) => {
+        var model = new User();
 
-    //     model.validate((err) => {
-    //         expect(err.errors.title).to.exist;
-    //         done();
-    //     });
-    // });
+        model.validate((err) => {
+            expect(err.errors.title).to.exist;
+            done();
+        });
+    });
 });

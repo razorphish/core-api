@@ -1,6 +1,6 @@
 const mongoose = require('mongoose'),
       Schema = mongoose.Schema,
-      State = require('./core/state.model');
+      State = require('../core/state.model');
 
 //console.log(State);
 const OrderSchema = new Schema({

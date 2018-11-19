@@ -125,30 +125,6 @@ UserSchema.pre('save', function (next) {
   });
 });
 
-// Pre-validate
-UserSchema.pre('validate', function (next) {
-  var user = this;
-
-  // AM hacky but necessary
-  if (user.salonServices) {
-    for (var i = 0; i < user.salonServices.length; i++) {
-      if (!user.salonServices[i]._id) {
-        user.salonServices[i]._id = mongoose.Types.ObjectId();
-      }
-    }
-  }
-
-  if (user.businessHours) {
-    for (var j = 0; j < user.businessHours.length; j++) {
-      if (!user.businessHours[j]._id) {
-        user.businessHours[j]._id = mongoose.Types.ObjectId();
-      }
-    }
-  }
-
-  next();
-});
-
 //Compare password
 UserSchema.methods.comparePassword = function (candidatePassword, callback) {
   bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
@@ -188,61 +164,62 @@ var reasons = (UserSchema.statics.failedLogin = {
 });
 
 UserSchema.statics.getAuthenticated = function (username, password, callback) {
-  this.findOne({ username: username }, function (err, user) {
-    if (err) {
-      return callback(err);
-    }
-
-    // make sure the user exists
-    if (!user) {
-      return callback(null, null, reasons.NOT_FOUND);
-    }
-
-    // check if the account is currently locked
-    if (user.isLocked) {
-      // just increment login attempts if account is already locked
-      return user.incLoginAttempts(function (err) {
-        if (err) {
-          return callback(err);
-        }
-        return callback(null, null, reasons.MAX_ATTEMPTS);
-      });
-    }
-
-    // test for a matching password
-    user.comparePassword(password, function (err, isMatch) {
+  this.findOne({ username: username },
+    (err, user) => {
       if (err) {
         return callback(err);
       }
 
-      // check if the password was a match
-      if (isMatch) {
-        // if there's no lock or failed attempts, just return the user
-        if (!user.loginAttempts && !user.lockUntil) {
-          return callback(null, user);
-        }
-        // reset attempts and lock info
-        var updates = {
-          $set: { loginAttempts: 0 },
-          $unset: { lockUntil: 1 }
-        };
-        return user.update(updates, function (err) {
+      // make sure the user exists
+      if (!user) {
+        return callback(null, null, reasons.NOT_FOUND);
+      }
+
+      // check if the account is currently locked
+      if (user.isLocked) {
+        // just increment login attempts if account is already locked
+        return user.incLoginAttempts(function (err) {
           if (err) {
             return callback(err);
           }
-          return callback(null, user);
+          return callback(null, null, reasons.MAX_ATTEMPTS);
         });
       }
 
-      // password is incorrect, so increment login attempts before responding
-      user.incLoginAttempts(function (err) {
+      // test for a matching password
+      user.comparePassword(password, function (err, isMatch) {
         if (err) {
           return callback(err);
         }
-        return callback(null, null, reasons.PASSWORD_INCORRECT);
+
+        // check if the password was a match
+        if (isMatch) {
+          // if there's no lock or failed attempts, just return the user
+          if (!user.loginAttempts && !user.lockUntil) {
+            return callback(null, user);
+          }
+          // reset attempts and lock info
+          var updates = {
+            $set: { loginAttempts: 0 },
+            $unset: { lockUntil: 1 }
+          };
+          return user.update(updates, function (err) {
+            if (err) {
+              return callback(err);
+            }
+            return callback(null, user);
+          });
+        }
+
+        // password is incorrect, so increment login attempts before responding
+        user.incLoginAttempts(function (err) {
+          if (err) {
+            return callback(err);
+          }
+          return callback(null, null, reasons.PASSWORD_INCORRECT);
+        });
       });
     });
-  });
 };
 
 //Compound index

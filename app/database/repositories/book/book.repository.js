@@ -1,7 +1,7 @@
 // Client Repository
 const mongoose = require('mongoose');
-const BookModel = require('../models/book.model');
-const logger = require('../../../lib/winston.logger');
+const BookModel = require('../../models/book/book.model');
+const logger = require('../../../../lib/winston.logger');
 
 /**
  * Client Repo class

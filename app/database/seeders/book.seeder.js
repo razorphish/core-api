@@ -1,4 +1,4 @@
-const User = require('../models/book.model');
+const User = require('../models/book/book.model');
 const logger = require('../../../lib/winston.logger');
 
 class BookFeeder {
