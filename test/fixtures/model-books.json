@@ -1,0 +1,24 @@
+{
+  "collections": {
+    "books": [
+      {
+        "title": "I Was Told There'd Be Cake",
+        "author": "Sloane Crosley",
+        "year": 2017,
+        "pages": 143
+      },
+      {
+        "title": "Do Androids Dream of Electric Sheep?",
+        "author": "Philip K. Dick",
+        "year": 2015,
+        "pages": 234
+      },
+      {
+        "title": "The Hitchhiker's Guide to the Galaxy (Hitchhiker's Guide to the Galaxy, #1) ",
+        "author": "Douglas Adams",
+        "year": 2016,
+        "pages": 345
+      }
+    ]
+  }
+}

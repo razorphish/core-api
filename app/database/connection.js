@@ -2,11 +2,73 @@ const mongoose = require('mongoose');
 const dbConfig = require('../../lib/config.loader').databaseConfig;
 const connectionString = `mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.database}${dbConfig.queryOptions}`;
 const logger = require('../../lib/winston.logger');
+const async = require('async');
 
 let connection = null;
 
 class Database {
-    open(callback) {
+
+    /**
+     * Close the database
+     */
+    close() {
+        connection.close(() => {
+            logger.debug(
+                'Mongoose default connection disconnected through app termination'
+            );
+            process.exit(0);
+        });
+    }
+
+    drop(done) {
+        if (!connection) {
+            return done()
+        }
+
+        // This is faster then dropping the database
+        connection.db.collections( (err, collections) => {
+            async.each(collections, function (collection, cb) {
+                if (collection.collectionName.indexOf('system') === 0) {
+                    return cb()
+                }
+                collection.deleteOne(cb)
+            }, done)
+        })
+
+        // This is faster then dropping the database
+        // connection.collections((err, collections) => {
+        // async.each(collections, (collection, cb) => {
+        // async.each(connection.db.collectionNames, (collection, cb) => {
+        //     if (collection.collectionName.indexOf('system') === 0) {
+        //         console.log('no')
+        //         return cb()
+        //     }
+        //     console.log('yes')
+        //     collection.remove(cb)
+        // }, done)
+        // })
+    }
+
+    fixtures(data, done) {
+        if (!connection) {
+            return done(new Error('Missing database connection.'))
+        }
+
+        var names = Object.keys(data.collections)
+
+        async.each(names, function (name, cb) {
+            connection.createCollection(name, function (err, collection) {
+                if (err) return cb(err)
+                collection.insertMany(data.collections[name], cb)
+            })
+        }, done)
+    }
+
+    getDatabase() {
+        return connection;
+    }
+
+    open(done) {
         const options = {
             user: dbConfig.username,
             pass: dbConfig.password,
@@ -30,23 +92,14 @@ class Database {
 
         mongoose.connection.on('error', (err) => {
             logger.error('Error connecting to MongoDB: ' + connectionString, err);
-            callback(err, false);
+            done(err, false);
         });
 
         mongoose.connection.once('open', () => {
             logger.debug('We have connected to mongodb');
-            callback(null, true);
+            done(null, true);
         });
-    }
 
-    // disconnect from database
-    close() {
-        connection.close(() => {
-            logger.debug(
-                'Mongoose default connection disconnected through app termination'
-            );
-            process.exit(0);
-        });
     }
 }
 

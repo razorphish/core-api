@@ -8,7 +8,7 @@
     "startdev": "concurrently \"SET NODE_ENV=dev\" \"nodemon server.js\"",
     "test": "mocha --exit --reporter spec",
     "testcat": "mocha --reporter nyan",
-    "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --exit -R spec test/*"
+    "cover": "node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --exit -R spec test/*spec.js"
   },
   "directories": {
     "test": "test"
