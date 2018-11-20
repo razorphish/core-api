@@ -92,6 +92,12 @@ class UserRepository {
     });
   }
 
+  /**
+   * Authenticate user
+   * @param {string} username username to authenticate
+   * @param {string} password password to validate
+   * @param {function} callback callback function
+   */
   authenticate(username, password, callback) {
     logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
 
@@ -201,6 +207,11 @@ class UserRepository {
     });
   }
 
+  /**
+   * Gets a user by a role
+   * @param {object} role role to get user by
+   * @param {function} callback callback
+   */
   byRole(role, callback) {
     logger.debug(`${this._classInfo}.byRole(${JSON.stringify(role)})`);
 
@@ -365,10 +376,7 @@ class UserRepository {
       //make sure password matches
       result.comparePassword(password, (err, isMatch) => {
         if (err) {
-          logger.error(
-            `${
-            this._classInfo
-            }.passwordMatch(${username}, ${password})::comparePassword`,
+          logger.error(`${this._classInfo}.passwordMatch(${username}, ${password})::comparePassword`,
             err
           );
           callback(err);
@@ -458,7 +466,8 @@ class UserRepository {
 
         //returns User data
         callback(null, item);
-      });
+      }
+    );
   }
 
   /**
@@ -516,7 +525,8 @@ class UserRepository {
 
         callback(null, result);
 
-      });
+      }
+    );
   }
 }
 

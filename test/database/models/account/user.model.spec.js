@@ -204,7 +204,7 @@ describe('User Model Tests', () => {
             });
     });
 
-    it('authenticate : valid credentials', (done) => {
+    it('authenticate : invalid credentials', (done) => {
         User.authenticate('david@maras.co', 'password',
             (err, data, reason) => {
                 reason.should.eq(1);
@@ -212,15 +212,14 @@ describe('User Model Tests', () => {
             });
     });
 
-    // it('passwordMatch : valid credentials', (done) => {
-    //     User.passwordMatch('david@maras.co', 'Letme1n!',
-    //         (err, data) => {
-    //             console.log(data);
-    //             data.firstName.should.eql('Antonio');
-    //             data.lastName.should.eql('Marasco');
-    //             done();
-    //         });
-    // });
+    it('passwordMatch : valid credentials', (done) => {
+        User.passwordMatch('david@maras.co', 'Letme1n!',
+            (err, data) => {
+                data.firstName.should.eql('Antonio');
+                data.lastName.should.eql('Marasco');
+                done();
+            });
+    });
 
     it('passwordMatch : invalid credentials', (done) => {
         User.passwordMatch('david@maras.co', 'password',

@@ -113,21 +113,28 @@ UserSchema.pre('save', function (next) {
     return next();
   }
 
-  bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
+  bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
     logger.info('user: got Salt?', salt)
     user.salt = salt;
 
-    bcrypt.hash(user.password, salt, function (err, hash) {
+    bcrypt.hash(user.password, salt, (err, hash) => {
       logger.info('*** User.SCHEMA.save password hashed', hash)
       user.password = hash;
       next();
     });
   });
+  // bcrypt.hash(user.password, SALT_WORK_FACTOR)
+  //   .then((hash, salt) => {
+  //     user.password = hash;
+  //     next();
+  //   }).catch((reason) => {
+  //     next();
+  //   });
 });
 
 //Compare password
 UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
+  bcrypt.compare(candidatePassword, this.password,  (err, isMatch) => {
     if (err) {
       return callback(err);
     }
