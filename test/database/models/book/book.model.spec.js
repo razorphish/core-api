@@ -6,16 +6,18 @@ var fs = require('fs');
 
 var readJson = (path, done) => {
     fs.readFile(require.resolve(path), (err, data) => {
-        if (err)
-            done(err)
-        else
-            done(null, JSON.parse(data))
+        if (err) {
+            done(err);
+        }
+        else {
+            done(null, JSON.parse(data));
+        }
     })
 }
 
 describe('Book Model Tests', () => {
     before((done) => {
-        DB.open(done)
+        DB.open(done);
     })
 
     beforeEach((done) => {
@@ -35,7 +37,7 @@ describe('Book Model Tests', () => {
 
     it('all', (done) => {
         Book.all((err, data) => {
-            data.count.should.eql(3)
+            data.count.should.eql(3);
             done();
         })
     })
@@ -70,10 +72,10 @@ describe('Book Model Tests', () => {
         Book.all((err, books) => {
             Book.delete(books.data[0]._id, (err) => {
                 Book.all((err, result) => {
-                    result.count.should.eql(2)
-                    result.data[0]._id.should.not.eql(books.data[0]._id)
-                    result.data[1]._id.should.not.eql(books.data[0]._id)
-                    done()
+                    result.count.should.eql(2);
+                    result.data[0]._id.should.not.eql(books.data[0]._id);
+                    result.data[1]._id.should.not.eql(books.data[0]._id);
+                    done();
                 })
             })
         })

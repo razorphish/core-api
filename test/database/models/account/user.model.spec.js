@@ -1,22 +1,26 @@
 process.env.NODE_ENV = 'test';
 
 const User = require('../../../../app/database/repositories/account/user.repository');
+const UserModel = require('../../../../app/database/models/account/user.model');
 const DB = require('../../../../app/database/connection');
-var fs = require('fs');
+const fs = require('fs');
+const expect = require('chai').expect;
 
-var readJson = (path, done) => {
+const readJson = (path, done) => {
     fs.readFile(require.resolve(path), (err, data) => {
-        if (err)
-            done(err)
-        else
-            done(null, JSON.parse(data))
+        if (err) {
+            done(err);
+        }
+        else {
+            done(null, JSON.parse(data));
+        }
     })
 }
 
 describe('User Model Tests', () => {
     before((done) => {
-        DB.open(done)
-    })
+        DB.open(done);
+    });
 
     beforeEach((done) => {
         DB.drop((err) => {
@@ -29,61 +33,272 @@ describe('User Model Tests', () => {
                     fixtures = data;
                     DB.fixtures(fixtures, done);
                 });
-        })
-    })
+        });
+    });
 
 
     it('all', (done) => {
         User.all((err, data) => {
-            data.count.should.eql(3)
+            data.count.should.eql(2);
             done();
-        })
-    })
+        });
+    });
+
+    it('allPaged', (done) => {
+        User.allPaged(0, 2, (err, result) => {
+            result.data.length.should.eql(2);
+            done();
+        });
+    });
+
+    it('summary', (done) => {
+        User.summary(0, 2, (err, result) => {
+            result.data.length.should.eql(2);
+            expect(result.data[0].password).to.not.exist;
+            expect(result.data[0].salt).to.not.exist;
+            expect(result.data[0].refreshToken).to.not.exist;
+            expect(result.data[0].loginAttempts).to.not.exist;
+            expect(result.data[0].lockUntil).to.not.exist;
+            done();
+        });
+    });
+
+    it('get', (done) => {
+        User.all((err, result) => {
+            User.get(result.data[0]._id, (err, data) => {
+                data.firstName.should.eql('Antonio');
+                data.lastName.should.eql('Marasco');
+                done();
+            })
+        });
+    });
 
     it('create', (done) => {
         User.insert(
             {
-                author: 'Famous Person',
-                title: 'I am so famous!',
-                year: 2018,
-                pages: 100
+                firstName: 'Erica',
+                lastName: 'Marasco',
+                email: 'erica@ericamarasco.com',
+                email_lower: 'erica@ericamarasco.com',
+                username: 'erica.marasco',
+                username_lower: 'erica.marasco',
+                status: 'active',
+                password: 'Letme1n!',
+                salt: '1NC7owXUlUj',
+                roles: [
+                    {
+                        _id: "59af319cfc13ae21640000dc",
+                        name: "Stylist",
+                        normalizedName: "STYLIST"
+                    },
+                ],
+                refreshToken: {
+                    loginProvider: "oAuth2",
+                    name: "refresh_token3",
+                    scope: "*",
+                    type: "bearer",
+                    expiresIn: 15552000,
+                    value: '123456789abcdefghi'
+                }
             },
             (err, user) => {
                 User.all((err, users) => {
-                    users.count.should.eql(4);
-                    users.data[3]._id.should.eql(user._id);
-                    users.data[3].author.should.eql('Famous Person');
-                    users.data[3].title.should.eql('I am so famous!');
+                    users.count.should.eql(3);
+                    users.data[2]._id.should.eql(user._id);
+                    users.data[2].firstName.should.eql('Erica');
+                    users.data[2].lastName.should.eql('Marasco');
+                    users.data[2].email.should.eql('erica@ericamarasco.com');
+                    users.data[2].username.should.eql('erica.marasco');
+
                     done();
                 });
             });
     });
 
-    it('allPaged', (done) => {
-        User.allPaged(0, 2, (err, data) => {
-            data.data.length.should.eql(2);
-            done();
-        })
-    })
+    it('update', (done) => {
+        User.all((err, users) => {
+            let body = {
+                firstName: 'Paco'
+            }
+            User.update(users.data[0]._id, body, (err, user) => {
+                User.get(user._id, (err, data) => {
+                    data.firstName.should.eql('Paco');
+                    done();
+                });
+            });
+        });
+    });
+
+    it('updateSummary', (done) => {
+        User.all((err, users) => {
+            let body = {
+                firstName: 'Smith',
+            }
+            User.updateSummary(users.data[0]._id, body, (err, user) => {
+                User.get(user._id, (err, data) => {
+                    data.firstName.should.eql('Smith');
+                    done();
+                });
+            });
+        });
+    });
+
+    it('updateToken', (done) => {
+        User.all((err, result) => {
+
+            let token = {
+                loginProvider: "oAuth2",
+                name: "refresh_token",
+                scope: "*",
+                type: "bearer",
+                expiresIn: 15552000,
+                value: '123456789abcdefghi'
+            }
+
+            User.updateToken(result.data[0]._id, token, (err, user) => {
+                user.refreshToken.value.should.eql('123456789abcdefghi');
+                done();
+            });
+        });
+    });
 
     it('remove', (done) => {
         User.all((err, users) => {
             User.delete(users.data[0]._id, (err) => {
                 User.all((err, result) => {
-                    result.count.should.eql(2)
-                    result.data[0]._id.should.not.eql(users.data[0]._id)
-                    result.data[1]._id.should.not.eql(users.data[0]._id)
-                    done()
-                })
-            })
-        })
-    })
+                    result.count.should.eql(1);
+                    result.data[0]._id.should.not.eql(users.data[0]._id);
+                    done();
+                });
+            });
+        });
+    });
 
-    it('should be invalid if name is missing', (done) => {
-        var model = new User();
+    it('add Device', (done) => {
+        User.all((err, users) => {
+            let body = {
+                pushRegistrationId: 'Registrion Id',
+                cordova: "body.cordova",
+                model: "body.model",
+                platform: "body.platform",
+                uuid: "body.uuid",
+                version: "body.version",
+                manufacturer: "body.manufacturer",
+                isVirtual: "body.isVirtual",
+                serial: "body.serial"
+            };
+
+            User.addDevice(users.data[0]._id, body, (err, data) => {
+                User.all((err, result) => {
+                    expect(result.data[0].devices).to.exist;
+                    done();
+                });
+            });
+        });
+    });
+
+    it('authenticate : valid credentials', (done) => {
+        User.authenticate('david@maras.co', 'Letme1n!',
+            (err, data, reason) => {
+                done();
+            });
+    });
+
+    it('authenticate : valid credentials', (done) => {
+        User.authenticate('david@maras.co', 'password',
+            (err, data, reason) => {
+                reason.should.eq(1);
+                done();
+            });
+    });
+
+    // it('passwordMatch : valid credentials', (done) => {
+    //     User.passwordMatch('david@maras.co', 'Letme1n!',
+    //         (err, data) => {
+    //             console.log(data);
+    //             data.firstName.should.eql('Antonio');
+    //             data.lastName.should.eql('Marasco');
+    //             done();
+    //         });
+    // });
+
+    it('passwordMatch : invalid credentials', (done) => {
+        User.passwordMatch('david@maras.co', 'password',
+            (err, data) => {
+                expect(data).to.not.exist;
+                done();
+            });
+    });
+
+    it('byRefreshToken', (done) => {
+        User.byRefreshToken('77dd93db3f1455022d0a6f701c9bbd00e8b678f3', (err, data) => {
+            data.firstName.should.eql('Antonio');
+            data.lastName.should.eql('Marasco');
+            done();
+        });
+    });
+
+    it('byRefreshToken: invalid', (done) => {
+        User.byRefreshToken('123', (err, data) => {
+            expect(data).to.not.exist;
+            done();
+        });
+    });
+
+    it('byRole', (done) => {
+        User.byRole('Guest', (err, result) => {
+            result.count.should.eql(1);
+            result.data[0].firstName.should.eql('Antonio');
+            result.data[0].lastName.should.eql('Marasco');
+            done();
+        });
+    });
+
+    it('byUsername', (done) => {
+        User.byUsername('david@maras.co', (err, result) => {
+            result.firstName.should.eql('Antonio');
+            result.lastName.should.eql('Marasco');
+            done();
+        });
+    });
+
+    /**
+     * Validations
+     */
+    it('should be invalid if email is missing', (done) => {
+        var model = new UserModel();
 
         model.validate((err) => {
-            expect(err.errors.title).to.exist;
+            expect(err.errors.email).to.exist;
+            expect(err.errors.email_lower).to.exist;
+            done();
+        });
+    });
+
+    it('should be invalid if status is missing', (done) => {
+        var model = new UserModel();
+
+        model.validate((err) => {
+            expect(err.errors.status).to.exist;
+            done();
+        });
+    });
+
+    it('should be invalid if username is missing', (done) => {
+        var model = new UserModel();
+
+        model.validate((err) => {
+            expect(err.errors.username).to.exist;
+            expect(err.errors.username_lower).to.exist;
+            done();
+        });
+    });
+
+    it('should be invalid if password is missing', (done) => {
+        var model = new UserModel();
+
+        model.validate((err) => {
+            expect(err.errors.password).to.exist;
             done();
         });
     });

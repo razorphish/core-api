@@ -4,7 +4,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const crypto = require('crypto');
-const logger = require('../../../../lib/winston.logger');
 
 const ClientSchema = new Schema({
   name: { type: String, required: true },

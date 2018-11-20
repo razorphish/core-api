@@ -54,43 +54,6 @@ class UserRepository {
   }
 
   /**
-   * Updates an User
-   * @param {any} id Id of User
-   * @param {object} body Object containing User information
-   * @param {function} callback Callback function fail/success
-   */
-  addSalonService(id, body, callback) {
-    logger.debug(`${this._classInfo}.addSalonService(${id})`, body);
-
-    UserModel.findById(id, (err, item) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.addSalonService(${id})::findById`,
-          err
-        );
-        return callback(err);
-      }
-
-      item.salonServices.push({
-        name: body.title,
-        description: body.description,
-        durationInMinutes: body.durationInMinutes,
-        className: body.className
-      });
-
-      item.save((err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.addSalonService(${id})`, err);
-          return callback(err);
-        }
-
-        //returns User data
-        callback(null, data);
-      });
-    });
-  }
-
-  /**
    * Gets all Users
    * @param {function} callback Callback function for all
    */
@@ -202,7 +165,7 @@ class UserRepository {
           name: 1
         })
         .skip(skip)
-        .top(top)
+        .limit(top)
         .exec((err, data) => {
           if (err) {
             logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, err);
@@ -241,45 +204,47 @@ class UserRepository {
   byRole(role, callback) {
     logger.debug(`${this._classInfo}.byRole(${JSON.stringify(role)})`);
 
-    UserModel.countDocuments((err, count) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
-          err
-        );
-        return callback(err);
-      }
-
-      logger.debug(
-        `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
-        count
-      );
-
-      UserModel.find(
-        { roles: { $elemMatch: { name: role } } },
-        {
-          password: 0,
-          salt: 0,
-          refreshToken: 0,
-          loginAttempts: 0,
-          lockUntil: 0
-        },
-        (err, data) => {
-          if (err) {
-            logger.error(
-              `${this._classInfo}.byRole(${JSON.stringify(role)})::find`,
-              err
-            );
-            return callback(err, null);
-          }
-
-          callback(null, {
-            count: count,
-            data: data
-          });
+    UserModel.countDocuments(
+      { roles: { $elemMatch: { name: role } } },
+      (err, count) => {
+        if (err) {
+          logger.error(
+            `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
+            err
+          );
+          return callback(err);
         }
-      );
-    });
+
+        logger.debug(
+          `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
+          count
+        );
+
+        UserModel.find(
+          { roles: { $elemMatch: { name: role } } },
+          {
+            password: 0,
+            salt: 0,
+            refreshToken: 0,
+            loginAttempts: 0,
+            lockUntil: 0
+          },
+          (err, data) => {
+            if (err) {
+              logger.error(
+                `${this._classInfo}.byRole(${JSON.stringify(role)})::find`,
+                err
+              );
+              return callback(err, null);
+            }
+
+            callback(null, {
+              count: count,
+              data: data
+            });
+          }
+        );
+      });
   }
 
   /**
@@ -311,7 +276,7 @@ class UserRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    UserModel.remove(
+    UserModel.deleteOne(
       {
         _id: id
       },
@@ -361,28 +326,7 @@ class UserRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new UserModel();
-    console.log(body);
-
-    model.firstName = body.firstName;
-    model.lastName = body.lastName;
-    model.email = body.email;
-    model.homePhone = body.homePhone;
-    model.username = body.username;
-    model.avatar = body.avatar;
-    model.addresses = body.addresses;
-    model.roles = body.roles;
-    model.calendars = body.calendars;
-    model.businessHours = body.businessHours;
-    model.salonServices = body.salonServices;
-    model.twitter = body.twitter;
-    model.facebook = body.facebook;
-    model.instagram = body.instagram;
-    model.devices = body.devices;
-
-    //Lowers
-    model.email_lower = body.email;
-    model.username_lower = body.username;
+    var model = new UserModel(body);
 
     //Created
     if (!body.password) {
@@ -409,7 +353,7 @@ class UserRepository {
   passwordMatch(username, password, callback) {
     logger.debug(`${this._classInfo}.passwordMatch(${username}, ${password})`);
 
-    UserModel.findOne({ username: username }, (err, data) => {
+    UserModel.findOne({ username: username }, (err, result) => {
       if (err) {
         logger.error(
           `${this._classInfo}.passwordMatch(${username}, ${password})::findOne`,
@@ -419,11 +363,11 @@ class UserRepository {
       }
 
       //make sure password matches
-      data.comparePassword(password, (err, isMatch) => {
+      result.comparePassword(password, (err, isMatch) => {
         if (err) {
           logger.error(
             `${
-              this._classInfo
+            this._classInfo
             }.passwordMatch(${username}, ${password})::comparePassword`,
             err
           );
@@ -434,63 +378,13 @@ class UserRepository {
           `${this._classInfo}.passwordMatch(${username}, ${password})::isMatch`,
           isMatch
         );
+
         if (isMatch) {
-          callback(null, data);
+          callback(null, result);
         } else {
           callback(null, null);
         }
       });
-    });
-  }
-
-  /**
-   * Search for a specific User
-   * @param {number} skip Page number
-   * @param {number} top Number of items per page
-   * @param {function} callback Callback function
-   */
-  search(skip, top, callback) {
-    logger.debug(`${this._classInfo}.search(${skip}, ${top})`);
-
-    UserModel.countDocuments((err, count) => {
-      if (err) {
-        logger.error(`${this._classInfo}.search(${skip}, ${top})::count`, err);
-        return callback(err);
-      }
-
-      logger.debug(`${this._classInfo}.search(${skip}, ${top})::count`, count);
-
-      UserModel.find(
-        {
-          name: body.name
-        },
-        {
-          password: 0,
-          salt: 0,
-          refreshToken: 0,
-          loginAttempts: 0,
-          lockUntil: 0
-        }
-      )
-        .sort({
-          name: 1
-        })
-        .skip(skip)
-        .top(top)
-        .exec((err, data) => {
-          if (err) {
-            logger.error(
-              `${this._classInfo}.search(${skip}, ${top})::find`,
-              err
-            );
-            return callback(err);
-          }
-
-          callback(null, {
-            count: count,
-            data: data
-          });
-        });
     });
   }
 
@@ -525,7 +419,7 @@ class UserRepository {
         }
       )
         .skip(skip)
-        .top(top)
+        .limit(top)
         .exec((err, data) => {
           if (err) {
             logger.error(
@@ -552,46 +446,19 @@ class UserRepository {
   update(id, body, callback) {
     logger.debug(`${this._classInfo}.update(${id})`);
 
-    UserModel.findById(id, (err, item) => {
-      if (err) {
-        logger.error(`${this._classInfo}.update(${id})::findById`, err);
-        return callback(err);
-      }
-
-      item.firstName = body.firstName;
-      item.lastName = body.lastName;
-      item.email = body.email;
-      item.homePhone = body.homePhone;
-      item.username = body.username;
-      item.avatar = body.avatar;
-      item.addresses = body.addresses;
-      item.roles = body.roles;
-      item.calendars = body.calendars;
-      item.businessHours = body.businessHours;
-      item.salonServices = body.salonServices;
-      item.facebook = body.facebook;
-      item.twitter = body.twitter;
-      item.instagram = body.instagram;
-      item.devices = body.devices;
-
-      //Lowers
-      item.email_lower = body.email;
-      item.username_lower = body.username;
-
-      if (body.password) {
-        item.password = body.password;
-      }
-
-      item.save((err, data) => {
+    UserModel.findOneAndUpdate(
+      { _id: id },
+      body,
+      { new: true },
+      (err, item) => {
         if (err) {
-          logger.error(`${this._classInfo}.update(${id})::save`, err);
+          logger.error(`${this._classInfo}.update(${id})::findById`, err);
           return callback(err);
         }
 
         //returns User data
-        callback(null, data);
+        callback(null, item);
       });
-    });
   }
 
   /**
@@ -609,31 +476,11 @@ class UserRepository {
         return callback(err);
       }
 
-      item.firstName = body.firstName;
-      item.lastName = body.lastName;
-      item.email = body.email;
-      item.homePhone = body.homePhone;
-      // item.username = body.username;
-      // item.avatar = body.avatar;
-      // item.addresses = body.addresses;
-      // item.roles = body.roles;
-      // item.calendars = body.calendars;
-      // item.businessHours = body.businessHours;
-      // item.salonServices = body.salonServices;
-      // item.facebook = body.facebook;
-      // item.twitter = body.twitter;
-      // item.instagram = body.instagram;
-      item.devices = body.devices;
-
-      //Lowers
-      item.email_lower = body.email;
-      item.username_lower = body.username;
-
       if (body.password) {
         item.password = body.password;
       }
 
-      item.save((err, data) => {
+      Object.assign(item, body).save((err, data) => {
         if (err) {
           logger.error(`${this._classInfo}.update(${id})::save`, err);
           return callback(err);
@@ -654,27 +501,22 @@ class UserRepository {
   updateToken(id, token, callback) {
     logger.debug(`${this._classInfo}.updateToken(${id}, ${token})`);
 
-    UserModel.findById(id, (err, item) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.updateToken(${id}, ${token})::findById`,
-          err
-        );
-        return callback(error);
-      }
-
-      item.update({ refreshToken: token }, (err, data) => {
+    UserModel.findOneAndUpdate(
+      { _id: id },
+      { refreshToken: token },
+      { new: true },
+      (err, result) => {
         if (err) {
           logger.error(
-            `${this._classInfo}.updateToken(${id}, ${token})::update`,
+            `${this._classInfo}.updateToken(${id}, ${token})::findByIdAndUpdate`,
             err
           );
-          return callback(err);
+          return callback(error);
         }
-        //returns User data
-        callback(null, data);
+
+        callback(null, result);
+
       });
-    });
   }
 }
 

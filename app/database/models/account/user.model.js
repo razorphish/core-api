@@ -71,7 +71,7 @@ const UserSchema = new Schema({
   refreshToken: { type: Token.schema, required: false },
   dateCreated: { type: Date, required: true, default: Date.now },
   dateModified: { type: Date, required: true, default: Date.now },
-  roles: { type: [Role.schema] },
+  roles: { type: [Role.schema], required: false },
   addresses: {
     type: [AddressSchema],
     required: false,
@@ -81,7 +81,7 @@ const UserSchema = new Schema({
   lockUntil: { type: Number },
   devices: { type: [DeviceSchema], required: false },
   status: { type: String, enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended'], required: true },
-  account: { type: Schema.Types.ObjectId, required: true }
+  account: { type: Schema.Types.ObjectId }
 });
 
 /**
