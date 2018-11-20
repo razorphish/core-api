@@ -161,6 +161,7 @@ describe('User Repository Tests', () => {
                     },
                 ],
                 refreshToken: {
+                    userId: "59e8e689ea1ea07ca6e6ef96",
                     loginProvider: "oAuth2",
                     name: "refresh_token3",
                     scope: "*",
@@ -244,6 +245,7 @@ describe('User Repository Tests', () => {
         User.all((err, result) => {
 
             let token = {
+                userId: "59e8e689ea1ea07ca6e6ef96",
                 loginProvider: "oAuth2",
                 name: "refresh_token",
                 scope: "*",

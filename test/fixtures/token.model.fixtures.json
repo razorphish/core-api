@@ -1,0 +1,36 @@
+{
+    "collections": {
+        "tokens": [
+            {
+                "userId": "59b0767a8207af454caa2560",
+                "loginProvider": "oAuth2",
+                "name": "access_token",
+                "value": "df87095132d000193ae7f2d34fe9196b30de83bc",
+                "scope": "*",
+                "type": "bearer",
+                "expiresIn": 1800,
+                "dateExpire": "2019-06-06T16:00:07-07:00"
+            },
+            {
+                "userId": "59b0767a8207af454caa2560",
+                "loginProvider": "OpenID",
+                "name": "access_token",
+                "value": "cbdd38f0d1edc40c8f16503e6f70c03dc5b67fed",
+                "scope": "*",
+                "type": "bearer",
+                "expiresIn": 1800,
+                "dateExpire": "2019-07-06T16:00:07-07:00"
+            },
+            {
+                "userId": "59b0767a8207af454caa2560",
+                "loginProvider": "simple",
+                "name": "access_token",
+                "value": "b0e55d0d92236182469b009e332f6cf0c619bffe",
+                "scope": "*",
+                "type": "bearer",
+                "expiresIn": 1800,
+                "dateExpire": "2019-09-06T16:00:07-07:00"
+            }
+        ]
+    }
+}

@@ -3,6 +3,7 @@
         "users": [
             {
                 "refreshToken": {
+                    "userId": "59e8e689ea1ea07ca6e6ef96",
                     "loginProvider": "oAuth2",
                     "name": "refresh_token",
                     "scope": "*",
@@ -33,6 +34,7 @@
                 }
             },
             {
+                "userId": "59e8e689ea1ea07ca6e6ef96",
                 "firstName": "Diego",
                 "lastName": "Marasco",
                 "email": "diego@maras.co",

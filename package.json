@@ -54,7 +54,7 @@
     "handlebars-helpers": "^0.7.5",
     "handlebars-layouts": "^3.1.4",
     "lodash": "^4.17.10",
-    "mongoose": "^5.3.12",
+    "mongoose": "^5.3.13",
     "morgan": "^1.9.1",
     "oauth2orize": "^1.8.0",
     "passport": "^0.3.2",

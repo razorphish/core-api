@@ -1,7 +1,7 @@
 // Token Repository
-const mongoose = require('mongoose'),
-  logger = require('../../../../lib/winston.logger'),
-  TokenModel = require('../../models/auth/token.model');
+const mongoose = require('mongoose');
+const logger = require('../../../../lib/winston.logger');
+const TokenModel = require('../../models/auth/token.model');
 
 /**
  * Token repository
@@ -14,6 +14,70 @@ class TokenRepository {
     //Logging Info
     this._classInfo = '*** [Token].repository';
   }
+
+  /**
+ * Gets all Users
+ * @param {function} callback Callback function for all
+ */
+  all(callback) {
+    logger.debug(`${this._classInfo}.all()`);
+
+    TokenModel.countDocuments((err, count) => {
+      logger.debug(`${this._classInfo}.all()::count`, count);
+
+      TokenModel.find({}, { }, (err, data) => {
+        if (err) {
+          logger.error(`${this._classInfo}.all()::find`, err);
+          return callback(err, null);
+        }
+
+        callback(null, {
+          count: count,
+          data: data
+        });
+      });
+    });
+  }
+
+  /**
+   * Gets a single User
+   * @param {object} accessToken Token value
+   * @param {function} callback Callback function for success/fail
+   */
+  byToken(accessToken, callback) {
+    logger.debug(`${this._classInfo}.getByToken(${accessToken})`);
+
+    TokenModel.findOne({ value: accessToken }, (err, docs) => {
+      if (err) {
+        logger.error(
+          `${this._classInfo}.getByToken(${accessToken})::findOne`,
+          err
+        );
+        return callback(err);
+      }
+
+      callback(null, docs);
+    });
+  }
+
+  /**
+   * Gets a single User
+   * @param {object} id Id of entity
+   * @param {function} callback Callback function for success/fail
+   */
+  // byUserId(userId, callback) {
+  //   logger.debug(`${this._classInfo}.getByUserId(${userId})`);
+
+  //   //TokenModel.find({ userId: new ObjectId(userId) }, (err, data) => {
+  //     TokenModel.find({ userId: userId }, (err, docs) => {
+  //     if (err) {
+  //       logger.error(`${this._classInfo}.all(${userId})::findOne`, err);
+  //       return callback(err);
+  //     }
+  //     console.log(docs);
+  //     callback(null, docs);
+  //   });
+  // }
 
   /**
    * Delete an item by id
@@ -98,45 +162,6 @@ class TokenRepository {
     TokenModel.findById(id, (err, data) => {
       if (err) {
         logger.error(`${this._classInfo}.get(${id})::findById`, err);
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
-  }
-
-  /**
-   * Gets a single User
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
-   */
-  getByUserId(userId, callback) {
-    logger.debug(`${this._classInfo}.getByUserId(${userId})`);
-
-    TokenModel.findOne({ userId: userId }, (err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.all(${userId})::findOne`, err);
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
-  }
-
-  /**
-   * Gets a single User
-   * @param {object} accessToken Token value
-   * @param {function} callback Callback function for success/fail
-   */
-  getByToken(accessToken, callback) {
-    logger.debug(`${this._classInfo}.getByToken(${accessToken})`);
-
-    TokenModel.findOne({ value: accessToken }, (err, data) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.getByToken(${accessToken})::findOne`,
-          err
-        );
         return callback(err);
       }
 
