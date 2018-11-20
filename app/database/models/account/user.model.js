@@ -160,7 +160,7 @@ UserSchema.methods.incLoginAttempts = function (callback) {
   if (this.loginAttempts + 1 >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
     updates.$set = { lockUntil: Date.now() + LOCK_TIME };
   }
-  return this.update(updates, callback);
+  return this.updateOne(updates, callback);
 };
 
 // expose enum on the model, and provide an internal convenience reference

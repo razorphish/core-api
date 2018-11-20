@@ -18,8 +18,8 @@ const ClientSchema = new Schema({
   allowedOrigins: { type: [String], required: true },
   tokenLifeTime: { type: Number, required: true },
   refreshTokenLifeTime: { type: Number, required: true },
-  allowedLoginAttempts: { type: Number, required: false, default: 0 },
-  daysToLock: { type: Number, required: false, default: 0 },
+  // allowedLoginAttempts: { type: Number, required: false, default: 0 },
+  // daysToLock: { type: Number, required: false, default: 0 },
   dateCreated: { type: Date, required: true, default: Date.now },
   dateModified: { type: Date, required: true, default: Date.now },
 });
@@ -62,6 +62,7 @@ ClientSchema.statics.getVerified = function(
       return callback(error);
     }
 
+    //check if client found::NOT_FOUND
     if (!client) {
       return callback(null, false, reasons.NOT_FOUND);
     }
@@ -71,11 +72,12 @@ ClientSchema.statics.getVerified = function(
       .update(clientSecret)
       .digest('hex');
 
+    //Check correct secret::SECRET_INCORRECT
     if (client.clientSecret !== accessTokenHash) {
       return callback(null, false, reasons.SECRET_INCORRECT);
     }
 
-    //Check origins
+    //Check origins::ORIGIN_DISABLED
     var originDisabled = true;
 
     for (var i = 0; i < client.allowedOrigins.length; i++) {
@@ -93,7 +95,7 @@ ClientSchema.statics.getVerified = function(
       return callback(null, false, reasons.ORIGIN_DISABLED);
     }
 
-    //Finally, check for Trust
+    //Finally, check for Trust::NOT_TRUSTED
     if (!client.isTrusted) {
       return callback(null, false, reasons.NOT_TRUSTED);
     }

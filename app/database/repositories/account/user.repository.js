@@ -93,48 +93,6 @@ class UserRepository {
   }
 
   /**
-   * Authenticate user
-   * @param {string} username username to authenticate
-   * @param {string} password password to validate
-   * @param {function} callback callback function
-   */
-  authenticate(username, password, callback) {
-    logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
-
-    UserModel.getAuthenticated(username, password, (err, user, reason) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.authenticate(${username}, ${password})`,
-          err
-        );
-        return callback(err, null);
-      }
-
-      if (user) {
-        callback(null, user);
-        return;
-      }
-
-      // otherwise we can determine why we failed
-      //var reasons = user.failedLogin;
-      // switch (reason) {
-      //   case reasons.NOT_FOUND:
-      //   case reasons.PASSWORD_INCORRECT:
-      //     // note: these cases are usually treated the same - don't tell
-      //     // the user *why* the login failed, only that it did
-      //     break;
-      //   case reasons.MAX_ATTEMPTS:
-      //     // send email or otherwise notify user that account is
-      //     // temporarily locked
-      //     break;
-      //}
-
-      //tell client password fail
-      callback(null, null, reason);
-    });
-  }
-
-  /**
    * Gets all Users paged
    * @param {number} skip Page number
    * @param {number} top Number of items per page
@@ -183,6 +141,48 @@ class UserRepository {
             data: data
           });
         });
+    });
+  }
+
+  /**
+ * Authenticate user
+ * @param {string} username username to authenticate
+ * @param {string} password password to validate
+ * @param {function} callback callback function
+ */
+  authenticate(username, password, callback) {
+    logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
+
+    UserModel.getAuthenticated(username, password, (err, user, reason) => {
+      if (err) {
+        logger.error(
+          `${this._classInfo}.authenticate(${username}, ${password})`,
+          err
+        );
+        return callback(err, null);
+      }
+
+      if (user) {
+        callback(null, user);
+        return;
+      }
+
+      // otherwise we can determine why we failed
+      //var reasons = user.failedLogin;
+      // switch (reason) {
+      //   case reasons.NOT_FOUND:
+      //   case reasons.PASSWORD_INCORRECT:
+      //     // note: these cases are usually treated the same - don't tell
+      //     // the user *why* the login failed, only that it did
+      //     break;
+      //   case reasons.MAX_ATTEMPTS:
+      //     // send email or otherwise notify user that account is
+      //     // temporarily locked
+      //     break;
+      //}
+
+      //tell client password fail
+      callback(null, null, reason);
     });
   }
 
@@ -460,7 +460,7 @@ class UserRepository {
       { new: true },
       (err, item) => {
         if (err) {
-          logger.error(`${this._classInfo}.update(${id})::findById`, err);
+          logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, err);
           return callback(err);
         }
 
@@ -479,26 +479,20 @@ class UserRepository {
   updateSummary(id, body, callback) {
     logger.debug(`${this._classInfo}.updateSummary(${id})`, body);
 
-    UserModel.findById(id, (err, item) => {
-      if (err) {
-        logger.error(`${this._classInfo}.updateSummary(${id})::findById`, err);
-        return callback(err);
-      }
-
-      if (body.password) {
-        item.password = body.password;
-      }
-
-      Object.assign(item, body).save((err, data) => {
+    UserModel.findOneAndUpdate(
+      { _id: id },
+      body,
+      { new: true },
+      (err, item) => {
         if (err) {
-          logger.error(`${this._classInfo}.update(${id})::save`, err);
+          logger.error(`${this._classInfo}.updateSummary(${id})::findById`, err);
           return callback(err);
         }
 
         //returns User data
-        callback(null, data);
+        callback(null, item);
+
       });
-    });
   }
 
   /**
