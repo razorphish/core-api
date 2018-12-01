@@ -60,6 +60,24 @@ class StateRepository {
     );
   }
 
+    /**
+   * Gets a single item
+   * @param {object} id Id of entity
+   * @param {function} callback Callback function for success/fail
+   */
+  get(id, callback) {
+    logger.debug(`${this._classInfo}.get(${id})`);
+
+    StateModel.findById(id, (err, data) => {
+      if (err) {
+        logger.error(`${this._classInfo}.get(${id})::findById`, err);
+        return callback(err);
+      }
+      // get client Id
+      callback(null, data);
+    });
+  }
+
   /**
    * Inserts a User into db
    * @param {object} body Object that contain Users info

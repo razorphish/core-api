@@ -27,7 +27,7 @@ describe('Token Repository Tests', () => {
                 return done(err);
             }
             var fixtures;
-            readJson('../../../fixtures/token.model.fixtures.json',
+            readJson('../../../fixtures/token.model.fixture.json',
                 (err, data) => {
                     fixtures = data;
                     DB.fixtures(fixtures, done);
