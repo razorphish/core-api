@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 const dbConfig = require('../../lib/config.loader').databaseConfig;
 const connectionString = `mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.database}${dbConfig.queryOptions}`;
 const logger = require('../../lib/winston.logger');
@@ -26,7 +27,7 @@ class Database {
         }
 
         // This is faster then dropping the database
-        connection.db.collections( (err, collections) => {
+        connection.db.collections((err, collections) => {
             async.each(collections, function (collection, cb) {
                 if (collection.collectionName.indexOf('system') === 0) {
                     return cb()
@@ -56,10 +57,20 @@ class Database {
 
         var names = Object.keys(data.collections)
 
-        async.each(names, function (name, cb) {
+        async.each(names, function (name, done) {
             connection.createCollection(name, function (err, collection) {
-                if (err) return cb(err)
-                collection.insertMany(data.collections[name], cb)
+                if (err) {
+                    return done(err)
+                }
+                
+                //Add fields here that have an ObjectId data type (not _ids)
+                data.collections[name].forEach((item, index) => {
+                    if (item.userId){
+                        item.userId = new ObjectId(item.userId);
+                    }
+                })
+
+                collection.insertMany(data.collections[name], done)
             })
         }, done)
     }

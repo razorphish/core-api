@@ -1,7 +1,7 @@
 // Token Repository
-const mongoose = require('mongoose');
 const logger = require('../../../../lib/winston.logger');
 const TokenModel = require('../../models/auth/token.model');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 /**
  * Token repository
@@ -25,7 +25,7 @@ class TokenRepository {
     TokenModel.countDocuments((err, count) => {
       logger.debug(`${this._classInfo}.all()::count`, count);
 
-      TokenModel.find({}, { }, (err, data) => {
+      TokenModel.find({}, {}, (err, data) => {
         if (err) {
           logger.error(`${this._classInfo}.all()::find`, err);
           return callback(err, null);
@@ -65,19 +65,19 @@ class TokenRepository {
    * @param {object} id Id of entity
    * @param {function} callback Callback function for success/fail
    */
-  // byUserId(userId, callback) {
-  //   logger.debug(`${this._classInfo}.getByUserId(${userId})`);
+  byUserId(userId, callback) {
+    logger.debug(`${this._classInfo}.getByUserId(${userId})`);
 
-  //   //TokenModel.find({ userId: new ObjectId(userId) }, (err, data) => {
-  //     TokenModel.find({ userId: userId }, (err, docs) => {
-  //     if (err) {
-  //       logger.error(`${this._classInfo}.all(${userId})::findOne`, err);
-  //       return callback(err);
-  //     }
-  //     console.log(docs);
-  //     callback(null, docs);
-  //   });
-  // }
+    //TokenModel.find({ userId: new ObjectId(userId) }, (err, data) => {
+    let query = { userId: userId };
+    TokenModel.find(query, (err, docs) => {
+      if (err) {
+        logger.error(`${this._classInfo}.all(${userId})::findOne`, err);
+        return callback(err);
+      }
+      callback(null, docs);
+    });
+  }
 
   /**
    * Delete an item by id

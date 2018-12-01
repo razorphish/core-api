@@ -1,10 +1,11 @@
 /** */
-const mongoose = require('mongoose').set('debug', true);
+//const mongoose = require('mongoose').set('debug', true);
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const TokenSchema = new Schema({
 
-  userId: { type: Schema.Types.ObjectId, required: true },
+  userId: { type: Schema.Types.ObjectId, required: true, ref: 'User'},
   loginProvider: { type: String, required: true, trim: true },
   name: { type: String, required: true, trim: true },
   value: { type: String, required: true, trim: true },

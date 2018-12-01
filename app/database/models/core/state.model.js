@@ -6,5 +6,5 @@ const StateSchema = new Schema({
   name: { type: String, required: true, trim: true }
 });
 
-module.exports = mongoose.model('State', StateSchema);
+module.exports = mongoose.model('State', StateSchema, 'states');
 

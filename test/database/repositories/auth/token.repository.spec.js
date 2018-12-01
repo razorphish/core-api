@@ -59,21 +59,21 @@ describe('Token Repository Tests', () => {
         });
     });
 
-    // it('byUserId: valid', (done) => {
+    it('byUserId: valid', (done) => {
 
-    //     Token.byUserId('59b0767a8207af454caa2560',
-    //         (err, data) => {
-    //             data.length.should.eql(3);
-    //             done();
-    //         });
-    // });
+        Token.byUserId('59b0767a8207af454caa2560',
+            (err, data) => {
+                data.length.should.eql(3);
+                done();
+            });
+    });
 
-    // it('byUserId: invalid', (done) => {
-    //     Token.byUserId('fake-user-id', (err, data) => {
-    //         expect(data).to.not.exist;
-    //         done();
-    //     });
-    // });
+    it('byUserId: invalid', (done) => {
+        Token.byUserId('fake-user-id', (err, data) => {
+            data.length.should.eql(0);
+            done();
+        });
+    });
 
 
     it('delete', (done) => {
