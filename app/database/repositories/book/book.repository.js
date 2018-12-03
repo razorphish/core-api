@@ -25,7 +25,7 @@ class BookRepository {
     BookModel.countDocuments((err, count) => {
       logger.debug(`${this._classInfo}.all()::count`, count);
 
-      BookModel.find({}, { password: 0, salt: 0 }, (err, data) => {
+      BookModel.find({}, (err, data) => {
         if (err) {
           logger.error(`${this._classInfo}.all()::find`, err);
           return callback(err, null);
