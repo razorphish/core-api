@@ -1,41 +1,268 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-let mongoose = require("mongoose");
-
 //Require the dev-dependencies
+const DB = require('../../app/database/connection');
+const fs = require('fs');
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../../server');
 let should = chai.should();
 
+const readJson = (path, done) => {
+    fs.readFile(require.resolve(path), (err, data) => {
+        if (err) {
+            done(err);
+        }
+        else {
+            done(null, JSON.parse(data));
+        }
+    });
+}
 
 chai.use(chaiHttp);
+
 //Our parent block
 describe('oAuth Tests', () => {
-    beforeEach((done) => { //Before each test we empty the database
-      done();
+    before((done) => { //Before each test we empty the database
+      DB.open(done);
+    });
+
+    beforeEach((done) => {
+        DB.drop((err) => {
+            if (err) {
+                return done(err);
+            }
+            var fixtures;
+            readJson('../fixtures/client-user.model.fixture.json',
+                (err, data) => {
+                    fixtures = data;
+                    DB.fixtures(fixtures, done);
+                });
+
+        });
     });
 
     /*
 `    * Test the /GET route
      */
     describe('/oauth/Token', () => {
-        it('authenticate', (done) => {
+        it('authenticate', function(done)  {
+
+            let clientId = 'web-ui';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
+            let origin = 'http://localhost:4200';
+            let username = 'david@maras.co';
+            const password = 'Letme1n!';
+
+            //this.timeout(15000);
             chai.request(server)
                 .post('/oauth/token')
                 .type('form')
+                .set('origin', origin)
                 .send({
-                    'username': '',
-                    'password': '',
-                    'client_id': '',
-                    'client_secret': '', 
+                    '_method': 'post',
+                    'username': username,
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
                     'grant_type': 'password'
                 })
                 .end((err, res) => {
                     res.should.have.status(200);
-                    res.body.should.be.a('array');
-                    res.body.length.should.be.eql(0);
+                    res.body.should.be.a('object');
+                    res.body.user.firstName.should.equal('Antonio');
+                    res.body.user.lastName.should.equal('Marasco');
+                    res.body.user.email.should.equal('david@maras.co');
+                    done();
+                });
+        });
+
+        it('authenticate:invalid credentials', function(done)  {
+
+            let clientId = 'web-ui';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
+            let origin = 'http://localhost:4200';
+            let username = 'david@maras.co';
+            const password = 'password';
+
+            //this.timeout(15000);
+            chai.request(server)
+                .post('/oauth/token')
+                .type('form')
+                .set('origin', origin)
+                .send({
+                    '_method': 'post',
+                    'username': username,
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
+                    'grant_type': 'password'
+                })
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    res.body.error.should.equal('invalid_grant');
+                    res.body.error_description.should.equal('Invalid resource owner credentials');
+                    done();
+                });
+        });
+
+        it('authenticate:invalid client id', function(done)  {
+
+            let clientId = 'web-ui-NOT-VALID';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
+            let origin = 'http://localhost:4200';
+            let username = 'david@maras.co';
+            const password = 'Letme1n!';
+
+            //this.timeout(15000);
+            chai.request(server)
+                .post('/oauth/token')
+                .type('form')
+                .set('origin', origin)
+                .send({
+                    '_method': 'post',
+                    'username': username,
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
+                    'grant_type': 'password'
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    done();
+                });
+        });
+
+        it('authenticate:invalid client secret', function(done)  {
+
+            let clientId = 'web-ui';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF-NOT-VALID';
+            let origin = 'http://localhost:4200';
+            let username = 'david@maras.co';
+            const password = 'Letme1n!';
+
+            //this.timeout(15000);
+            chai.request(server)
+                .post('/oauth/token')
+                .type('form')
+                .set('origin', origin)
+                .send({
+                    '_method': 'post',
+                    'username': username,
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
+                    'grant_type': 'password'
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    done();
+                });
+        });
+
+        it('authenticate:client NOT TRUSTED', function(done)  {
+
+            let clientId = 'web-mobile';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
+            let origin = 'http://localhost:8100';
+            let username = 'david@maras.co';
+            const password = 'Letme1n!';
+
+            //this.timeout(15000);
+            chai.request(server)
+                .post('/oauth/token')
+                .type('form')
+                .set('origin', origin)
+                .send({
+                    '_method': 'post',
+                    'username': username,
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
+                    'grant_type': 'password'
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    done();
+                });
+        });
+
+        it('authenticate:Username does not exist', function(done)  {
+
+            let clientId = 'web-ui';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
+            let origin = 'http://localhost:4200';
+            let username = null;
+            const password = 'Letme1n!';
+
+            //this.timeout(15000);
+            chai.request(server)
+                .post('/oauth/token')
+                .type('form')
+                .set('origin', origin)
+                .send({
+                    'username': username,
+                    '_method': 'post',
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
+                    'grant_type': 'password'
+                })
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.error.should.equal('invalid_request');
+                    res.body.error_description.should.equal('Missing required parameter: username');
+                    done();
+                });
+        });
+
+        it('authenticate:Password does not exist', function(done)  {
+
+            let clientId = 'web-ui';
+            let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+            'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+            'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+            'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
+            let origin = 'http://localhost:4200';
+            let username = 'david@maras.co';
+            const password = null; // 'Letme1n!';
+
+            //this.timeout(15000);
+            chai.request(server)
+                .post('/oauth/token')
+                .type('form')
+                .set('origin', origin)
+                .send({
+                    'username': username,
+                    '_method': 'post',
+                    'password': password,
+                    'client_id': clientId,
+                    'client_secret': clientSecret, 
+                    'grant_type': 'password'
+                })
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.error.should.equal('invalid_request');
+                    res.body.error_description.should.equal('Missing required parameter: password');
                     done();
                 });
         });

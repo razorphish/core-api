@@ -1,6 +1,7 @@
 // Module dependencies
 const mongoose = require('mongoose');
-const BookSeeder = require('./seeders/book.seeder');
+const ClientSeeder = require('./seeders/auth/client.seeder');
+const UserSeeder = require('./seeders/account/user.seeder');
 const logger = require('../../lib/winston.logger');
 
 (dbConfig = require('../../lib/config.loader').databaseConfig),
@@ -11,7 +12,7 @@ class DBSeeder {
     init() {
         mongoose.connection.db
             .listCollections({
-                name: 'customers'
+                name: 'clients'
             })
             .next((err, collinfo) => {
                 if (!collinfo) {
@@ -22,10 +23,13 @@ class DBSeeder {
     }
 
     seed() {
-        logger.info('Seeding data....')
+        logger.info('Seeding data...')
 
-        // Book
-        //BookSeeder.seed();
+        // Client
+        ClientSeeder.seed();
+
+        // User
+        UserSeeder.seed();
     }
 }
 

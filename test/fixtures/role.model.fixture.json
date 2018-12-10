@@ -1,0 +1,21 @@
+{
+    "collections": {
+        "roles": [
+            {
+                "_id": "59af3138fc13ae21640000c9",
+                "name": "User",
+                "normalizedName": "USER"
+            },
+            {
+                "_id": "59af3138fc13ae21640000ca",
+                "name": "Admin",
+                "normalizedName": "ADMIN"
+            },
+            {
+                "_id": "59af3138fc13ae21640000c8",
+                "name": "Guest",
+                "normalizedName": "GUEST"
+            }
+        ]
+    }
+}

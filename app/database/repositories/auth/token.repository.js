@@ -45,12 +45,12 @@ class TokenRepository {
    * @param {function} callback Callback function for success/fail
    */
   byToken(accessToken, callback) {
-    logger.debug(`${this._classInfo}.getByToken(${accessToken})`);
+    logger.debug(`${this._classInfo}.byToken(${accessToken})`);
 
     TokenModel.findOne({ value: accessToken }, (err, docs) => {
       if (err) {
         logger.error(
-          `${this._classInfo}.getByToken(${accessToken})::findOne`,
+          `${this._classInfo}.byToken(${accessToken})::findOne`,
           err
         );
         return callback(err);

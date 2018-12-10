@@ -14,6 +14,7 @@ const express = require('express'),
   seeder = require('./app/database/seeder'),
   cors = require('cors'),
   passport = require('passport'),
+  logger = require('./lib/winston.logger');
   authRoutes = require('./app/routes/oAuth2');
   
 (app = express()), (port = 3000);
@@ -32,7 +33,7 @@ class Server {
 
   start() {
     module.exports = app.listen(port, err => {
-      console.log(
+      logger.debug(
         '[%s] Listening on http://localhost:%d',
         process.env.NODE_ENV,
         port
@@ -58,11 +59,11 @@ class Server {
     var corsOptions = {
       origin: (origin, callback) => {
         if (whiteList.indexOf(origin) !== -1) {
-          console.log('Cors enabled: ' + origin);
+          logger.debug(`Cors enabled: ${origin}`);
           callback(null, true);
         } else {
           if (origin) {
-            console.log('origin not allowed: ' + origin);
+            logger.error(`origin not allowed: ${origin}`, origin);
             callback(new Error('Not allowed by CORS'));
           } else {
             callback(null, true);
@@ -78,7 +79,7 @@ class Server {
     };
 
     app.use(cors(corsOptions));
-    console.log('Cors Initialized');
+    logger.debug('Cors Initialized');
   }
 
   initViewEngine() {
@@ -127,11 +128,11 @@ class Server {
     //   // console.log('csrf-token: ' + csrfToken);
     //   next();
     // });
+    //process.setMaxListeners(0);
 
     process.on('uncaughtException', err => {
       if (err) {
-        console.log('oops you did it again');
-        console.log(err, err.stack);
+        logger.error('---------========APPLICATION ERROR========---------', err);
       }
     });
   }
@@ -144,13 +145,13 @@ class Server {
           output: process.stdout
         })
         .on('SIGINT', () => {
-          console.log('SIGINT: Closing MongoDB connection');
+          logger.debug('SIGINT: Closing MongoDB connection');
           database.close();
         });
     }
 
     process.on('SIGINT', () => {
-      console.log('SIGINT: Closing MongoDB connection');
+      logger.debug('SIGINT: Closing MongoDB connection');
       database.close();
     });
   }

@@ -245,7 +245,7 @@ class ClientRepository {
           );
           return callback(err, null);
         }
-
+        
         if (client) {
           logger.debug(
             `${this._classInfo}.verify(${clientId}, ${clientSecret}, ${origin}) OK`
@@ -256,7 +256,6 @@ class ClientRepository {
           logger.debug(
             `${this._classInfo}.verify(${clientId}, ${clientSecret}, ${origin}) FAIL. Add ${origin} to db`
           );
-
           callback(null, null, reason);
           return;
         }

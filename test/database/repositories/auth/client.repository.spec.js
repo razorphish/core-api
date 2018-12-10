@@ -13,7 +13,7 @@ const readJson = (path, done) => {
         else {
             done(null, JSON.parse(data));
         }
-    })
+    });
 }
 
 describe('Client Repository Tests', () => {

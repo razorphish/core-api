@@ -107,7 +107,15 @@ UserSchema.virtual('isLocked').get(function () {
 
 //PRE-SAVE
 UserSchema.pre('save', function (next) {
-  var user = this;
+  const user = this;
+  const now = new Date();
+  
+  if (!user.dateCreated) {
+    user.dateCreated = now;
+    user.dateModified = now;
+  } else {
+    user.dateModified = now;
+  }
 
   if (!user.isModified('password')) {
     return next();
@@ -134,7 +142,7 @@ UserSchema.pre('save', function (next) {
 
 //Compare password
 UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.password,  (err, isMatch) => {
+  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
     if (err) {
       return callback(err);
     }
@@ -171,6 +179,7 @@ var reasons = (UserSchema.statics.failedLogin = {
 });
 
 UserSchema.statics.getAuthenticated = function (username, password, callback) {
+
   this.findOne({ username: username },
     (err, user) => {
       if (err) {

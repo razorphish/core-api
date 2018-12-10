@@ -11,6 +11,7 @@ const tokenRepo = require('../../database/repositories/auth/token.repository');
 const clientRepo = require('../../database/repositories/auth/client.repository');
 const crypto = require('crypto');
 const util = require('util');
+const logger = require('../../../lib/winston.logger');
 
 /**
  * LocalStrategy
@@ -53,7 +54,7 @@ passport.deserializeUser((id, done) => {
  * the specification, in practice it is quite common.
  */
 function verifyClient(req, clientId, clientSecret, done) {
-  console.log('*** verify [Client]');
+  logger.debug('*** verify [Client]');
 
   if (!clientId || !clientSecret) {
     throw new Error('Client required');
@@ -61,18 +62,18 @@ function verifyClient(req, clientId, clientSecret, done) {
 
   var origin = req.headers.origin;
 
-  clientRepo.verify(clientId, clientSecret, origin, (err, client) => {
+  clientRepo.verify(clientId, clientSecret, origin, (err, client, reason) => {
     if (err) {
-      console.log('*** clientRepo.verify [Client] error: ' + util.inspect(err));
+      logger.error('*** clientRepo.verify [Client] error: ', util.inspect(err));
       return done(err);
     }
 
     if (client) {
-      console.log('*** verify [Client] ok');
+      logger.debug('*** verify [Client] ok');
       return done(null, client);
     } else {
-      console.log('*** verify [Client] denied');
-      return done(null, false);
+      logger.debug('*** verify [Client] denied');
+      return done(null, false, reason);
     }
   });
 }
@@ -92,14 +93,14 @@ passport.use(
  */
 passport.use(
   'user-bearer',
-  new BearerStrategy(function(accessToken, done) {
+  new BearerStrategy(function (accessToken, done) {
 
     var accessTokenHash = crypto
       .createHash('sha1')
       .update(accessToken)
       .digest('hex');
 
-    tokenRepo.getByToken(accessTokenHash, (error, token) => {
+    tokenRepo.byToken(accessTokenHash, (error, token) => {
       if (error) {
         return done(error);
       }
@@ -109,7 +110,7 @@ passport.use(
       }
 
       if (new Date() > token.dateExpire) {
-        tokenRepo.delete(token._id, function(err, token) {
+        tokenRepo.delete(token._id, function (err, token) {
           done(err);
         });
       } else {
