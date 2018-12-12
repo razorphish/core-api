@@ -45,4 +45,5 @@ describe('User Model Tests', () => {
             done();
         });
     });
+
 });

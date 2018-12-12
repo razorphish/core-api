@@ -1,16 +1,24 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-let User = require('../../../../app/database/models/account/user.model');
+
+const User = require('../../../../app/database/repositories/account/user.repository');
+const UserModel = require('../../../../app/database/models/account/user.model');
 const DB = require('../../../../app/database/connection');
 const fs = require('fs');
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../../../../server');
-let should = chai.should();
 
-let user = {};
+//Require the dev-dependencies
+const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const spies = require('chai-spies');
+
+const server = require('../../../../server');
+const should = chai.should();
+
+let liveUser = {};
+const origin = 'http://localhost:4200';
 
 const readJson = (path, done) => {
     fs.readFile(require.resolve(path), (err, data) => {
@@ -25,6 +33,7 @@ const readJson = (path, done) => {
 
 
 chai.use(chaiHttp);
+chai.use(spies);
 //Our parent block
 describe('Users', () => {
 
@@ -53,7 +62,6 @@ describe('Users', () => {
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
             'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
-        let origin = 'http://localhost:4200';
         let username = 'david@maras.co';
         const password = 'Letme1n!';
 
@@ -71,7 +79,7 @@ describe('Users', () => {
                 'grant_type': 'password'
             })
             .end((err, res) => {
-                user = res.body;
+                liveUser = res.body;
                 done();
             });
     });
@@ -79,137 +87,235 @@ describe('Users', () => {
     /*
     `    * Test the /GET route
      */
-    describe('/GET user', () => {
-        it('it should GET all the Users', (done) => {
-            let origin = 'http://localhost:4200';
+    describe('Endpoints', function () {
 
-            //console.log(user);
+        it('should GET all the Users', (done) => {
             chai.request(server)
                 .get('/api/user')
                 .set({
                     'origin': origin,
                     'Content-Type': 'application/json',
-                    'Authorization': `bearer ${user.access_token}`,
+                    'Authorization': `bearer ${liveUser.access_token}`,
                 })
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.a('array');
-                    res.body.length.should.be.eql(2);
+                .end((err, response) => {
+                    response.should.have.status(200);
+                    response.should.be.json;
+                    response.body.should.be.a('array');
+                    response.body.length.should.be.eql(2);
                     done();
                 });
         });
+
+        it('should GET all the Users Paged', (done) => {
+
+            chai.request(server)
+                .get('/api/user/page/0/2')
+                .set({
+                    'origin': origin,
+                    'Content-Type': 'application/json',
+                    'Authorization': `bearer ${liveUser.access_token}`,
+                })
+                .end((err, response) => {
+                    response.should.have.status(200);
+                    response.should.be.json;
+                    response.body.should.be.a('array');
+                    response.body.should.have.length(2);
+                    done();
+                });
+        });
+
+        it('should GET a User', (done) => {
+
+            User.all((err, result) => {
+                chai.request(server)
+                    .get(`/api/user/${result[0]._id}`)
+                    .set({
+                        'origin': origin,
+                        'Content-Type': 'application/json',
+                        'Authorization': `bearer ${liveUser.access_token}`,
+                    })
+                    .end((err, response) => {
+                        response.should.have.status(200);
+                        response.should.be.json;
+                        response.body.should.be.a('object');
+                        response.body._id.should.equal(result[0]._id.toString());
+                        done();
+                    });
+            });
+        });
+
+        it('should ADD a User', (done) => {
+
+            chai.request(server)
+                .post(`/api/user`)
+                .set({
+                    'origin': origin,
+                    'Content-Type': 'application/json',
+                    'Authorization': `bearer ${liveUser.access_token}`,
+                })
+                .send({
+                    firstName: 'Snoop',
+                    lastName: 'Doggy Dogg',
+                    email: 'snoop@doggydogg.com',
+                    email_lower: 'snoop@doggydog.com',
+                    username: 'snoopdoggy',
+                    username_lower: 'snoopdiggy',
+                    password: 'Letme1n!',
+                    status: 'active'
+                })
+                .end((err, response) => {
+                    response.should.have.status(200);
+                    response.should.be.json;
+
+                    User.all((err, result) => {
+                        result.length.should.eql(3);
+                        done();
+                    });
+                });
+        });
+
+        it('should GET a User by roles', (done) => {
+            chai.request(server)
+                .get(`/api/user/roles/Admin`)
+                .set({
+                    'origin': origin,
+                    'Content-Type': 'application/json',
+                    'Authorization': `bearer ${liveUser.access_token}`,
+                })
+                .end((err, response) => {
+                    response.should.have.status(200);
+                    response.should.be.json;
+                    response.body.should.be.a('array');
+                    response.body.length.should.equal(1);
+                    done();
+                });
+        });
+
+        it('should DELETE A USER', (done) => {
+
+            User.all((err, result) => {
+                chai.request(server)
+                    .del(`/api/user/${result[0]._id}`)
+                    .set({
+                        'origin': origin,
+                        'Content-Type': 'application/json',
+                        'Authorization': `bearer ${liveUser.access_token}`,
+                    })
+                    .end((err, response) => {
+                        response.should.have.status(200);
+                        response.should.be.json;
+                        User.all((err, resp) => {
+                            resp.length.should.eql(1);
+                            done();
+                        });
+                    });
+            });
+        });
+
+        it('should Add a device to user', (done) => {
+
+            User.all((err, result) => {
+                chai.request(server)
+                    .post(`/api/user/${result[0]._id}/devices`)
+                    .set({
+                        'origin': origin,
+                        'Content-Type': 'application/json',
+                        'Authorization': `bearer ${liveUser.access_token}`,
+                    })
+                    .send({
+                        pushRegistrationId: '123456789',
+                        cordova: 'Cordova.Android',
+                        model: 'Android',
+                        platform: 'Lollipop',
+                        uuid: '123asdf459erwerwe',
+                        version: '12.0.1',
+                        manufacturer: 'Samsung',
+                        isVirtual: 'false',
+                        serial: '12341234134'
+                    })
+                    .end((err, res) => {
+                        res.should.have.status(200);
+                        res.should.be.json;
+                        res.body.data.should.be.a('object');
+                        res.body.data._id.should.equal(result[0]._id.toString());
+                        res.body.data.should.have.property('devices')
+                        res.body.data.devices.should.be.a('array');
+                        res.body.data.devices.length.should.equal(1);
+                        res.body.data.devices[0].should.have.property('pushRegistrationId').eql('123456789');
+                        done();
+                    });
+            });
+        });
+
+        it('should Update a user', (done) => {
+
+            User.all((err, result) => {
+
+                chai.request(server)
+                    .put(`/api/user/${result[0]._id}`)
+                    .set({
+                        'origin': origin,
+                        'Content-Type': 'application/json',
+                        'Authorization': `bearer ${liveUser.access_token}`,
+                    })
+                    .send({
+                        firstName: 'Tommy',
+                        lastName: 'John'
+                    })
+                    .end((err, response) => {
+                        response.should.have.status(200);
+                        response.should.be.json;
+                        response.body.should.be.a('object');
+                        response.body._id.should.equal(result[0]._id.toString());
+                        response.body.should.have.property('firstName').eql('Tommy');
+                        response.body.should.have.property('lastName').eql('John');
+                        done();
+                    });
+            });
+        });
+
+        // describe('Force Mongoose Errors.', () => {
+
+        //     describe('Faulty find method', () => {
+        //         const _find = UserModel.find;
+        //         const _countDocuments = UserModel.countDocuments
+
+        //         beforeEach(() => {
+        //             UserModel.find = () => {
+        //                 return Promise.reject('forced error');
+        //             };
+
+        //             UserModel.countDocuments = function () {
+        //                 return Promise.reject('forced error');
+        //             };
+        //         });
+
+        //         afterEach(() => {
+        //             UserModel.find = _find;
+        //             UserModel.countDocuments = _countDocuments;
+        //         });
+
+        //         it('should respond with a server error', function () {
+        //             const spy = chai.spy();
+        //             return chai
+        //                 .request(server)
+        //                 .get('/api/user')
+        //                 .set({
+        //                     'origin': origin,
+        //                     'Content-Type': 'application/json',
+        //                     'Authorization': `bearer ${liveUser.access_token}`,
+        //                 })
+        //                 .then(spy)
+        //                 .catch((err) => {
+        //                     console.log('success')
+        //                     const res = err.response;
+        //                     res.should.have.status(500);
+        //                 })
+        //                 .then(() => {
+        //                     spy.should.not.have.been.called();
+        //                 });
+        //         });
+        //     });
+        // });
     });
-
-    /*
-    * Test the /POST route
-    */
-    // describe('/POST user', () => {
-    //     it('it should not POST a user without pages field', (done) => {
-    //         let user = {
-    //             title: "The Lord of the Rings",
-    //             author: "J.R.R. Tolkien",
-    //             year: 1954
-    //         }
-    //         chai.request(server)
-    //             .post('/api/user')
-    //             .send(user)
-    //             .end((err, res) => {
-    //                 res.should.have.status(200);
-    //                 res.body.should.be.a('object');
-    //                 res.body.should.have.property('errors');
-    //                 res.body.errors.should.have.property('pages');
-    //                 res.body.errors.pages.should.have.property('kind').eql('required');
-    //                 done();
-    //             });
-    //     });
-    //     it('it should POST a user ', (done) => {
-    //         let user = {
-    //             title: "The Lord of the Rings",
-    //             author: "J.R.R. Tolkien",
-    //             year: 1954,
-    //             pages: 1170
-    //         }
-    //         chai.request(server)
-    //             .post('/api/user')
-    //             .send(user)
-    //             .end((err, res) => {
-    //                 res.should.have.status(200);
-    //                 res.body.should.be.a('object');
-    //                 res.body.should.have.property('message').eql('user successfully added!');
-    //                 res.body.user.should.have.property('title');
-    //                 res.body.user.should.have.property('author');
-    //                 res.body.user.should.have.property('pages');
-    //                 res.body.user.should.have.property('year');
-    //                 done();
-    //             });
-    //     });
-
-    // });
-
-    // /*
-    // * Test the /GET/:id route
-    // */
-    // describe('/GET/:id user', () => {
-    //     it('it should GET a user by the given id', (done) => {
-    //         let user = new User({ title: "The Lord of the Rings", author: "J.R.R. Tolkien", year: 1954, pages: 1170 });
-    //         user.save((err, user) => {
-    //             chai.request(server)
-    //                 .get('/api/user/' + user.id)
-    //                 .send(user)
-    //                 .end((err, res) => {
-    //                     res.should.have.status(200);
-    //                     res.body.should.be.a('object');
-    //                     res.body.should.have.property('title');
-    //                     res.body.should.have.property('author');
-    //                     res.body.should.have.property('pages');
-    //                     res.body.should.have.property('year');
-    //                     res.body.should.have.property('_id').eql(user.id);
-    //                     done();
-    //                 });
-    //         });
-
-    //     });
-    // });
-
-    /*
-    * Test the /PUT/:id route
-    */
-    // describe('/PUT/:id user', () => {
-    //     it('it should UPDATE a user given the id', (done) => {
-    //         let user = new User({ title: "The Chronicles of Narnia", author: "C.S. Lewis", year: 1948, pages: 778 })
-    //         user.save((err, user) => {
-    //             chai.request(server)
-    //                 .put('/api/user/' + user.id)
-    //                 .send({ title: "The Chronicles of Narnia", author: "C.S. Lewis", year: 1950, pages: 778 })
-    //                 .end((err, res) => {
-    //                     res.should.have.status(200);
-    //                     res.body.should.be.a('object');
-    //                     res.body.should.have.property('message').eql('user updated!');
-    //                     res.body.user.should.have.property('year').eql(1950);
-    //                     done();
-    //                 });
-    //         });
-    //     });
-    // });
-
-    /*
-     * Test the /DELETE/:id route
-     */
-    // describe('/DELETE/:id user', () => {
-    //     it('it should DELETE a user given the id', (done) => {
-    //         let user = new User({ title: "The Chronicles of Narnia", author: "C.S. Lewis", year: 1948, pages: 778 })
-    //         user.save((err, user) => {
-    //             chai.request(server)
-    //                 .delete('/api/user/' + user.id)
-    //                 .end((err, res) => {
-    //                     res.should.have.status(200);
-    //                     res.body.should.be.a('object');
-    //                     res.body.should.have.property('message').eql('user successfully deleted!');
-    //                     res.body.result.should.have.property('ok').eql(1);
-    //                     res.body.result.should.have.property('n').eql(1);
-    //                     done();
-    //                 });
-    //         });
-    //     });
-    // });
 });

@@ -3,7 +3,17 @@ const UserModel = require('../../models/account/user.model');
 const logger = require('../../../../lib/winston.logger');
 
 /**
- * Users
+ * This callback type is called `requestCallback` and is displayed as a global symbol.
+ *
+ * @callback requestCallback
+ * @param {*} error
+ * @param {*} data
+ */
+
+/**
+ * User Repository
+ * @author Antonio Marasco
+ * @class User Repository
  */
 class UserRepository {
   /**
@@ -16,34 +26,26 @@ class UserRepository {
 
   /**
    * Adds a device to User
-   * @param {any} id Id of User
-   * @param {object} body Object containing User information
-   * @param {function} callback Callback function fail/success
+   * @param {string} userId Id of User
+   * @param {*} body Object containing User information
+   * @param {requestCallback} callback Handles the response
+   * @example addDevice('123456789, {property:value}, (err, data) => {})
    */
-  addDevice(id, body, callback) {
-    logger.debug(`${this._classInfo}.addDevice(${id})`, body);
+  addDevice(userId, body, callback) {
 
-    UserModel.findById(id, (err, item) => {
+    logger.debug(`${this._classInfo}.addDevice(${userId})`, body);
+
+    UserModel.findById(userId, (err, item) => {
       if (err) {
-        logger.error(`${this._classInfo}.addDevice(${id})::findById`, err);
+        logger.error(`${this._classInfo}.addDevice(${userId})::findById`, err);
         return callback(err);
       }
 
-      item.devices.push({
-        pushRegistrationId: body.pushRegistrationId,
-        cordova: body.cordova,
-        model: body.model,
-        platform: body.platform,
-        uuid: body.uuid,
-        version: body.version,
-        manufacturer: body.manufacturer,
-        isVirtual: body.isVirtual,
-        serial: body.serial
-      });
+      item.devices.push(body);
 
       item.save((err, data) => {
         if (err) {
-          logger.error(`${this._classInfo}.addDevice(${id})::save`, err);
+          logger.error(`${this._classInfo}.addDevice(${userId})::save`, err);
           return callback(err);
         }
 
@@ -55,100 +57,73 @@ class UserRepository {
 
   /**
    * Gets all Users
-   * @param {function} callback Callback function for all
+   * @param {requestCallback} callback Handles the response
+   * @example all((error, data) => {})
    */
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    UserModel.countDocuments((err, count) => {
-      if (err) {
-        logger.error(`${this._classInfo}.all()::count`, err);
-        return callback(err);
-      }
-
-      logger.debug(`${this._classInfo}.all()::count`, count);
-
-      UserModel.find(
-        {},
-        {
-          password: 0,
-          salt: 0,
-          refreshToken: 0,
-          loginAttempts: 0,
-          lockUntil: 0
-        },
-        (err, data) => {
-          if (err) {
-            logger.error(`${this._classInfo}.all()::find`, err);
-            return callback(err, null);
-          }
-
-          callback(null, {
-            count: count,
-            data: data
-          });
+    UserModel.find(
+      {},
+      {
+        password: 0,
+        salt: 0,
+        refreshToken: 0,
+        loginAttempts: 0,
+        lockUntil: 0
+      },
+      (err, data) => {
+        if (err) {
+          logger.error(`${this._classInfo}.all()::find`, err);
+          return callback(err, null);
         }
-      );
-    });
+
+        callback(null, data);
+      }
+    );
   }
 
   /**
-   * Gets all Users paged
-   * @param {number} skip Page number
-   * @param {number} top Number of items per page
-   * @param {function} callback Callback function
+   * Gets all Users paginated
+   * @param {number} [skip=10] Page number
+   * @param {number} [top=10] Per Page
+   * @param {requestCallback} callback Handles the response
+   * @example allPaged(2, 10, (error, data) => {} )
    */
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    UserModel.countDocuments((err, count) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.allPaged(${skip}, ${top})::count`,
-          err
-        );
-        return callback(err);
+    UserModel.find(
+      {},
+      {
+        password: 0,
+        salt: 0,
+        refreshToken: 0,
+        loginAttempts: 0,
+        lockUntil: 0
       }
-
-      logger.debug(
-        `${this._classInfo}.allPaged(${skip}, ${top})::count`,
-        count
-      );
-
-      UserModel.find(
-        {},
-        {
-          password: 0,
-          salt: 0,
-          refreshToken: 0,
-          loginAttempts: 0,
-          lockUntil: 0
+    )
+      .sort({
+        name: 1
+      })
+      .skip(skip)
+      .limit(top)
+      .exec((err, data) => {
+        if (err) {
+          logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, err);
+          return callback(err, null);
         }
-      )
-        .sort({
-          name: 1
-        })
-        .skip(skip)
-        .limit(top)
-        .exec((err, data) => {
-          if (err) {
-            logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, err);
-            return callback(err, null);
-          }
 
-          callback(null, {
-            count: count,
-            data: data
-          });
-        });
-    });
+        callback(null, data);
+      });
   }
 
   /**
  * Authenticate user
  * @param {string} username username to authenticate
  * @param {string} password password to validate
- * @param {function} callback callback function
+ * @param {requestCallback} callback Handles the response
+ * @example authenticate('myusername', 'password', (error, data)=>{})
  */
   authenticate(username, password, callback) {
     logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
@@ -187,9 +162,10 @@ class UserRepository {
   }
 
   /**
-   * Gets a single User
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
+   * Gets users by refresh token
+   * @param {string} token User token
+   * @param {requestCallback} callback Handles the response
+   * @example byRefreshToken('123456789asdfghjkl', (error, data) => {})
    */
   byRefreshToken(token, callback) {
     logger.debug(`${this._classInfo}.byRefreshToken(${token})`);
@@ -209,59 +185,41 @@ class UserRepository {
 
   /**
    * Gets a user by a role
-   * @param {object} role role to get user by
-   * @param {function} callback callback
+   * @param {string} role role to get user by
+   * @param {requestCallback} callback Handles the response
+   * @example byRole('User', (error, data) => {})
    */
   byRole(role, callback) {
     logger.debug(`${this._classInfo}.byRole(${JSON.stringify(role)})`);
 
-    UserModel.countDocuments(
+    UserModel.find(
       { roles: { $elemMatch: { name: role } } },
-      (err, count) => {
+      {
+        password: 0,
+        salt: 0,
+        refreshToken: 0,
+        loginAttempts: 0,
+        lockUntil: 0
+      },
+      (err, data) => {
         if (err) {
           logger.error(
-            `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
+            `${this._classInfo}.byRole(${JSON.stringify(role)})::find`,
             err
           );
-          return callback(err);
+          return callback(err, null);
         }
 
-        logger.debug(
-          `${this._classInfo}.byRole(${JSON.stringify(role)})::count`,
-          count
-        );
-
-        UserModel.find(
-          { roles: { $elemMatch: { name: role } } },
-          {
-            password: 0,
-            salt: 0,
-            refreshToken: 0,
-            loginAttempts: 0,
-            lockUntil: 0
-          },
-          (err, data) => {
-            if (err) {
-              logger.error(
-                `${this._classInfo}.byRole(${JSON.stringify(role)})::find`,
-                err
-              );
-              return callback(err, null);
-            }
-
-            callback(null, {
-              count: count,
-              data: data
-            });
-          }
-        );
-      });
+        callback(null, data);
+      }
+    );
   }
 
   /**
-   * Gets a single User
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
+   * Gets a single User by their username
+   * @param {string} username username of user
+   * @param {requestCallback} callback Handles the response
+   * @example byUsername('username', (error, data) => {})
    */
   byUsername(username, callback) {
     logger.debug(`${this._classInfo}.byUsername(${username})`);
@@ -280,9 +238,10 @@ class UserRepository {
   }
 
   /**
-   * Delete a User ry id
-   * @param {string} id Id of User to delete
-   * @param {function} callback function on success/fail
+   * Delete a User by id
+   * @param {string} id user Id
+   * @param {requestCallback} callback Handles the response
+   * @example delete('123456789', (error, data) => {})
    */
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
@@ -303,8 +262,9 @@ class UserRepository {
 
   /**
    * Gets a single User
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
+   * @param {string} id user id
+   * @param {requestCallback} callback Handles the response
+   * @example get('123456789', (error, data) => {})
    */
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
@@ -330,9 +290,10 @@ class UserRepository {
   }
 
   /**
-   * Inserts a User into db
-   * @param {object} body Object that contain Users info
-   * @param {function} callback Callback function success/fail
+   * Inserts a User
+   * @param {object} body User data
+   * @param {requestCallback} callback Handles the response
+   * @example insert({property: value}, (error, data) => {})
    */
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
@@ -357,9 +318,11 @@ class UserRepository {
   }
 
   /**
-   * Gets a single User
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
+   * Determines if input password matches correct password
+   * @param {string} username username 
+   * @param {string} password password
+   * @param {requestCallback} callback Handles the response
+   * @example passwordMatch('username', 'password123', (error, data) => {})
    */
   passwordMatch(username, password, callback) {
     logger.debug(`${this._classInfo}.passwordMatch(${username}, ${password})`);
@@ -397,59 +360,46 @@ class UserRepository {
   }
 
   /**
-   * Get basic User information
+   * Get a list of users exposing limited properties
    * @param {number} skip Page number
-   * @param {number} top Number of items per page
-   * @param {function} callback Callback function on success/fail
+   * @param {number} top Per Page
+   * @param {requestCallback} callback Handles the response
+   * @example summary(3, 10, (error, data) => {})
    */
   summary(skip, top, callback) {
     logger.debug(`${this._classInfo}.summary(${skip}, ${top})`);
 
-    UserModel.countDocuments((err, count) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.summarry(${skip}, ${top})::count`,
-          err
-        );
-        return callback(err);
+    UserModel.find(
+      {},
+      {
+        password: 0,
+        salt: 0,
+        refreshToken: 0,
+        loginAttempts: 0,
+        lockUntil: 0
       }
-
-      logger.debug(`${this._classInfo}.summary(${skip}, ${top})::count`, count);
-
-      UserModel.find(
-        {},
-        {
-          password: 0,
-          salt: 0,
-          refreshToken: 0,
-          loginAttempts: 0,
-          lockUntil: 0
+    )
+      .skip(skip)
+      .limit(top)
+      .exec((err, data) => {
+        if (err) {
+          logger.error(
+            `${this._classInfo}.summary(${skip}, ${top})::find`,
+            err
+          );
+          return callback(err, null);
         }
-      )
-        .skip(skip)
-        .limit(top)
-        .exec((err, data) => {
-          if (err) {
-            logger.error(
-              `${this._classInfo}.summary(${skip}, ${top})::find`,
-              err
-            );
-            return callback(err, null);
-          }
 
-          return callback(null, {
-            count: count,
-            data: data
-          });
-        });
-    });
+        return callback(null, data);
+      });
   }
 
   /**
    * Updates an User
-   * @param {any} id Id of User
-   * @param {object} body Object containing User information
-   * @param {function} callback Callback function fail/success
+   * @param {string} id user id
+   * @param {object} body user data
+   * @param {requestCallback} callback Handles the response
+   * @example update('1234', {body:data}, (error, data) => {})
    */
   update(id, body, callback) {
     logger.debug(`${this._classInfo}.update(${id})`);
@@ -472,9 +422,10 @@ class UserRepository {
 
   /**
    * Updates an User
-   * @param {any} id Id of User
-   * @param {object} body Object containing User information
-   * @param {function} callback Callback function fail/success
+   * @param {string} id User id
+   * @param {object} body User data
+   * @param {requestCallback} callback Handles the response
+   * @example updateSummary('123456789', {property:value}, (error, data) => {})
    */
   updateSummary(id, body, callback) {
     logger.debug(`${this._classInfo}.updateSummary(${id})`, body);
@@ -491,15 +442,15 @@ class UserRepository {
 
         //returns User data
         callback(null, item);
-
       });
   }
 
   /**
    * Updates an User
-   * @param {any} id Id of User
-   * @param {object} body Object containing User information
-   * @param {function} callback Callback function fail/success
+   * @param {string} id User id
+   * @param {object} body User data
+   * @param {requestCallback} callback Handles the response
+   * @example updateToken('123456789, '123456789asdfghjkl', (error, data) => {})
    */
   updateToken(id, token, callback) {
     logger.debug(`${this._classInfo}.updateToken(${id}, ${token})`);
@@ -518,7 +469,6 @@ class UserRepository {
         }
 
         callback(null, result);
-
       }
     );
   }

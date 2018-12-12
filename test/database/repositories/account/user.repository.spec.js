@@ -49,9 +49,9 @@ describe('User Repository Tests', () => {
                 serial: "body.serial"
             };
 
-            User.addDevice(users.data[0]._id, body, (err, data) => {
+            User.addDevice(users[0]._id, body, (err, data) => {
                 User.all((err, result) => {
-                    expect(result.data[0].devices).to.exist;
+                    expect(result[0].devices).to.exist;
                     done();
                 });
             });
@@ -59,15 +59,15 @@ describe('User Repository Tests', () => {
     });
 
     it('all', (done) => {
-        User.all((err, data) => {
-            data.count.should.eql(2);
+        User.all((err, result) => {
+            result.length.should.eql(2);
             done();
         });
     });
 
     it('allPaged', (done) => {
         User.allPaged(0, 2, (err, result) => {
-            result.data.length.should.eql(2);
+            result.should.have.length(2);
             done();
         });
     });
@@ -104,9 +104,9 @@ describe('User Repository Tests', () => {
 
     it('byRole', (done) => {
         User.byRole('Guest', (err, result) => {
-            result.count.should.eql(1);
-            result.data[0].firstName.should.eql('Antonio');
-            result.data[0].lastName.should.eql('Marasco');
+            result.length.should.eql(1);
+            result[0].firstName.should.eql('Antonio');
+            result[0].lastName.should.eql('Marasco');
             done();
         });
     });
@@ -121,10 +121,10 @@ describe('User Repository Tests', () => {
 
     it('delete', (done) => {
         User.all((err, users) => {
-            User.delete(users.data[0]._id, (err) => {
+            User.delete(users[0]._id, (err) => {
                 User.all((err, result) => {
-                    result.count.should.eql(1);
-                    result.data[0]._id.should.not.eql(users.data[0]._id);
+                    result.length.should.eql(1);
+                    result[0]._id.should.not.eql(users[0]._id);
                     done();
                 });
             });
@@ -133,7 +133,7 @@ describe('User Repository Tests', () => {
 
     it('get', (done) => {
         User.all((err, result) => {
-            User.get(result.data[0]._id, (err, data) => {
+            User.get(result[0]._id, (err, data) => {
                 data.firstName.should.eql('Antonio');
                 data.lastName.should.eql('Marasco');
                 done();
@@ -172,12 +172,12 @@ describe('User Repository Tests', () => {
             },
             (err, user) => {
                 User.all((err, users) => {
-                    users.count.should.eql(3);
-                    users.data[2]._id.should.eql(user._id);
-                    users.data[2].firstName.should.eql('Erica');
-                    users.data[2].lastName.should.eql('Marasco');
-                    users.data[2].email.should.eql('erica@ericamarasco.com');
-                    users.data[2].username.should.eql('erica.marasco');
+                    users.length.should.eql(3);
+                    users[2]._id.should.eql(user._id);
+                    users[2].firstName.should.eql('Erica');
+                    users[2].lastName.should.eql('Marasco');
+                    users[2].email.should.eql('erica@ericamarasco.com');
+                    users[2].username.should.eql('erica.marasco');
 
                     done();
                 });
@@ -203,12 +203,12 @@ describe('User Repository Tests', () => {
 
     it('summary', (done) => {
         User.summary(0, 2, (err, result) => {
-            result.data.length.should.eql(2);
-            expect(result.data[0].password).to.not.exist;
-            expect(result.data[0].salt).to.not.exist;
-            expect(result.data[0].refreshToken).to.not.exist;
-            expect(result.data[0].loginAttempts).to.not.exist;
-            expect(result.data[0].lockUntil).to.not.exist;
+            result.length.should.eql(2);
+            expect(result[0].password).to.not.exist;
+            expect(result[0].salt).to.not.exist;
+            expect(result[0].refreshToken).to.not.exist;
+            expect(result[0].loginAttempts).to.not.exist;
+            expect(result[0].lockUntil).to.not.exist;
             done();
         });
     });
@@ -218,7 +218,7 @@ describe('User Repository Tests', () => {
             let body = {
                 firstName: 'Paco'
             }
-            User.update(users.data[0]._id, body, (err, user) => {
+            User.update(users[0]._id, body, (err, user) => {
                 User.get(user._id, (err, data) => {
                     data.firstName.should.eql('Paco');
                     done();
@@ -232,7 +232,7 @@ describe('User Repository Tests', () => {
             let body = {
                 firstName: 'Smith',
             }
-            User.updateSummary(users.data[0]._id, body, (err, user) => {
+            User.updateSummary(users[0]._id, body, (err, user) => {
                 User.get(user._id, (err, data) => {
                     data.firstName.should.eql('Smith');
                     done();
@@ -254,11 +254,10 @@ describe('User Repository Tests', () => {
                 value: '123456789abcdefghi'
             }
 
-            User.updateToken(result.data[0]._id, token, (err, user) => {
+            User.updateToken(result[0]._id, token, (err, user) => {
                 user.refreshToken.value.should.eql('123456789abcdefghi');
                 done();
             });
         });
     });
-
 });

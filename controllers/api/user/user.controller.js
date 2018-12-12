@@ -11,11 +11,14 @@ const logger = require('../../../lib/winston.logger');
 /**
  * User Api Controller
  * http://.../api/user
+ * @author Antonio Marasco
  */
 class UserController {
+
   /**
    * Constructor for User
    * @param {router} router Node router framework
+   * @example let controller = new UserController(router);
    */
   constructor(router) {
     router.get(
@@ -24,6 +27,7 @@ class UserController {
       utils.isInRole('admin'),
       this.all.bind(this)
     );
+
     router.get('/roles/:roleId', this.byRole.bind(this));
 
     router.get(
@@ -32,18 +36,21 @@ class UserController {
       utils.isInRole('admin'),
       this.allPaged.bind(this)
     );
+
     router.get(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
     );
+
     router.post(
       '/',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.insert.bind(this)
     );
+
     router.put(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
@@ -67,208 +74,217 @@ class UserController {
     //Logging Info
     this._classInfo = '*** [User].controller';
     this._routeName = '/api/user';
+
   }
 
   /**
-   * Adds a [Device]
-   * endpoint [POST] : /:id
-   * @param {any} req Request object
-   * @param {any} res Response object
+   * Adds a device to user
+   * @param {Request} request - Request object
+   * @param {Response} response - Response object
+   * @example POST /api/user/{user id}/devices
    */
-  addDevice(req, res) {
+  addDevice(request, response) {
     logger.info(`${this._classInfo}.addDevice() [${this._routeName}]`);
 
-    if (!req.body) {
-      throw new Error('Device required');
-    }
-
-    repo.addDevice(req.params.id, req.body, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.addDevice() [${this._routeName}]`, err);
-        res.json({
+    repo.addDevice(request.params.id, request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.addDevice() [${this._routeName}]`, error);
+        response.json({
           status: false,
           msg: 'Update Failed',
           error: {
-            code: err.code,
-            errmsg: err.errmsg,
-            index: err.index
+            code: error.code,
+            errmsg: error.errmsg,
+            index: error.index
           },
           data: null
         });
       } else {
-        logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`, resp);
-        res.json({ status: true, msg: null, error: null, data: resp });
+        logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`, result);
+        response.json({ status: true, msg: null, error: null, data: result });
       }
     });
   }
 
   /**
-   * Gets all [User]s
-   * endpoint [GET]: /
-   * @param {any} req Request object
-   * @param {any} res Response
+   * Gets all users
+   * @param {Request} [request] Request object
+   * @param {Response} response Response
+   * @example GET /api/user
+   * @returns {pointer} res.json
    */
-  all(req, res) {
+  all(request, response) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
-    repo.all((err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.all() [${this._routeName}]`, err);
-        res.json(null);
+    repo.all((error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
+        response.json(null);
       } else {
-        logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, resp);
-        res.json(resp.data);
+        logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
+
+    // UserModel.find()
+    //   .then(data => {
+    //     console.log('wish i didn make it here')
+    //     res.json(data);
+    //   })
+    //   .catch(err => {
+    //     console.log('yay')
+    //     res.status(500).json({ message: 'Internal server error' });
+    //     console.error(err);
+    //   });
   }
 
   /**
-   * Gets all [User]s paged
-   * endpoint [GET]: /page/:skip/:top
-   * @param {any} req Request object
-   * @param {any} res Response
+   * Gets all users paginated
+   * @param {Request} request Request object {Default:10}
+   * @param {Request} [request.params.top=10]
+   * @param {Response} response Response
+   * @example /api/user/page/2/10
+   * @description /api/user/page/{page number}/{# per page}
    */
-  allPaged(req, res) {
-  logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
+  allPaged(request, response) {
+    logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
 
-    const topVal = req.params.top,
-      skipVal = req.params.skip,
+    const topVal = request.params.top,
+      skipVal = request.params.skip,
       top = isNaN(topVal) ? 10 : +topVal,
       skip = isNaN(skipVal) ? 0 : +skipVal;
 
-    repo.allPaged(skip, top, (err, resp) => {
-      res.setHeader('X-InlineCount', resp.count);
-      if (err) {
-        logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, err);
-        res.json(null);
+    repo.allPaged(skip, top, (error, result) => {
+      //response.setHeader('X-InlineCount', result.count);
+      if (error) {
+        logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
+        response.json(null);
       } else {
-        logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, resp);
-        res.json(resp.data);
+        logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
   }
 
   /**
-   * Gets all [User]s by role
-   * endpoint [GET]: /roles/{roleId}
-   * @param {any} req Request object
-   * @param {any} res Response
+   * Gets all users by role
+   * @param {any} request Request object
+   * @param {Response} response Response
+   * @example GET /api/user/roles/Guest
+   * @returns pointer to .json via 'res' param
    */
-  byRole(req, res) {
-    const id = req.params.id;
+  byRole(request, response) {
+    const id = request.params.roleId;
     logger.info(`${this._classInfo}.byRole(${id}) [${this._routeName}]`);
 
-    repo.byRole(id, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.byRole() [${this._routeName}]`, err);
-        res.json(null);
+    repo.byRole(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.byRole() [${this._routeName}]`, error);
+        response.json(null);
       } else {
-        logger.debug(`${this._classInfo}.byRole() [${this._routeName}] OK`, resp);
-        res.json(resp.data);
+        logger.debug(`${this._classInfo}.byRole() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
   }
 
   /**
-   * Deletes a [User]
-   * endpoint [DELETE]: /:id
-   * @param {any} req Request object
-   * @param {any} res Response object
+   * Deletes a user
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @example DELETE /api/user/123456789
+   * @returns {status: true|false} via res pointer
    */
-  delete(req, res) {
-    const id = req.params.id;
+  delete(request, response) {
+    const id = request.params.id;
     logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
-    repo.delete(id, (err) => {
-      if (err) {
-        logger.error(`${this._classInfo}.delete() [${this._routeName}]`, err);
-        res.json({ status: false });
+    repo.delete(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
+        response.json({ status: false });
       } else {
-        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, resp);
-        res.json({ status: true });
+        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+        response.json({ status: true });
       }
     });
   }
 
   /**
-   * Gets a [User] by its id
-   * endpoint [GET]: /:id'
-   * @param {any} req Request object
-   * @param {any} res Response
+   * Gets a user by its id
+   * @param {any} request Request object
+   * @param {Response} response Response
+   * @example GET /api/user/123456789
    */
-  get(req, res) {
-    const id = req.params.id;
+  get(request, response) {
+    const id = request.params.id;
     logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
 
-    repo.get(id, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.get() [${this._routeName}]`, err);
-        res.json(null);
+    repo.get(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
+        response.json(null);
       } else {
-        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, resp);
-        res.json(resp);
+        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
   }
 
   /**
-   * Inserts a [User]
-   * endpoint [POST]: /
-   * @param {any} req Request object
-   * @param {any} res Response
+   * Inserts a user
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example POST /api/user
    */
-  insert(req, res) {
+  insert(request, response) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
 
-    repo.insert(req.body, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.insert() [${this._routeName}]`, err);
-        res.json({
+    repo.insert(request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
+        response.json({
           status: false,
           msg:
-            'Insert failed' + err.code === 11000
+            'Insert failed' + error.code === 11000
               ? ': Username or Email already exist'
               : '',
-          error: err,
+          error: error,
           data: null
         });
       } else {
-        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, resp);
-        res.json({ status: true, error: null, data: resp });
+        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
+        response.json({ status: true, error: null, data: result });
       }
     });
   }
 
   /**
-   * Updates a [User]
-   * endpoint [PUT] : /:id
-   * @param {any} req Request object
-   * @param {any} res Response object
+   * Updates a user
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @examle PUT /api/user/123456789
    */
-  update(req, res) {
-    const id = req.params.id;
+  update(request, response) {
+    const id = request.params.id;
     logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
 
-    if (!req.body) {
-      throw new Error('User required');
-    }
-
-    repo.update(id, req.body, (err, resp) => {
-      if (err) {
-        logger.error(`${this._classInfo}.update() [${this._routeName}]`, err, req.body);
-        res.json({
+    repo.update(id, request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
+        response.json({
           status: false,
           msg: 'Update Failed',
           error: {
-            code: err.code,
-            errmsg: err.errmsg,
-            index: err.index
+            code: error.code,
+            errmsg: error.errmsg,
+            index: error.index
           },
           data: null
         });
       } else {
-        logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, resp);
-        res.json({ status: true, msg: null, error: null, data: resp });
+        logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
   }
