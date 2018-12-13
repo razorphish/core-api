@@ -109,7 +109,7 @@ UserSchema.virtual('isLocked').get(function () {
 UserSchema.pre('save', function (next) {
   const user = this;
   const now = new Date();
-  
+
   if (!user.dateCreated) {
     user.dateCreated = now;
     user.dateModified = now;
@@ -180,15 +180,20 @@ var reasons = (UserSchema.statics.failedLogin = {
 
 UserSchema.statics.getAuthenticated = function (username, password, callback) {
 
-  this.findOne({ username: username },
-    (err, user) => {
-      if (err) {
-        return callback(err);
-      }
-
-      // make sure the user exists
+  this.findOne({ username: username })
+    .then(user => {
       if (!user) {
         return callback(null, null, reasons.NOT_FOUND);
+      }
+
+      if (user.isLocked) {
+        // just increment login attempts if account is already locked
+        return user.incLoginAttempts(function (err) {
+          if (err) {
+            return callback(err);
+          }
+          return callback(null, null, reasons.MAX_ATTEMPTS);
+        });
       }
 
       // check if the account is currently locked
@@ -202,7 +207,6 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
         });
       }
 
-      // test for a matching password
       user.comparePassword(password, function (err, isMatch) {
         if (err) {
           return callback(err);
@@ -235,6 +239,9 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
           return callback(null, null, reasons.PASSWORD_INCORRECT);
         });
       });
+    })
+    .catch(error => {
+      return callback(error);
     });
 };
 

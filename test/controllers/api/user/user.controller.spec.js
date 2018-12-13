@@ -274,48 +274,43 @@ describe('Users', () => {
             });
         });
 
-        // describe('Force Mongoose Errors.', () => {
+        describe('Force Mongoose Errors.', () => {
 
-        //     describe('Faulty find method', () => {
-        //         const _find = UserModel.find;
-        //         const _countDocuments = UserModel.countDocuments
+            describe('Faulty find method', () => {
+                const _find = UserModel.find;
 
-        //         beforeEach(() => {
-        //             UserModel.find = () => {
-        //                 return Promise.reject('forced error');
-        //             };
+                beforeEach(() => {
+                    UserModel.find = () => {
+                        return Promise.reject('forced error');
+                    };
+                });
 
-        //             UserModel.countDocuments = function () {
-        //                 return Promise.reject('forced error');
-        //             };
-        //         });
+                afterEach(() => {
+                    UserModel.find = _find;
+                });
 
-        //         afterEach(() => {
-        //             UserModel.find = _find;
-        //             UserModel.countDocuments = _countDocuments;
-        //         });
-
-        //         it('should respond with a server error', function () {
-        //             const spy = chai.spy();
-        //             return chai
-        //                 .request(server)
-        //                 .get('/api/user')
-        //                 .set({
-        //                     'origin': origin,
-        //                     'Content-Type': 'application/json',
-        //                     'Authorization': `bearer ${liveUser.access_token}`,
-        //                 })
-        //                 .then(spy)
-        //                 .catch((err) => {
-        //                     console.log('success')
-        //                     const res = err.response;
-        //                     res.should.have.status(500);
-        //                 })
-        //                 .then(() => {
-        //                     spy.should.not.have.been.called();
-        //                 });
-        //         });
-        //     });
-        // });
+                it('should respond with a server error', function () {
+                    const spy = chai.spy();
+                    return chai
+                        .request(server)
+                        .get('/api/user')
+                        .set({
+                            'origin': origin,
+                            'Content-Type': 'application/json',
+                            'Authorization': `bearer ${liveUser.access_token}`,
+                        })
+                        .then(spy)
+                        .catch((err) => {
+                            const res = err.response;
+                            res.should.have.status(500);
+                            done();
+                        })
+                        // .then(() => {
+                        //     spy.should.not.have.been.called();
+                        //     done();
+                        // });
+                });
+            });
+        });
     });
 });

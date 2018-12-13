@@ -35,24 +35,21 @@ class UserRepository {
 
     logger.debug(`${this._classInfo}.addDevice(${userId})`, body);
 
-    UserModel.findById(userId, (err, item) => {
-      if (err) {
-        logger.error(`${this._classInfo}.addDevice(${userId})::findById`, err);
-        return callback(err);
-      }
-
-      item.devices.push(body);
-
-      item.save((err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.addDevice(${userId})::save`, err);
-          return callback(err);
-        }
-
+    UserModel.findByIdAndUpdate(
+      userId,
+      { devices: body },
+      {
+        new: true,
+        runValidators: true
+      })
+      .then(data => {
         //returns User data
         callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.addDevice(${userId})::findByIdAndUpdate`, error);
+        return callback(error);
       });
-    });
   }
 
   /**
@@ -63,24 +60,20 @@ class UserRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    UserModel.find(
-      {},
-      {
-        password: 0,
-        salt: 0,
-        refreshToken: 0,
-        loginAttempts: 0,
-        lockUntil: 0
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.all()::find`, err);
-          return callback(err, null);
-        }
-
+    UserModel.find({}, {
+      password: 0,
+      salt: 0,
+      refreshToken: 0,
+      loginAttempts: 0,
+      lockUntil: 0
+    })
+      .then(data => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.all::find`, error);
+        callback(error);
+      });
   }
 
   /**
@@ -93,28 +86,28 @@ class UserRepository {
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    UserModel.find(
-      {},
-      {
-        password: 0,
-        salt: 0,
-        refreshToken: 0,
-        loginAttempts: 0,
-        lockUntil: 0
-      }
-    )
-      .sort({
-        name: 1
-      })
-      .skip(skip)
-      .limit(top)
-      .exec((err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, err);
-          return callback(err, null);
+    UserModel
+      .find({},
+        null,
+        {
+          skip: skip,
+          select: {
+            password: 0,
+            salt: 0,
+            refreshToken: 0,
+            loginAttempts: 0,
+            lockUntil: 0
+          },
+          top: top,
+          sort: { name: 1 }
         }
-
+      )
+      .then((data) => {
         callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, error);
+        return callback(error, null);
       });
   }
 
@@ -141,7 +134,8 @@ class UserRepository {
         callback(null, user);
         return;
       }
-
+      
+      callback(null, null, reason);
       // otherwise we can determine why we failed
       //var reasons = user.failedLogin;
       // switch (reason) {
@@ -157,7 +151,7 @@ class UserRepository {
       //}
 
       //tell client password fail
-      callback(null, null, reason);
+
     });
   }
 
@@ -170,17 +164,25 @@ class UserRepository {
   byRefreshToken(token, callback) {
     logger.debug(`${this._classInfo}.byRefreshToken(${token})`);
 
-    UserModel.findOne({ 'refreshToken.value': token }, (err, data) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.byRefreshToken(${token})::findOne`,
-          err
-        );
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
+    UserModel.findOne(
+      { 'refreshToken.value': token },
+      null,
+      {
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
+        }
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byRefreshToken::findOne`, error);
+        return callback(error);
+      });
   }
 
   /**
@@ -194,25 +196,23 @@ class UserRepository {
 
     UserModel.find(
       { roles: { $elemMatch: { name: role } } },
+      null,
       {
-        password: 0,
-        salt: 0,
-        refreshToken: 0,
-        loginAttempts: 0,
-        lockUntil: 0
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(
-            `${this._classInfo}.byRole(${JSON.stringify(role)})::find`,
-            err
-          );
-          return callback(err, null);
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
         }
-
+      })
+      .then((data) => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byRole::find`, error);
+        callback(error);
+      });
   }
 
   /**
@@ -224,17 +224,25 @@ class UserRepository {
   byUsername(username, callback) {
     logger.debug(`${this._classInfo}.byUsername(${username})`);
 
-    UserModel.findOne({ username: username }, (err, data) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.byUsername(${username})::findOne`,
-          err
-        );
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
+    UserModel.findOne(
+      { username: username },
+      null,
+      {
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
+        }
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byUsername::find`, error);
+        callback(error);
+      });
   }
 
   /**
@@ -247,17 +255,14 @@ class UserRepository {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
     UserModel.deleteOne(
-      {
-        _id: id
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.delete(${id})::remove`, err);
-          return callback(err, null);
-        }
+      { _id: id })
+      .then((data) => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.delete(${id})::remove`, error);
+        return callback(error);
+      });
   }
 
   /**
@@ -271,22 +276,23 @@ class UserRepository {
 
     UserModel.findById(
       id,
+      null,
       {
-        password: 0,
-        salt: 0,
-        refreshToken: 0,
-        loginAttempts: 0,
-        lockUntil: 0
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.get(${id})`, err);
-          return callback(err);
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
         }
-
+      })
+      .then(data => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.get(${id})`, error);
+        return callback(error);
+      })
   }
 
   /**
@@ -298,23 +304,17 @@ class UserRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new UserModel(body);
-
     //Created
-    if (!body.password) {
-      model.password = 'Letme1n!';
-    } else {
-      model.password = body.password;
-    }
+    body.password = body.password || 'Letme1n!';
 
-    model.save((err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.insert()::save`, err);
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
+    UserModel.create(body)
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.insert()::save`, error);
+        callback(error);
+      });
   }
 
   /**
@@ -327,36 +327,33 @@ class UserRepository {
   passwordMatch(username, password, callback) {
     logger.debug(`${this._classInfo}.passwordMatch(${username}, ${password})`);
 
-    UserModel.findOne({ username: username }, (err, result) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.passwordMatch(${username}, ${password})::findOne`,
-          err
-        );
-        return callback(err);
-      }
+    UserModel.findOne(
+      { username: username })
+      .then((data) => {
+        data.comparePassword(password, (error, isMatch) => {
+          if (error) {
+            logger.error(`${this._classInfo}.passwordMatch(${username}, ${password})::comparePassword`,
+              error
+            );
+            return callback(error);
+          }
 
-      //make sure password matches
-      result.comparePassword(password, (err, isMatch) => {
-        if (err) {
-          logger.error(`${this._classInfo}.passwordMatch(${username}, ${password})::comparePassword`,
-            err
+          logger.debug(
+            `${this._classInfo}.passwordMatch(${username}, ${password})::isMatch`,
+            isMatch
           );
-          callback(err);
-        }
 
-        logger.debug(
-          `${this._classInfo}.passwordMatch(${username}, ${password})::isMatch`,
-          isMatch
-        );
-
-        if (isMatch) {
-          callback(null, result);
-        } else {
-          callback(null, null);
-        }
+          if (isMatch) {
+            callback(null, data);
+          } else {
+            callback(null, null);
+          }
+        });
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.passwordMatch::findOne`, error);
+        callback(error);
       });
-    });
   }
 
   /**
@@ -369,28 +366,28 @@ class UserRepository {
   summary(skip, top, callback) {
     logger.debug(`${this._classInfo}.summary(${skip}, ${top})`);
 
-    UserModel.find(
-      {},
-      {
-        password: 0,
-        salt: 0,
-        refreshToken: 0,
-        loginAttempts: 0,
-        lockUntil: 0
-      }
-    )
-      .skip(skip)
-      .limit(top)
-      .exec((err, data) => {
-        if (err) {
-          logger.error(
-            `${this._classInfo}.summary(${skip}, ${top})::find`,
-            err
-          );
-          return callback(err, null);
+    UserModel
+      .find({},
+        null,
+        {
+          skip: skip,
+          select: {
+            password: 0,
+            salt: 0,
+            refreshToken: 0,
+            loginAttempts: 0,
+            lockUntil: 0
+          },
+          top: top,
+          sort: { name: 1 }
         }
-
-        return callback(null, data);
+      )
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.summary(${skip}, ${top})::find`, error);
+        return callback(error, null);
       });
   }
 
@@ -407,41 +404,14 @@ class UserRepository {
     UserModel.findOneAndUpdate(
       { _id: id },
       body,
-      { new: true },
-      (err, item) => {
-        if (err) {
-          logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, err);
-          return callback(err);
-        }
-
+      { new: true })
+      .then(data => {
         //returns User data
-        callback(null, item);
-      }
-    );
-  }
-
-  /**
-   * Updates an User
-   * @param {string} id User id
-   * @param {object} body User data
-   * @param {requestCallback} callback Handles the response
-   * @example updateSummary('123456789', {property:value}, (error, data) => {})
-   */
-  updateSummary(id, body, callback) {
-    logger.debug(`${this._classInfo}.updateSummary(${id})`, body);
-
-    UserModel.findOneAndUpdate(
-      { _id: id },
-      body,
-      { new: true },
-      (err, item) => {
-        if (err) {
-          logger.error(`${this._classInfo}.updateSummary(${id})::findById`, err);
-          return callback(err);
-        }
-
-        //returns User data
-        callback(null, item);
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, error);
+        return callback(error);
       });
   }
 
@@ -458,19 +428,17 @@ class UserRepository {
     UserModel.findOneAndUpdate(
       { _id: id },
       { refreshToken: token },
-      { new: true },
-      (err, result) => {
-        if (err) {
-          logger.error(
-            `${this._classInfo}.updateToken(${id}, ${token})::findByIdAndUpdate`,
-            err
-          );
-          return callback(error);
-        }
-
+      { new: true })
+      .then(result => {
         callback(null, result);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(
+          `${this._classInfo}.updateToken(${id}, ${token})::findByIdAndUpdate`,
+          error
+        );
+        return callback(error);
+      })
   }
 }
 

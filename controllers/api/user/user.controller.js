@@ -7,6 +7,7 @@ const repo = require('../../../app/database/repositories/account/user.repository
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
+//const UserModel = require('../../../app/database/models/account/user.model');
 
 /**
  * User Api Controller
@@ -113,13 +114,14 @@ class UserController {
    * @example GET /api/user
    * @returns {pointer} res.json
    */
-  all(request, response) {
+  all(request, response, next) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
     repo.all((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).json({ message: 'Internal server error' });
+        //next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
         response.json(result);
@@ -128,13 +130,13 @@ class UserController {
 
     // UserModel.find()
     //   .then(data => {
-    //     console.log('wish i didn make it here')
-    //     res.json(data);
+    //     response.json(data);
     //   })
-    //   .catch(err => {
+    //   .catch(error => {
     //     console.log('yay')
-    //     res.status(500).json({ message: 'Internal server error' });
-    //     console.error(err);
+    //     //response.status(500).json({ message: 'Internal server error' });
+    //     next(error)
+    //     console.error(error);
     //   });
   }
 
