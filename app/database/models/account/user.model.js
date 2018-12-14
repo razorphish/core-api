@@ -4,7 +4,7 @@
 
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Role = require('./role.model');
+const Role = require('../auth/role.model');
 const Token = require('../auth/token.model');
 const logger = require('../../../../lib/winston.logger');
 

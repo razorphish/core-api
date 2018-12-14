@@ -6,7 +6,17 @@ const logger = require('../../../../lib/winston.logger');
 const utils = require('../../../../lib/utils');
 
 /**
- * Client Repo class
+ * This callback type is called `requestCallback` and is displayed as a global symbol.
+ *
+ * @callback requestCallback
+ * @param {*} error
+ * @param {*} data
+ */
+
+/**
+ * Client Repository
+ * @author Antonio Marasco
+ * @class ClientRepository
  */
 class ClientRepository {
   /**
@@ -18,84 +28,79 @@ class ClientRepository {
   }
 
   /**
-   * Gets all Users
-   * @param {function} callback Callback function for all
+   * Gets all Clients
+   * @param {requestCallback} callback Handles the response
+   * @example all((error, data) => {})
    */
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    ClientModel.countDocuments((err, count) => {
-      logger.debug(`${this._classInfo}.all()::count`, count);
-
-      ClientModel.find({}, { password: 0, salt: 0 }, (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.all()::find`, err);
-          return callback(err, null);
-        }
-
-        callback(null, {
-          count: count,
-          data: data
-        });
+    ClientModel.find()
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.all::find`, error);
+        callback(error);
       });
-    });
   }
 
   /**
-   * Gets all clients paged
-   * @param {number} skip Page number
-   * @param {number} top Number of items per page
-   * @param {function} callback Callback function
+   * Gets all Clients paginated
+   * @param {number} [skip=10] Page number
+   * @param {number} [top=10] Per Page
+   * @param {requestCallback} callback Handles the response
+   * @example allPaged(2, 10, (error, data) => {} )
    */
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    ClientModel.countDocuments((err, itemCount) => {
-      var count = itemCount;
-      logger.verbose(
-        `${this._classInfo}.allPaged()`,
-        `Skip ${skip} Top: ${top} Count: ${count}`
-      );
-
-      ClientModel.find({}, { password: 0, salt: 0 })
-        .sort({
-          name: 1
-        })
-        .skip(skip)
-        .limit(top)
-        .exec((err, data) => {
-          if (err) {
-            logger.error(`${this._classInfo}.allPaged()`, err);
-            return callback(err, null);
-          }
-
-          callback(null, {
-            count: count,
-            data: data
-          });
-        });
-    });
+    ClientModel
+      .find({},
+        null,
+        {
+          skip: skip,
+          select: {
+            password: 0,
+            salt: 0,
+            refreshToken: 0,
+            loginAttempts: 0,
+            lockUntil: 0
+          },
+          top: top,
+          sort: { name: 1 }
+        }
+      )
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, error);
+        return callback(error, null);
+      });
   }
 
   /**
- * Gets a single User
- * @param {object} clientId Id of entity
- * @param {function} callback Callback function for success/fail
- */
+   * Gets client by ClintId
+   * @param {string} token User token
+   * @param {requestCallback} callback Handles the response
+   * @example byRefreshToken('123456789asdfghjkl', (error, data) => {})
+   */
   byClientId(clientId, callback) {
     logger.debug(`${this._classInfo}.getByClientId(${clientId})`);
 
-    ClientModel.findOne({ clientId: clientId }, (err, data) => {
-      if (err) {
+    ClientModel.findOne({ clientId: clientId })
+      .then(data => {
+
+        callback(null, data);
+      })
+      .catch(error => {
         logger.error(
           `${this._classInfo}.getByClientId(${clientId})::findOne`,
           err
         );
         return callback(err);
-      }
-
-      callback(null, data);
-    });
+      });
   }
 
   /**
@@ -245,7 +250,7 @@ class ClientRepository {
           );
           return callback(err, null);
         }
-        
+
         if (client) {
           logger.debug(
             `${this._classInfo}.verify(${clientId}, ${clientSecret}, ${origin}) OK`

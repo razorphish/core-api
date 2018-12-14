@@ -438,16 +438,12 @@ describe('User Repository Tests', () => {
                 });
             });
 
-            it('authenticate should response with ', (done) => {
-                User.authenticate('david@maras.co', 'Letme1n!',
-                    (error, data, reason) => {
-                        expect(error).to.exist;
-                        done();
-                    });
-            });
         });
+    });
 
-        describe('Faulty CRUD Methods', () => {
+    describe('Faulty CRUD Methods', () => {
+
+        describe('Faulty deleteOne, Insert method(s)', () => {
             const _deleteOne = UserModel.deleteOne;
             const _insert = UserModel.create;
 
@@ -507,6 +503,6 @@ describe('User Repository Tests', () => {
                     done();
                 });
             });
-        })
+        });
     });
 });

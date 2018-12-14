@@ -21,21 +21,14 @@ class StateRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    StateModel.countDocuments((err, count) => {
-      logger.debug(`${this._classInfo}.all()::count`, count);
-
-      StateModel.find({}, { /**Hide columns */}, (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.all()::find`, err);
-          return callback(err, null);
-        }
-
-        callback(null, {
-          count: count,
-          data: data
-        });
-      });
-    });
+    StateModel.find()
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.all()::find`, error);
+        return callback(error, null);
+      })
   }
 
   /**
@@ -49,33 +42,32 @@ class StateRepository {
     StateModel.deleteOne(
       {
         _id: id
-      },
-      (err, result) => {
-        if (err) {
-          logger.error(`${this._classInfo}.delete(${id})::remove`, err);
-          return callback(err, null);
-        }
-        callback(null, result);
-      }
-    );
+      })
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.delete(${id})::remove`, error);
+        return callback(error, null);
+      });
   }
 
-    /**
-   * Gets a single item
-   * @param {object} id Id of entity
-   * @param {function} callback Callback function for success/fail
-   */
+  /**
+ * Gets a single item
+ * @param {object} id Id of entity
+ * @param {function} callback Callback function for success/fail
+ */
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
-
-    StateModel.findById(id, (err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.get(${id})::findById`, err);
-        return callback(err);
-      }
-      // get client Id
-      callback(null, data);
-    });
+    StateModel.findById(id)
+      .then(data => {
+        console.log(data)
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.get(${id})::findById`, error);
+        return callback(error);
+      });
   }
 
   /**

@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 
-const RoleModel = require('../../../../app/database/models/account/role.model');
+const RoleModel = require('../../../../app/database/models/auth/role.model');
 const expect = require('chai').expect;
 
 describe('Role Model Tests', () => {

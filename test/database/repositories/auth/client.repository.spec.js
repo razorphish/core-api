@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 
-const Client = require('../../../../app/database/repositories/auth/client.repository');
+const ClientRepository = require('../../../../app/database/repositories/auth/client.repository');
 const DB = require('../../../../app/database/connection');
 const fs = require('fs');
 const expect = require('chai').expect;
@@ -36,39 +36,39 @@ describe('Client Repository Tests', () => {
     });
 
     it('all', (done) => {
-        Client.all((err, data) => {
-            data.count.should.eql(2);
+        ClientRepository.all((err, clients) => {
+            clients.should.have.length(2);
             done();
         });
     });
 
     it('allPaged', (done) => {
-        Client.allPaged(0, 2, (err, result) => {
-            result.data.length.should.eql(2);
+        ClientRepository.allPaged(0, 2, (err, clients) => {
+            clients.should.have.length(2);
             done();
         });
     });
 
     it('byClientId: valid', (done) => {
-        Client.byClientId('web-mobile', (err, data) => {
-            data.name.should.eql('Web.Mobile');
+        ClientRepository.byClientId('web-mobile', (err, client) => {
+            client.name.should.eql('Web.Mobile');
             done();
         });
     });
 
     it('byClientId: invalid', (done) => {
-        Client.byClientId('fake-mobile', (err, data) => {
-            expect(data).to.not.exist;
+        ClientRepository.byClientId('fake-mobile', (err, client) => {
+            expect(client).to.not.exist;
             done();
         });
     });
 
     it('delete', (done) => {
-        Client.all((err, users) => {
-            Client.delete(users.data[0]._id, (err) => {
-                Client.all((err, result) => {
-                    result.count.should.eql(1);
-                    result.data[0]._id.should.not.eql(users.data[0]._id);
+        ClientRepository.all((err, data) => {
+            ClientRepository.delete(data[0]._id, (err) => {
+                ClientRepository.all((err, clients) => {
+                    clients.should.have.length(1);
+                    clients[0]._id.should.not.eql(clients[0]._id);
                     done();
                 });
             });
@@ -76,17 +76,17 @@ describe('Client Repository Tests', () => {
     });
 
     it('get', (done) => {
-        Client.all((err, result) => {
-            Client.get(result.data[0]._id, (err, data) => {
-                data.name.should.eql('Web.UI');
-                data.clientId.should.eql('web-ui');
+        ClientRepository.all((err, clients) => {
+            ClientRepository.get(clients[0]._id, (err, client) => {
+                client.name.should.eql('Web.UI');
+                client.clientId.should.eql('web-ui');
                 done();
             })
         });
     });
 
     it('insert', (done) => {
-        Client.insert(
+        ClientRepository.insert(
             {
                 name: 'App.UI',
                 clientId: 'app-ui',
@@ -102,37 +102,37 @@ describe('Client Repository Tests', () => {
                 allowedLoginAttempts: 3,
                 daysToLock: 3
             },
-            (err, user) => {
-                Client.all((err, items) => {
-                    items.count.should.eql(3);
-                    items.data[2]._id.should.eql(user._id);
-                    items.data[2].name.should.eql('App.UI');
-                    items.data[2].clientId.should.eql('app-ui');
-                    items.data[2].tokenLifeTime.should.eql(30);
-                    items.data[2].refreshTokenLifeTime.should.eql(259200);
+            (err, client) => {
+                ClientRepository.all((err, clients) => {
+                    clients.should.have.length(3);
+                    clients[2]._id.should.eql(client._id);
+                    clients[2].name.should.eql('App.UI');
+                    clients[2].clientId.should.eql('app-ui');
+                    clients[2].tokenLifeTime.should.eql(30);
+                    clients[2].refreshTokenLifeTime.should.eql(259200);
                     done();
                 });
             });
     });
 
     it('refreshToken', (done) => {
-        Client.all((err, result) => {
+        ClientRepository.all((err, clients) => {
 
-            Client.refreshToken(result.data[0]._id, (err, item) => {
-                expect(item.takenHash).should.exist;
-                expect(item.clientSecret).should.exist;
+            ClientRepository.refreshToken(clients[0]._id, (err, token) => {
+                expect(token.takenHash).should.exist;
+                expect(token.clientSecret).should.exist;
                 done();
             });
         });
     });
 
     it('update', (done) => {
-        Client.all((err, users) => {
+        ClientRepository.all((err, clients) => {
             let body = {
                 clientId: 'maraso-web-ui'
             }
-            Client.update(users.data[0]._id, body, (err, item) => {
-                Client.get(item._id, (err, data) => {
+            ClientRepository.update(clients[0]._id, body, (err, client) => {
+                ClientRepository.get(client._id, (err, data) => {
                     data.clientId.should.eql('maraso-web-ui');
                     done();
                 });
@@ -148,9 +148,9 @@ describe('Client Repository Tests', () => {
         'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
         let origin = 'http://localhost:4200';
 
-        Client.verify(clientId, clientSecret, origin,
-            (err, data, reason) => {
-                data.name.should.eq('Web.UI');
+        ClientRepository.verify(clientId, clientSecret, origin,
+            (err, client, reason) => {
+                client.name.should.eq('Web.UI');
                 done();
             });
     });
@@ -160,8 +160,8 @@ describe('Client Repository Tests', () => {
         let clientSecret = '123456789';
         let origin = 'http://localhost:4200';
 
-        Client.verify(clientId, clientSecret, origin,
-            (err, data, reason) => {
+        ClientRepository.verify(clientId, clientSecret, origin,
+            (err, client, reason) => {
                 //Secret incorrect
                 reason.should.eq(1);
                 done();
@@ -173,8 +173,8 @@ describe('Client Repository Tests', () => {
         let clientSecret = '123456789';
         let origin = 'http://localhost:4200';
 
-        Client.verify(clientId, clientSecret, origin,
-            (err, data, reason) => {
+        ClientRepository.verify(clientId, clientSecret, origin,
+            (err, client, reason) => {
                 //Not Found
                 reason.should.eq(0);
                 done();
@@ -189,7 +189,7 @@ describe('Client Repository Tests', () => {
         'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
         let origin = 'http://localhost:8100';
 
-        Client.verify(clientId, clientSecret, origin,
+        ClientRepository.verify(clientId, clientSecret, origin,
             (err, data, reason) => {
                 //Not Found
                 reason.should.eq(3);
@@ -205,7 +205,7 @@ describe('Client Repository Tests', () => {
         'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
         let origin = 'https://api.maras.co';
 
-        Client.verify(clientId, clientSecret, origin,
+        ClientRepository.verify(clientId, clientSecret, origin,
             (err, data, reason) => {
                 reason.should.eq(2);
                 done();

@@ -131,7 +131,7 @@ passport.use(
         } else {
           // The request came from a client only since userId is null,
           // therefore the client is passed back instead of a user.
-          userRepo.getByClientId(token.clientId, (error, client) => {
+          clientRepo.byClientId(token.clientId, (error, client) => {
             if (error) {
               return done(error);
             }

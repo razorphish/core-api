@@ -28,7 +28,7 @@ const server = oauth2orize.createServer();
 server.serializeClient((client, done) => done(null, client.id));
 
 server.deserializeClient((clientId, done) => {
-    clientRepo.getByClientId(clientId, (error, client) => {
+    clientRepo.byClientId(clientId, (error, client) => {
         if (error) {
             return done(error);
         }
@@ -44,7 +44,7 @@ server.deserializeClient((clientId, done) => {
 server.exchange(
     oauth2orize.exchange.clientCredentials((client, scope, done) => {
         // Validate the client
-        clientRepo.getByClientId(client.clientId, (error, localClient) => {
+        clientRepo.byClientId(client.clientId, (error, localClient) => {
             if (error) {
                 return done(error);
             }
