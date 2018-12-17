@@ -68,7 +68,8 @@ describe('Client Repository Tests', () => {
             ClientRepository.delete(data[0]._id, (err) => {
                 ClientRepository.all((err, clients) => {
                     clients.should.have.length(1);
-                    clients[0]._id.should.not.eql(clients[0]._id);
+                    console.log(clients)
+                    clients[0].name.should.not.eql(clients[0].name);
                     done();
                 });
             });

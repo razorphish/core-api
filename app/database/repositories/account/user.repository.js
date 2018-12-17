@@ -99,7 +99,7 @@ class UserRepository {
             lockUntil: 0
           },
           top: top,
-          sort: { name: 1 }
+          sort: { lastName: 1 }
         }
       )
       .then((data) => {
@@ -134,7 +134,7 @@ class UserRepository {
         callback(null, user);
         return;
       }
-      
+
       callback(null, null, reason);
       // otherwise we can determine why we failed
       //var reasons = user.failedLogin;
@@ -254,8 +254,7 @@ class UserRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    UserModel.deleteOne(
-      { _id: id })
+    UserModel.deleteOne({ _id: id })
       .then((data) => {
         callback(null, data);
       })

@@ -214,7 +214,7 @@ class UserController {
 
   /**
    * Gets a user by its id
-   * @param {any} request Request object
+   * @param {Request} request Request object
    * @param {Response} response Response
    * @example GET /api/user/123456789
    */

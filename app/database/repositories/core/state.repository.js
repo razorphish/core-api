@@ -61,7 +61,6 @@ class StateRepository {
     logger.debug(`${this._classInfo}.get(${id})`);
     StateModel.findById(id)
       .then(data => {
-        console.log(data)
         callback(null, data);
       })
       .catch(error => {
