@@ -1,0 +1,18 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const WishlistItemCategorySchema = new Schema({
+    name: { type: String, required: true, trim: true },
+    dateCreated: { type: Date, required: true, default: Date.now },
+    dateModified: { type: Date, required: true, default: Date.now }
+});
+
+AccountSchema.pre('save', function (next) {
+    if (this.dateModified) {
+        this.dateModified = new Date();
+    }
+    next();
+});
+
+module.exports = mongoose.model('WishlistItemCategory', WishlistItemCategorySchema, 'wishlistItemCategory');
+
