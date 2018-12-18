@@ -37,7 +37,7 @@ https://www.terlici.com/2014/09/15/node-testing.html
 
 update verion numbers
 
-npm version patch -m "Version %s - add sweet badges"
+npm version patch|major|minor|premajor|preminor| -m "Version %s - add sweet badges"
 
 git push && git push --tags
 
