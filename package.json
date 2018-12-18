@@ -1,6 +1,6 @@
 {
   "name": "@marasco/core-passport-api",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Authorization and authentication api",
   "main": "server.js",
   "scripts": {
