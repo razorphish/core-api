@@ -1,8 +1,8 @@
 //Clients Api
 const repo = require('../../../app/database/repositories/auth/client.repository');
 const utils = require('../../../lib/utils');
-logger = require('../../../lib/winston.logger'),
-    passport = require('passport');
+const logger = require('../../../lib/winston.logger');
+const passport = require('passport');
 
 /**
  * Client Api Controller
@@ -237,7 +237,7 @@ class ClientsController {
      * Updates a client
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @examle PUT /api/user/123456789
+     * @example PUT /api/user/123456789
      */
     update(request, response) {
         const id = request.params.id;

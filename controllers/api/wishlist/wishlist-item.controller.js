@@ -1,117 +1,79 @@
 'use strict';
 /**
- * Users Api
+ * Wishlist Api
  */
 
-const repo = require('../../../app/database/repositories/account/user.repository');
+const repo = require('../../../app/database/repositories/wishlist/wishlist-item.repository');
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
-//const UserModel = require('../../../app/database/models/account/user.model');
 
 /**
- * User Api Controller
- * http://.../api/user
+ * Wishlist Api Controller
+ * http://.../api/wishlist
  * @author Antonio Marasco
  */
-class UserController {
+class WishlistItemController {
 
   /**
-   * Constructor for User
+   * Constructor for Wishlist
    * @param {router} router Node router framework
-   * @example let controller = new UserController(router);
+   * @example let controller = new WishlistController(router);
    */
   constructor(router) {
     router.get(
-      '/',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
+      '/:id/item',
+      //passport.authenticate('user-bearer', { session: false }),
+      //utils.isInRole('admin'),
       this.all.bind(this)
     );
 
-    router.get('/roles/:roleId', this.byRole.bind(this));
-
     router.get(
-      '/page/:skip/:top',
+      '/:id/item/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.allPaged.bind(this)
     );
 
     router.get(
-      '/:id',
+      '/:id/item/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
     );
 
     router.post(
-      '/',
+      '/:id/item',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.insert.bind(this)
     );
 
     router.put(
-      '/:id',
+      '/:id/item/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
-    router.post(
-      '/:id/devices',
-      passport.authenticate('user-bearer', { session: false }),
-      this.addDevice.bind(this)
-    );
-
     router.delete(
-      '/:id',
+      '/:id/item/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.delete.bind(this)
     );
 
     //Logging Info
-    this._classInfo = '*** [User].controller';
-    this._routeName = '/api/user';
+    this._classInfo = '*** [wishlist-item].controller';
+    this._routeName = '/api/wishlist/:id/item';
 
   }
 
   /**
-   * Adds a device to user
-   * @param {Request} request - Request object
-   * @param {Response} response - Response object
-   * @example POST /api/user/{user id}/devices
-   */
-  addDevice(request, response) {
-    logger.info(`${this._classInfo}.addDevice() [${this._routeName}]`);
-
-    repo.addDevice(request.params.id, request.body, (error, result) => {
-      if (error) {
-        logger.error(`${this._classInfo}.addDevice() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: error.code,
-            errmsg: error.errmsg,
-            index: error.index
-          },
-          data: null
-        });
-      } else {
-        logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`, result);
-        response.json({ status: true, msg: null, error: null, data: result });
-      }
-    });
-  }
-
-  /**
-   * Gets all users
+   * Gets all Wishlist
    * @param {Request} [request] Request object
    * @param {Response} response Response
-   * @example GET /api/user
+   * @example GET /api/wishlist
    * @returns {pointer} res.json
    */
   all(request, response, next) {
@@ -127,26 +89,15 @@ class UserController {
         response.json(result);
       }
     });
-
-    // UserModel.find()
-    //   .then(data => {
-    //     response.json(data);
-    //   })
-    //   .catch(error => {
-    //     console.log('yay')
-    //     //response.status(500).json({ message: 'Internal server error' });
-    //     next(error)
-    //     console.error(error);
-    //   });
   }
 
   /**
-   * Gets all users paginated
+   * Gets all Wishlist paginated
    * @param {Request} request Request object {Default:10}
    * @param {Request} [request.params.top=10]
    * @param {Response} response Response
-   * @example /api/user/page/2/10
-   * @description /api/user/page/{page number}/{# per page}
+   * @example /api/wishlist/page/2/10
+   * @description /api/wishlist/page/{page number}/{# per page}
    */
   allPaged(request, response) {
     logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
@@ -169,32 +120,10 @@ class UserController {
   }
 
   /**
-   * Gets all users by role
-   * @param {any} request Request object
-   * @param {Response} response Response
-   * @example GET /api/user/roles/Guest
-   * @returns pointer to .json via 'res' param
-   */
-  byRole(request, response) {
-    const id = request.params.roleId;
-    logger.info(`${this._classInfo}.byRole(${id}) [${this._routeName}]`);
-
-    repo.byRole(id, (error, result) => {
-      if (error) {
-        logger.error(`${this._classInfo}.byRole() [${this._routeName}]`, error);
-        response.json(null);
-      } else {
-        logger.debug(`${this._classInfo}.byRole() [${this._routeName}] OK`, result);
-        response.json(result);
-      }
-    });
-  }
-
-  /**
-   * Deletes a user
+   * Deletes a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example DELETE /api/user/123456789
+   * @example DELETE /api/wishlist/123456789
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
@@ -213,10 +142,10 @@ class UserController {
   }
 
   /**
-   * Gets a user by its id
+   * Gets a Wishlist by its id
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example GET /api/user/123456789
+   * @example GET /api/wishlist/123456789
    */
   get(request, response) {
     const id = request.params.id;
@@ -234,10 +163,10 @@ class UserController {
   }
 
   /**
-   * Inserts a user
+   * Inserts a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example POST /api/user
+   * @example POST /api/wishlist
    */
   insert(request, response) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
@@ -247,10 +176,7 @@ class UserController {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
         response.json({
           status: false,
-          msg:
-            'Insert failed' + error.code === 11000
-              ? ': Username or Email already exist'
-              : '',
+          msg: 'Insert failed',
           error: error,
           data: null
         });
@@ -262,10 +188,10 @@ class UserController {
   }
 
   /**
-   * Updates a user
+   * Updates a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example PUT /api/user/123456789
+   * @example PUT /api/wishlist/123456789
    */
   update(request, response) {
     const id = request.params.id;
@@ -292,4 +218,4 @@ class UserController {
   }
 }
 
-module.exports = UserController;
+module.exports = WishlistItemController;

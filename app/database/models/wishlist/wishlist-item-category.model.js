@@ -7,7 +7,7 @@ const WishlistItemCategorySchema = new Schema({
     dateModified: { type: Date, required: true, default: Date.now }
 });
 
-AccountSchema.pre('save', function (next) {
+WishlistItemCategorySchema.pre('save', function (next) {
     if (this.dateModified) {
         this.dateModified = new Date();
     }

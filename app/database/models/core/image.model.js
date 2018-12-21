@@ -6,7 +6,7 @@ const ImageSchema = new Schema({
     contentType: { type: String }, //image/pneg
     mimeType: { type: String }, //.png
     fileName: { type: String }, //image.png
-    fileOwner: { type: string },
+    fileOwner: { type: String },
     sortOrder: { type: Number, default: 0 },
     dateCreated: { type: Date, required: true, default: Date.now }
 });

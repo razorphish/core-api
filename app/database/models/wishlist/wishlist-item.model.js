@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Image = require('../core/image.model');
-const Category = require('../account')
 
 const WishlistItemSchema = new Schema({
     name: { type: String, required: true, trim: true },
@@ -16,7 +15,7 @@ const WishlistItemSchema = new Schema({
     dateModified: { type: Date, required: true, default: Date.now }
 });
 
-AccountSchema.pre('save', function (next) {
+WishlistItemSchema.pre('save', function (next) {
     if (this.dateModified) {
         this.dateModified = new Date();
     }

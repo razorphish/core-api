@@ -2,6 +2,7 @@
 const repo = require('../../../app/database/repositories/account/account.repository');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
+const passport = require('passport');
 
 /**
  * account Api Controller
