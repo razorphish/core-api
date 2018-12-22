@@ -1,79 +1,79 @@
 'use strict';
 /**
- * Wishlist Api
+ * Wishlist Category Api
  */
 
-const repo = require('../../../app/database/repositories/wishlist/wishlist-item.repository');
+const repo = require('../../../../app/database/repositories/wishlist/wishlist-item-category.repository');
 const passport = require('passport');
-const utils = require('../../../lib/utils');
-const logger = require('../../../lib/winston.logger');
+const utils = require('../../../../lib/utils');
+const logger = require('../../../../lib/winston.logger');
 
 /**
- * Wishlist Api Controller
- * http://.../api/wishlist/:id/item
+ * Wishlist Category for items Api Controller
+ * http://.../api/wishlist/category
  * @author Antonio Marasco
  */
-class WishlistItemController {
+class WishlistItemCategoryController {
 
   /**
-   * Constructor for Wishlist
+   * Constructor for Wishlist Item Category
    * @param {router} router Node router framework
-   * @example let controller = new WishlistController(router);
+   * @example let controller = new WishlistItemCategoryController(router);
    */
   constructor(router) {
     router.get(
-      '/:id/item',
+      '/',
       //passport.authenticate('user-bearer', { session: false }),
       //utils.isInRole('admin'),
       this.all.bind(this)
     );
 
     router.get(
-      '/:id/item/page/:skip/:top',
+      '/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.allPaged.bind(this)
     );
 
     router.get(
-      '/:id/item/:itemId',
+      '/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
     );
 
     router.post(
-      '/:id/item',
+      '/',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.insert.bind(this)
     );
 
     router.put(
-      '/:id/item/:itemId',
+      '/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
     router.delete(
-      '/:id/item/:itemId',
+      '/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.delete.bind(this)
     );
 
     //Logging Info
-    this._classInfo = '*** [wishlist-item].controller';
-    this._routeName = '/api/wishlist/:id/item';
+    this._classInfo = '*** [wishlist-item-category].controller';
+    this._routeName = '/api/wishlist/category';
 
   }
 
   /**
-   * Gets all Wishlist
+   * Gets all Wishlist item categories
    * @param {Request} [request] Request object
    * @param {Response} response Response
-   * @example GET /api/wishlist/:id/item
+   * @example GET /api/wishlist/category
    * @returns {pointer} res.json
    */
   all(request, response, next) {
@@ -97,7 +97,7 @@ class WishlistItemController {
    * @param {Request} [request.params.top=10]
    * @param {Response} response Response
    * @example /api/wishlist/page/2/10
-   * @description /api/wishlist/:id/item/page/{page number}/{# per page}
+   * @description /api/wishlist/category/page/{page number}/{# per page}
    */
   allPaged(request, response) {
     logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
@@ -123,7 +123,7 @@ class WishlistItemController {
    * Deletes a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example DELETE /api/wishlist/:id/item/:itemId
+   * @example DELETE /api/wishlist/category/:id
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
@@ -145,7 +145,7 @@ class WishlistItemController {
    * Gets a Wishlist by its id
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example GET /api/wishlist/:id/item/:itemId
+   * @example GET /api/wishlist/category/:id
    */
   get(request, response) {
     const id = request.params.id;
@@ -166,7 +166,7 @@ class WishlistItemController {
    * Inserts a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example POST /api/wishlist/:id/item
+   * @example POST /api/wishlist/category
    */
   insert(request, response) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
@@ -191,12 +191,10 @@ class WishlistItemController {
    * Updates a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example PUT /api/wishlist/:id/item/:itemId
+   * @example PUT /api/wishlist/category/:id
    */
   update(request, response) {
-    const id = request.params.id; //wishlist id
-    const itemId = request.params.itemId; //wishlist item id
-
+    const id = request.params.id;
     logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
 
     repo.update(id, request.body, (error, result) => {
@@ -220,4 +218,4 @@ class WishlistItemController {
   }
 }
 
-module.exports = WishlistItemController;
+module.exports = WishlistItemCategoryController;

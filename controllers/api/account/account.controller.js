@@ -112,7 +112,7 @@ class AccountController {
      * Deletes a account
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @example DELETE /api/account/123456789
+     * @example DELETE /api/account/:id
      * @returns {status: true|false} via res pointer
      */
     delete(request, response) {
@@ -134,7 +134,7 @@ class AccountController {
      * Gets a account by its id
      * @param {Request} request Request object
      * @param {Response} response Response
-     * @example GET /api/account/123456789
+     * @example GET /api/account/:id
      */
     get(request, response) {
         const id = request.params.id;
@@ -183,7 +183,7 @@ class AccountController {
      * Updates a account
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @examle PUT /api/user/123456789
+     * @examle PUT /api/user/:id
      */
     update(request, response) {
         const id = request.params.id;

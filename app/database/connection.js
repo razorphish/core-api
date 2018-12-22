@@ -62,10 +62,10 @@ class Database {
                 if (err) {
                     return done(err)
                 }
-                
+
                 //Add fields here that have an ObjectId data type (not _ids)
                 data.collections[name].forEach((item, index) => {
-                    if (item.userId){
+                    if (item.userId) {
                         item.userId = new ObjectId(item.userId);
                     }
                 })

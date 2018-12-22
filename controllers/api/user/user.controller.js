@@ -82,7 +82,7 @@ class UserController {
    * Adds a device to user
    * @param {Request} request - Request object
    * @param {Response} response - Response object
-   * @example POST /api/user/{user id}/devices
+   * @example POST /api/user/:id/devices
    */
   addDevice(request, response) {
     logger.info(`${this._classInfo}.addDevice() [${this._routeName}]`);
@@ -172,7 +172,7 @@ class UserController {
    * Gets all users by role
    * @param {any} request Request object
    * @param {Response} response Response
-   * @example GET /api/user/roles/Guest
+   * @example GET /api/user/roles/:roleId
    * @returns pointer to .json via 'res' param
    */
   byRole(request, response) {
@@ -194,7 +194,7 @@ class UserController {
    * Deletes a user
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example DELETE /api/user/123456789
+   * @example DELETE /api/user/:id
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
@@ -216,7 +216,7 @@ class UserController {
    * Gets a user by its id
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example GET /api/user/123456789
+   * @example GET /api/user/:id
    */
   get(request, response) {
     const id = request.params.id;
@@ -265,7 +265,7 @@ class UserController {
    * Updates a user
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example PUT /api/user/123456789
+   * @example PUT /api/user/:id
    */
   update(request, response) {
     const id = request.params.id;

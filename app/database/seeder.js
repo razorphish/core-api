@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const ClientSeeder = require('./seeders/auth/client.seeder');
 const UserSeeder = require('./seeders/account/user.seeder');
+const WishlistCategorySeeder = require('./seeders/wishlist/wishlist-category.seeder');
 const logger = require('../../lib/winston.logger');
 
 (dbConfig = require('../../lib/config.loader').databaseConfig),
@@ -30,6 +31,9 @@ class DBSeeder {
 
         // User
         UserSeeder.seed();
+
+        // Wishlist category seeder
+        WishlistCategorySeeder.seed();
     }
 }
 

@@ -123,7 +123,7 @@ class WishlistController {
    * Deletes a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example DELETE /api/wishlist/123456789
+   * @example DELETE /api/wishlist/:id
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
@@ -145,7 +145,7 @@ class WishlistController {
    * Gets a Wishlist by its id
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example GET /api/wishlist/123456789
+   * @example GET /api/wishlist/:id
    */
   get(request, response) {
     const id = request.params.id;
@@ -191,7 +191,7 @@ class WishlistController {
    * Updates a wishlist
    * @param {Request} request Request object
    * @param {Response} response Response object
-   * @example PUT /api/wishlist/123456789
+   * @example PUT /api/wishlist/:id
    */
   update(request, response) {
     const id = request.params.id;

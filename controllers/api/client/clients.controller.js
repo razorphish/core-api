@@ -117,7 +117,7 @@ class ClientsController {
      * Deletes a client
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @example DELETE /api/client/123456789
+     * @example DELETE /api/client/:id
      * @returns {status: true|false} via res pointer
      */
     delete(request, response) {
@@ -139,7 +139,7 @@ class ClientsController {
      * Gets a client by its id
      * @param {Request} request Request object
      * @param {Response} response Response
-     * @example GET /api/client/123456789
+     * @example GET /api/client/:id
      */
     get(request, response) {
         const id = request.params.id;
@@ -237,7 +237,7 @@ class ClientsController {
      * Updates a client
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @example PUT /api/user/123456789
+     * @example PUT /api/user/:id
      */
     update(request, response) {
         const id = request.params.id;

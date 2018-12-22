@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const Image = require('../core/image.model');
 
 const WishlistItemSchema = new Schema({
+    wishListId: { type: Schema.Types.ObjectId, required: true, ref: 'Wishlist' },
     name: { type: String, required: true, trim: true },
     category: { type: String, required: false, trim: true },
     price: { type: Number, required: false },
