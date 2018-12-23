@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/razorphish/core-passport-api.svg?branch=master)](https://travis-ci.org/razorphish/core-passport-api)
+[![Build Status](https://travis-ci.org/razorphish/core-api.svg?branch=master)](https://travis-ci.org/razorphish/core-api)
 
-[![Coverage Status](https://coveralls.io/repos/github/razorphish/core-passport-api/badge.svg)](https://coveralls.io/github/razorphish/core-passport-api)
+[![Coverage Status](https://coveralls.io/repos/github/razorphish/core-api/badge.svg)](https://coveralls.io/github/razorphish/core-api)
 
 Passport Api
 =========
@@ -9,11 +9,11 @@ A small library that manages passport authorization and authentication
 
 ## Installation
 
-  `npm install @marasco/core-passport-api`
+  `npm install @marasco/core-api`
 
 ## Usage
 
-    var numFormatter = require('@marasco/core-passport-api');
+    var numFormatter = require('@marasco/core-api');
 
     var formattedNum = numFormatter(35666);
   

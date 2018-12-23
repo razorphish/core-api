@@ -1,5 +1,5 @@
 {
-  "name": "@marasco/core-passport-api",
+  "name": "@marasco/core-api",
   "version": "2.0.1",
   "description": "Authorization and authentication api",
   "main": "server.js",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/razorphish/core-passport-api.git"
+    "url": "git+https://github.com/razorphish/core-api.git"
   },
   "keywords": [
     "authorization",
@@ -28,9 +28,9 @@
   "author": "Antonio Marasco <david@maras.co> (http://www.maras.co)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/razorphish/core-passport-api/issues"
+    "url": "https://github.com/razorphish/core-api/issues"
   },
-  "homepage": "https://github.com/razorphish/core-passport-api#readme",
+  "homepage": "https://github.com/razorphish/core-api#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.2.0",

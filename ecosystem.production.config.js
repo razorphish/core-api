@@ -35,7 +35,7 @@ module.exports = {
         user : 'node',
         host : ['172.23.5.249', '172.23.5.248'],
         ref  : 'origin/master',
-        repo : 'https://github.com/razorphish/core-passport-api',
+        repo : 'https://github.com/razorphish/core-api',
         path : '/var/www/api.maras.co/html',
         'post-deploy' : 'npm install && pm2 reload ecosystem.production.config.js --env production',
         'post-setup': 'ls -la',
