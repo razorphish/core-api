@@ -15,6 +15,7 @@ const ClientSchema = new Schema({
     enum: ['ClientConfidential', 'Native'],
     required: true
   },
+  redirectUrl: { type : String, required: true, default: '/home'},
   allowedOrigins: { type: [String], required: true },
   tokenLifeTime: { type: Number, required: true },
   refreshTokenLifeTime: { type: Number, required: true },
