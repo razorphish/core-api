@@ -37,11 +37,6 @@ class UserFeeder {
             normalizedName: 'ADMIN'
           },
           {
-            _id: '59af319cfc13ae21640000dc',
-            name: 'Stylist',
-            normalizedName: 'STYLIST'
-          },
-          {
             _id: '59af3138fc13ae21640000c9',
             name: 'User',
             normalizedName: 'USER'

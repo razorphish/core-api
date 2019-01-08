@@ -1,13 +1,18 @@
 'use strict';
 
 const oauth2orize = require('oauth2orize'),
+    jwtBearer = require('oauth2orize-jwt-bearer').Exchange,
     passport = require('passport'),
     userRepo = require('../../app/database/repositories/account/user.repository'),
     tokenRepo = require('../../app/database/repositories/auth/token.repository'),
     clientRepo = require('../../app/database/repositories/auth/client.repository'),
     crypto = require('crypto'),
     logger = require('../../lib/winston.logger'),
-    utils = require('../../lib/utils');
+    utils = require('../../lib/utils'),
+    jwt_sign = require('../security/signers/jwt-sign'),
+    jwt = require('jsonwebtoken');
+
+const oAuthProvider = 'oAuth2'
 
 // Create OAuth 2.0 server
 const server = oauth2orize.createServer();
@@ -56,17 +61,23 @@ server.exchange(
                 .createHash('sha1')
                 .update(client.clientSecret)
                 .digest('hex');
+
             if (localClient.clientSecret !== accessTokenHash) {
                 return done(null, false);
             }
             // Everything validated, return the token
             const token = utils.getUid(256);
+
             // Pass in a null for user id since there is no user with this grant type
-            db.accessTokens.save(token, null, client.clientId, (error) => {
+            tokenRepo.insert(token, (error) => {
                 if (error) {
                     return done(error);
                 }
-                return done(null, token, { test: 'test' });
+
+                return done(
+                    null,
+                    token, { test: 'test' }
+                );
             });
         });
     })
@@ -124,7 +135,8 @@ server.exchange(
                         loginProvider: 'oAuth2',
                         scope: scope || '*',
                         dateExpire: expirationDate,
-                        expiresIn: expiresIn
+                        expiresIn: expiresIn,
+                        protocol: 'Http'
                     };
 
                     var refreshExpiresIn = client.refreshTokenLifeTime * 60;
@@ -144,17 +156,19 @@ server.exchange(
                             return done(error);
                         }
 
+                        //AM BUG
                         //Save client refresh token
                         userRepo.updateToken(user.id, refresh_token, (err, resp) => {
                             //Let's do nothing as user will just NOT
                             //have a refresh token for the time being
                         });
+                        user.refreshToken = refreshToken;
 
                         return done(
                             null,
                             token,
                             refreshToken,
-                            mergeParam(user, expirationDate, expiresIn)
+                            mergeParam(user, refreshToken, expirationDate, expiresIn, oAuthProvider)
                         );
                     });
                 } else {
@@ -166,9 +180,55 @@ server.exchange(
     })
 );
 
+server.exchange('urn:ietf:params:oauth:grant-type:jwt-bearer',
+    jwtBearer(function (client, data, signature, done) {
+
+        //load file system so you can grab the public key to read.
+        var fs = require('fs');
+        var path = require('path');
+        var publicKey = path.resolve(process.cwd() + '/app/security/verifiers/public.pem');
+        var privateKey = path.resolve(process.cwd() + '/app/security/verifiers/private.pem');
+
+        //load PEM format public key as string, should be clients public key
+        var pub = fs.readFileSync(publicKey).toString();
+
+        var verifier = crypto.createVerify("RSA-SHA256");
+
+        //logger.info('*** token [Exchange:JWT Client]', client);
+        //logger.info('*** token [Exchange:JWT Data]', data);
+        //logger.info('*** token [Exchange:JWT Signature]', signature)
+        //logger.info('*** token [Exchange:JWT Pub]', pub)
+
+        //verifier.update takes in a string of the data that is encrypted in the signature  
+        //verifier.update(JSON.stringify(data));
+
+        verifier.update(data);
+
+        if (verifier.verify(pub, signature, 'base64')) {
+            //base64url decode data 
+            var b64string = data;
+            var buf = new Buffer.from(b64string, 'base64').toString('ascii');
+            console.log(buf.split('}{')[1])
+
+            var Options = {
+                issuer: 'www.maras.co',
+                subject: 'mewho',
+                audience: client._id.toString() // this should be provided by client
+            }
+
+            var token = jwt_sign.sign({ 'token_type': 'jwt', 'expires_in': 3600, 'mouse': 'dead' }, Options);
+
+            done(null, token, { 'token_type': 'foo', 'expires_in': 3600 })
+            // AccessToken.create(client, scope, function (err, accessToken) {
+            //     if (err) { return done(err); }
+            //     done(null, accessToken);
+            // });
+        } else {
+            console.log('FAIL BIGLY')
+        }
+    }));
 /*
- * `accessToken` is the access token that will be sent to the client.  An
- * optional `refreshToken` will be sent to the client, if the server chooses to
+ * `refresh_token` is the access token that will be sent to the client.  if the server chooses to
  * implement support for this functionality.  Any additional `params` will be
  * included in the useronse.  If an error occurs, `done` should be invoked with
  * `err` set in idomatic Node.js fashion.
@@ -180,7 +240,7 @@ server.exchange(
         scope,
         done
     ) {
-        var that = this;
+
         logger.info('*** token [Exchange:Refresh Token]');
 
         if (!refreshToken) {
@@ -244,7 +304,8 @@ server.exchange(
                 loginProvider: 'oAuth2',
                 scope: scope || '*',
                 dateExpire: expirationDate,
-                expiresIn: expiresIn
+                expiresIn: expiresIn,
+                protocol: 'Http'
             };
 
             // var refreshExpiresIn = client.refreshTokenLifeTime * 60;
@@ -274,18 +335,22 @@ server.exchange(
                     null,
                     token,
                     refreshToken,
-                    mergeParam(user, expirationDate, expiresIn)
+                    mergeParam(user, refreshToken, expirationDate, expiresIn, oAuthProvider)
                 );
             });
         });
     })
 );
 
-function mergeParam(user, expires, expiresIn) {
+function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
+    let issuedAtTime = new Date().toUTCString();
     var u = {
-        '.issued': new Date().toUTCString(),
+        '.issued': issuedAtTime,
         '.expires': expires,
         expires_in: expiresIn,
+        expirationTime: expires,
+        issuedAtTime: issuedAtTime,
+        signInProvider: signInProvider,
         user: {
             _id: user.id,
             username: user.username,
@@ -297,12 +362,11 @@ function mergeParam(user, expires, expiresIn) {
             roles: user.roles || [],
             calendars: user.calendars || [],
             addresses: user.addresses || [],
-            businessHours: user.businessHours || [],
-            salonServices: user.salonServices || [],
             twitter: user.twitter,
             facebook: user.facebook,
             instagram: user.instagram,
-            devices: user.devices || []
+            devices: user.devices || [],
+            refreshToken: refreshToken
         }
     };
 

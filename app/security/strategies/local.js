@@ -4,14 +4,21 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const BasicStrategy = require('passport-http').BasicStrategy;
-const ClientPasswordStrategy = require('passport-oauth2-client-password')
-  .Strategy;
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
 const userRepo = require('../../database/repositories/account/user.repository');
 const tokenRepo = require('../../database/repositories/auth/token.repository');
 const clientRepo = require('../../database/repositories/auth/client.repository');
 const crypto = require('crypto');
 const util = require('util');
 const logger = require('../../../lib/winston.logger');
+
+var JWTopts = {}
+JWTopts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+JWTopts.secretOrKey = 'secret';
+JWTopts.issuer = 'api.maras.co';
+JWTopts.audience = 'maras.co';
 
 /**
  * LocalStrategy
@@ -83,6 +90,31 @@ passport.use(new BasicStrategy({ passReqToCallback: true }, verifyClient));
 passport.use(
   new ClientPasswordStrategy({ passReqToCallback: true }, verifyClient)
 );
+
+// passport.use(new ClientJWTBearerStrategy({ passReqToCallback: true }, 'key',
+//   function(claimSetIss, done) {
+//       // Clients.findOne({ clientId: claimSetIss }, function (err, client) {
+//       //     if (err) { return done(err); }
+//       //     if (!client) { return done(null, false); }
+//       //     return done(null, client);
+//       // });
+//       return done (null, {});
+//   }
+// ));
+
+passport.use(new JwtStrategy(JWTopts, function (jwt_payload, done) {
+  tokenRepo.byToken({ id: jwt_payload.sub }, function (err, user) {
+    if (err) {
+      return done(err, false);
+    }
+    if (user) {
+      return done(null, user);
+    } else {
+      return done(null, false);
+      // or you could create a new account
+    }
+  });
+}));
 
 /**
  * BearerStrategy

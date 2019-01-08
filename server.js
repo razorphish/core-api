@@ -16,6 +16,7 @@ const express = require('express'),
   passport = require('passport'),
   logger = require('./lib/winston.logger');
   authRoutes = require('./app/routes/oAuth2');
+  //authRoutesJwt = require('./app/routes/JWT');
   
 (app = express()), (port = 3000);
 
@@ -180,6 +181,7 @@ class Server {
     //router.load(app, './publiccontrollers');
 
     app.post('/oauth/token', authRoutes.token);
+    //app.post('/oauth/jwt-token', authRoutesJwt.token);
   }
 
   initSecureRoutes() {

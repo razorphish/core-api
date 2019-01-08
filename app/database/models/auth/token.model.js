@@ -5,12 +5,13 @@ const Schema = mongoose.Schema;
 
 const TokenSchema = new Schema({
 
-  userId: { type: Schema.Types.ObjectId, required: true, ref: 'User'},
+  userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
   loginProvider: { type: String, required: true, trim: true },
   name: { type: String, required: true, trim: true },
   value: { type: String, required: true, trim: true },
   scope: { type: String, required: true, trim: true },
   type: { type: String, required: true, trim: true },
+  protocol: { type: String, required: true, trim: true },
   expiresIn: { type: Number, required: true },
   dateExpire: { type: Date, required: false },
   dateCreated: { type: Date, required: false, default: Date.now }
