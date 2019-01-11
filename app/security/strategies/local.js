@@ -7,6 +7,7 @@ const BasicStrategy = require('passport-http').BasicStrategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 const userRepo = require('../../database/repositories/account/user.repository');
 const tokenRepo = require('../../database/repositories/auth/token.repository');
 const clientRepo = require('../../database/repositories/auth/client.repository');
@@ -91,17 +92,6 @@ passport.use(
   new ClientPasswordStrategy({ passReqToCallback: true }, verifyClient)
 );
 
-// passport.use(new ClientJWTBearerStrategy({ passReqToCallback: true }, 'key',
-//   function(claimSetIss, done) {
-//       // Clients.findOne({ clientId: claimSetIss }, function (err, client) {
-//       //     if (err) { return done(err); }
-//       //     if (!client) { return done(null, false); }
-//       //     return done(null, client);
-//       // });
-//       return done (null, {});
-//   }
-// ));
-
 passport.use(new JwtStrategy(JWTopts, function (jwt_payload, done) {
   tokenRepo.byToken({ id: jwt_payload.sub }, function (err, user) {
     if (err) {
@@ -116,6 +106,17 @@ passport.use(new JwtStrategy(JWTopts, function (jwt_payload, done) {
   });
 }));
 
+passport.use(new FacebookStrategy({
+  clientID: 'FACEBOOK_APP_ID',
+  clientSecret: 'FACEBOOK_APP_SECRET',
+  callbackURL: "http://localhost:3000/auth/facebook/callback"
+},
+  function (accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
 /**
  * BearerStrategy
  *
