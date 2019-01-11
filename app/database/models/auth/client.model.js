@@ -16,13 +16,14 @@ const ClientSchema = new Schema({
     required: true
   },
   redirectUrl: { type : String, required: true, default: '/home'},
+  tokenProtocol: { type : String, enum: ['http', 'jwt'], required: true, default: 'http'},
   allowedOrigins: { type: [String], required: true },
   tokenLifeTime: { type: Number, required: true },
   refreshTokenLifeTime: { type: Number, required: true },
   // allowedLoginAttempts: { type: Number, required: false, default: 0 },
   // daysToLock: { type: Number, required: false, default: 0 },
   dateCreated: { type: Date, required: true, default: Date.now },
-  dateModified: { type: Date, required: true, default: Date.now },
+  dateModified: { type: Date, required: true, default: Date.now }
 });
 
 //PRE-SAVE

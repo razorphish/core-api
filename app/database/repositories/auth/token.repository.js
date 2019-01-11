@@ -187,6 +187,7 @@ class TokenRepository {
     model.expiresIn = body.expiresIn;
     model.scope = body.scope;
     model.type = body.type;
+    model.protocol = body.protocol;
 
     model.save((err, data) => {
       if (err) {
