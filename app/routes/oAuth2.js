@@ -92,11 +92,7 @@ server.exchange(
     oauth2orize.exchange.password((client, username, password, scope, done) => {
         logger.info('*** userRepo.authenticate [Exchange:Password]');
 
-        if (!username) {
-            throw new Error('User required');
-        }
-
-        userRepo.authenticate(username, password, (err, user, reason) => {
+        userRepo.authenticate(username, password, client.requestBody.socialUser || null, (err, user, reason) => {
             if (err) {
                 logger.error(
                     `*** userRepo.authenticate [auth] user:${user}, reason:${reason}`,
@@ -109,66 +105,27 @@ server.exchange(
                     logger.debug('*** userRepo.authenticate [auth] ok', reason);
 
                     // Everything validated, return the token
-                    const token = utils.getUid(256);
-                    const refreshToken = utils.getUid(256);
+                    const token = utils.createHttpToken(user.id, 'access_token', client.tokenLifeTime, scope);
+                    const refreshToken = utils.createHttpToken(user.id, 'refresh_token', client.refreshTokenLifeTime, scope);
 
-                    var tokenHash = crypto
-                        .createHash('sha1')
-                        .update(token)
-                        .digest('hex');
-                    var refreshTokenHash = crypto
-                        .createHash('sha1')
-                        .update(refreshToken)
-                        .digest('hex');
-
-                    //Convert minutes to seconds
-                    var expiresIn = client.tokenLifeTime * 60;
-                    var expirationDate = new Date(
-                        new Date().getTime() + expiresIn * 1000
-                    ).toUTCString();
-
-                    var accessToken = {
-                        value: tokenHash,
-                        userId: user.id,
-                        type: 'bearer',
-                        name: 'access_token',
-                        loginProvider: 'oAuth2',
-                        scope: scope || '*',
-                        dateExpire: expirationDate,
-                        expiresIn: expiresIn,
-                        protocol: 'Http'
-                    };
-
-                    var refreshExpiresIn = client.refreshTokenLifeTime * 60;
-                    var refreshExpirationDate = new Date(
-                        new Date().getTime() + refreshExpiresIn * 1000
-                    ).toUTCString();
-
-                    var refresh_token = Object.assign({}, accessToken, {
-                        value: refreshTokenHash,
-                        name: 'refresh_token',
-                        expiresIn: refreshExpiresIn,
-                        dateExpire: refreshExpirationDate
-                    });
-
-                    tokenRepo.insert(accessToken, (error) => {
+                    tokenRepo.insert(token, (error) => {
                         if (error) {
                             return done(error);
                         }
 
                         //AM BUG
                         //Save client refresh token
-                        userRepo.updateToken(user.id, refresh_token, (err, resp) => {
+                        userRepo.updateToken(user.id, refreshToken, (err, resp) => {
                             //Let's do nothing as user will just NOT
                             //have a refresh token for the time being
                         });
-                        user.refreshToken = refreshToken;
+                        user.refreshToken = refreshToken.value_;
 
                         return done(
                             null,
-                            token,
-                            refreshToken,
-                            mergeParam(user, refreshToken, expirationDate, expiresIn, oAuthProvider)
+                            token.value_,
+                            refreshToken.value_,
+                            mergeParam(user, refreshToken.value_, token.dateExpire, token.expiresIn, oAuthProvider)
                         );
                     });
                 } else {
@@ -280,16 +237,11 @@ server.exchange(
 
             // Everything validated, return the token
             const token = utils.getUid(256);
-            //const refreshToken = utils.getUid(256);
 
             var tokenHash = crypto
                 .createHash('sha1')
                 .update(token)
                 .digest('hex');
-            // var refreshTokenHash = crypto
-            //   .createHash('sha1')
-            //   .update(refreshToken)
-            //   .digest('hex');
 
             var expiresIn = client.tokenLifeTime * 60;
             var expirationDate = new Date(
@@ -308,28 +260,11 @@ server.exchange(
                 protocol: 'Http'
             };
 
-            // var refreshExpiresIn = client.refreshTokenLifeTime * 60;
-            // var refreshExpiriationDate = new Date(
-            //     new Date().getTime() + (refreshExpiresIn * 1000)
-            //   ).toUTCString();
-
-            // var refresh_token = Object.assign({}, accessToken, {
-            //   value: refreshTokenHash,
-            //   name: 'refresh_token',
-            //   expiresIn: refreshExpiresIn,
-            //   dateExpire: refreshExpiriationDate
-            // });
 
             tokenRepo.insert(accessToken, (error) => {
                 if (error) {
                     return done(error);
                 }
-
-                //Save client refresh token
-                // userRepo.updateToken(user.id, refresh_token, (err, resp) => {
-                //   //Let's do nothing as user will just NOT
-                //   //have a refresh token for the time being
-                // });
 
                 return done(
                     null,
@@ -366,7 +301,8 @@ function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
             facebook: user.facebook,
             instagram: user.instagram,
             devices: user.devices || [],
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
+            updatedExisting: user.updatedExisting
         }
     };
 
@@ -379,7 +315,6 @@ function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
 // for access tokens. Based on the grant type being exchanged, the above
 // exchange middleware will be invoked to handle the request. Clients must
 // authenticate when making requests to this endpoint.
-
 exports.token = [
     passport.authenticate(['basic', 'oauth2-client-password'], {
         session: false

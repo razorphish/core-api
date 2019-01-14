@@ -78,6 +78,7 @@ function verifyClient(req, clientId, clientSecret, done) {
 
     if (client) {
       logger.debug('*** verify [Client] ok');
+      client.requestBody = req.body;
       return done(null, client);
     } else {
       logger.debug('*** verify [Client] denied');

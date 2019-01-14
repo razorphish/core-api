@@ -115,12 +115,33 @@ class UserRepository {
  * Authenticate user
  * @param {string} username username to authenticate
  * @param {string} password password to validate
+ * @param {string} socialUser user authenticated through a social provider (facebook, twitter)
  * @param {requestCallback} callback Handles the response
  * @example authenticate('myusername', 'password', (error, data)=>{})
  */
-  authenticate(username, password, callback) {
+  authenticate(username, password, socialUser, callback) {
     logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
 
+    if (socialUser) {
+      logger.debug(`${this._classInfo}.authenticate(${socialUser})`);
+      UserModel.getSociallyAuthenticated(socialUser, (err, user) => {
+        if (err) {
+          logger.error(
+            `${this._classInfo}.getSociallyAuthenticated(${socialUser})`,
+            err
+          );
+          return callback(err, null);
+        }
+
+        if (user) {
+          callback(null, user);
+          return;
+        }
+      });
+      return;
+    }
+
+    logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
     UserModel.getAuthenticated(username, password, (err, user, reason) => {
       if (err) {
         logger.error(
@@ -137,7 +158,7 @@ class UserRepository {
 
       callback(null, null, reason);
       // otherwise we can determine why we failed
-      //var reasons = user.failedLogin;
+      // var reasons = user.failedLogin;
       // switch (reason) {
       //   case reasons.NOT_FOUND:
       //   case reasons.PASSWORD_INCORRECT:
@@ -426,7 +447,10 @@ class UserRepository {
 
     UserModel.findOneAndUpdate(
       { _id: id },
-      { refreshToken: token },
+      {
+        refreshToken: token,
+        dateModified: new Date()
+      },
       { new: true })
       .then(result => {
         callback(null, result);

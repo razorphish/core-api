@@ -124,9 +124,6 @@ class AccountRepository {
     insert(body, callback) {
         logger.debug(`${this._classInfo}.insert()`, body);
 
-        //Created
-        body.password = body.password || 'Letme1n!';
-
         accountModel.create(body)
             .then(data => {
                 callback(null, data);

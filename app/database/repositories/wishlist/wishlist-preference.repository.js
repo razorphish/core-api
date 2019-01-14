@@ -129,9 +129,6 @@ class WishlistPreferenceRepository {
     insert(body, callback) {
         logger.debug(`${this._classInfo}.insert()`, body);
 
-        //Created
-        body.password = body.password || 'Letme1n!';
-
         WishlistPreferenceModel.create(body)
             .then(data => {
                 callback(null, data);

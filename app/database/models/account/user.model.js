@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Role = require('../auth/role.model');
 const Token = require('../auth/token.model');
+const Social = require('../core/social.model');
 const logger = require('../../../../lib/winston.logger');
 
 const bcrypt = require('bcrypt');
@@ -63,10 +64,8 @@ const UserSchema = new Schema({
     index: { unique: true }
   },
   avatar: { type: String, required: false, trim: true },
-  twitter: { type: String, required: false, trim: true },
-  facebook: { type: String, required: false, trim: true },
-  instagram: { type: String, required: false, trim: true },
-  password: { type: String, required: true },
+  social: { type: Social.schema, required: false },
+  password: { type: String, required: false },
   salt: { type: String, required: false },
   refreshToken: { type: Token.schema, required: false },
   dateCreated: { type: Date, required: true, default: Date.now },
@@ -98,6 +97,49 @@ function upperBound(val) {
     //not job of this validator
     return true;
   }
+}
+
+function traverseUser(user) {
+  user.social = {};
+
+  const user_ = Object.assign({}, user);
+  switch (user.provider) {
+    case 'FACEBOOK':
+      user_.social.facebook = user.facebook;
+      user_.social.facebook.authToken = user.authToken;
+      user_.username = user.email;
+      user_.email_lower = user.email.toLowerCase();
+      user_.username_lower = user.email.toLowerCase();
+      user_.avatar = user.photoUrl;
+      break;
+    case 'GOOGLE':
+      user_.social.google = {
+        authToken: user.authToken,
+        email: user.email,
+        firstName: user.firstName,
+        id: user.id,
+        lastName: user.lastName,
+        name: user.name,
+        photoUrl: user.photUrl,
+        provider: user.provider,
+        idToken: user.idToken
+      };
+      user_.username = user.email;
+      user_.email_lower = user.email.toLowerCase();
+      user_.username_lower = user.email.toLowerCase();
+      user_.avatar = user.photoUrl;
+      break;
+    case 'LINKEDIN':
+      user_.social.linkedIn = user.linkedIn;
+      user_.social.linkedIn.authToken = user.authToken;
+      user_.username = user.email;
+      user_.email_lower = user.email.toLowerCase();
+      user_.username_lower = user.email.toLowerCase();
+      user_.avatar = user.photoUrl;
+      break;
+  }
+
+  return user_;
 }
 
 UserSchema.virtual('isLocked').get(function () {
@@ -196,17 +238,6 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
         });
       }
 
-      // check if the account is currently locked
-      if (user.isLocked) {
-        // just increment login attempts if account is already locked
-        return user.incLoginAttempts(function (err) {
-          if (err) {
-            return callback(err);
-          }
-          return callback(null, null, reasons.MAX_ATTEMPTS);
-        });
-      }
-
       user.comparePassword(password, function (err, isMatch) {
         if (err) {
           return callback(err);
@@ -245,6 +276,58 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
     });
 };
 
+UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
+  var socialUser_ = traverseUser(socialUser);
+
+  this.findOneAndUpdate({ email: socialUser.email }, socialUser_, { upsert: true, new: true, rawResult: true })
+    .then(user => {
+      if (!user) {
+        return callback(null, null, reasons.NOT_FOUND);
+      }
+
+      // check if the account is currently locked
+      if (user.isLocked) {
+        // just increment login attempts if account is already locked
+        return user.incLoginAttempts(function (err) {
+          if (err) {
+            return callback(err);
+          }
+          return callback(null, null, reasons.MAX_ATTEMPTS);
+        });
+      }
+
+      /**
+       * When socially authenticating we will not check password
+       * Typically the user will have already been authenticated
+       * through another platform so no password is present 
+       * or necessary
+       */
+      // if there's no lock or failed attempts, just return the user
+
+      user.value.updatedExisting = user.lastErrorObject.updatedExisting
+
+      if (!user.loginAttempts && !user.lockUntil) {
+        return callback(null, user.value);
+      }
+
+      // reset attempts and lock info
+      var updates = {
+        $set: { loginAttempts: 0 },
+        $unset: { lockUntil: 1 }
+      };
+
+      return user.update(updates, function (err) {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, user.value);
+      });
+
+    })
+    .catch(error => {
+      return callback(error);
+    });
+};
 //Compound index
 //UserSchema.index({username: 1, email: 1 });
 
