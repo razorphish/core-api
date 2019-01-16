@@ -79,7 +79,12 @@ const UserSchema = new Schema({
   loginAttempts: { type: Number, required: true, default: 0 },
   lockUntil: { type: Number },
   devices: { type: [DeviceSchema], required: false },
-  status: { type: String, enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended'], required: true },
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'awaitingPassword'],
+    default: 'pending',
+    required: true
+  },
   account: { type: Schema.Types.ObjectId }
 });
 
@@ -103,6 +108,7 @@ function traverseUser(user) {
   user.social = {};
 
   const user_ = Object.assign({}, user);
+
   switch (user.provider) {
     case 'FACEBOOK':
       user_.social.facebook = user.facebook;
@@ -182,6 +188,17 @@ UserSchema.pre('save', function (next) {
   //   });
 });
 
+UserSchema.methods.changeStatus = function (status, callback) {
+  // Change status of the user
+  return this.update(
+    {
+      $set: { status: status }
+    },
+    callback
+  );
+
+}
+
 //Compare password
 UserSchema.methods.comparePassword = function (candidatePassword, callback) {
   bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
@@ -217,7 +234,8 @@ UserSchema.methods.incLoginAttempts = function (callback) {
 var reasons = (UserSchema.statics.failedLogin = {
   NOT_FOUND: 0,
   PASSWORD_INCORRECT: 1,
-  MAX_ATTEMPTS: 2
+  MAX_ATTEMPTS: 2,
+  ACCOUNT_NOT_ACTIVE: 3
 });
 
 UserSchema.statics.getAuthenticated = function (username, password, callback) {
@@ -238,6 +256,11 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
         });
       }
 
+      //Determine if user is in active status
+      if (user.status !== 'active') {
+        return callback(null, null, reasons.ACCOUNT_NOT_ACTIVE);
+      }
+
       user.comparePassword(password, function (err, isMatch) {
         if (err) {
           return callback(err);
@@ -254,6 +277,7 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
             $set: { loginAttempts: 0 },
             $unset: { lockUntil: 1 }
           };
+
           return user.update(updates, function (err) {
             if (err) {
               return callback(err);
@@ -279,7 +303,12 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
 UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
   var socialUser_ = traverseUser(socialUser);
 
-  this.findOneAndUpdate({ email: socialUser.email }, socialUser_, { upsert: true, new: true, rawResult: true })
+  this.findOneAndUpdate({ email: socialUser.email }, socialUser_,
+    {
+      upsert: true,
+      new: true,
+      //rawResult: true
+    })
     .then(user => {
       if (!user) {
         return callback(null, null, reasons.NOT_FOUND);
@@ -302,12 +331,21 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
        * through another platform so no password is present 
        * or necessary
        */
+      if (user.status === 'pending') {
+        // if user status is pending and currently inserted
+        // change status to awaitingPassword (from user)
+        user.status = 'awaitingPassword'
+        user.changeStatus(user.status, function (err) {
+          if (err) {
+            return callback(err);
+          }
+          //SUCCESSFUL : Move on
+        });
+      }
+
       // if there's no lock or failed attempts, just return the user
-
-      user.value.updatedExisting = user.lastErrorObject.updatedExisting
-
       if (!user.loginAttempts && !user.lockUntil) {
-        return callback(null, user.value);
+        return callback(null, user);
       }
 
       // reset attempts and lock info
@@ -320,7 +358,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
         if (err) {
           return callback(err);
         }
-        return callback(null, user.value);
+        return callback(null, user);
       });
 
     })

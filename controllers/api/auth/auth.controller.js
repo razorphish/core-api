@@ -1,5 +1,6 @@
 //Account Api
-const repo = require('../../../app/database/repositories/auth/token.repository');
+const tokenRepo = require('../../../app/database/repositories/auth/token.repository');
+const userRepo = require('../../../app/database/repositories/account/user.repository');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 const passport = require('passport');
@@ -23,6 +24,13 @@ class AuthController {
             this.logout.bind(this)
         );
 
+        router.post(
+            '/register-with-email-password',
+            // passport.authenticate('user-bearer', { session: false }),
+            // utils.isInRole('admin'),
+            this.registerWithEmailPassword.bind(this)
+          );
+
         //Logging Info
         this._classInfo = '*** [auth].controller';
         this._routeName = '/api/auth';
@@ -37,7 +45,7 @@ class AuthController {
     logout(request, response) {
         logger.info(`${this._classInfo}.logout() [${this._routeName}]`);
 
-        repo.deleteByUserId(request.body.user._id, (error, result) => {
+        tokenRepo.deleteByUserId(request.body.user._id, (error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
                 response.json({
@@ -53,6 +61,34 @@ class AuthController {
             }
         });
     }
+
+   /**
+   * Registers a user with email and password
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example POST /api/user
+   */
+  registerWithEmailPassword(request, response) {
+    logger.info(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`);
+
+    userRepo.insert(request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
+        response.json({
+          status: false,
+          msg:
+            'Insert failed' + error.code === 11000
+              ? ': Username or Email already exist'
+              : '',
+          error: error,
+          data: null
+        });
+      } else {
+        logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`, result);
+        response.json({ status: true, error: null, data: result });
+      }
+    });
+  }
 }
 
 module.exports = AuthController;

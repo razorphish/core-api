@@ -325,7 +325,9 @@ class UserRepository {
     logger.debug(`${this._classInfo}.insert()`, body);
 
     //Created
-    body.password = body.password || 'Letme1n!';
+    body.status = !!body.password ? 'active' : 'awaitingPassword';
+    body.email_lower = body.email.toLowerCase();
+    body.username_lower = body.username.toLowerCase();
 
     UserModel.create(body)
       .then(data => {

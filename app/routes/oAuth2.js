@@ -301,11 +301,13 @@ function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
             facebook: user.facebook,
             instagram: user.instagram,
             devices: user.devices || [],
-            refreshToken: refreshToken,
-            updatedExisting: user.updatedExisting
+            refreshToken: refreshToken
         }
     };
 
+    if (user.status === 'awaitingPassword') {
+        u.user.status = user.status;
+    }
     return u;
 }
 
