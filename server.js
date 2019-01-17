@@ -15,7 +15,6 @@ const express = require('express'),
   cors = require('cors'),
   passport = require('passport'),
   logger = require('./lib/winston.logger'),
-  flash = require('express-flash'),
   authRoutes = require('./app/routes/oAuth2');
 //authRoutesJwt = require('./app/routes/JWT');
 
@@ -128,7 +127,6 @@ class Server {
     app.use(errorhandler());
 
     app.use(cookieParser());
-    app.use(flash());
     // app.use(cookieParser({
     //   key: "mysite.sid.uid.whatever",
     //   secret: 'secret123', //**SET ENCRYPTED SECRET IN ENV process.env["SESSION_SECRET"],

@@ -6,7 +6,7 @@ const userRepo = require('../../../app/database/repositories/account/user.reposi
 const logger = require('../../../lib/winston.logger');
 const utils = require('../../../lib/utils');
 const mandrill = require('../../../lib/mandrill.library').mandrill;
-
+const mandrillConfig = require('../../../lib/config.loader').mandrill;
 
 /**
  * Auth Api Controller
@@ -20,19 +20,28 @@ class AuthController {
    */
   constructor(router) {
 
+    // forgot-password
+    router.post(
+      '/forgot-password',
+      this.forgotPassword.bind(this)
+    );
+
+    // logout
     router.post(
       '/logout',
       this.logout.bind(this)
     );
 
+    // register-with-email-password
     router.post(
       '/register-with-email-password',
       this.registerWithEmailPassword.bind(this)
     );
 
-    router.post(
-      '/forgot-password',
-      this.forgotPassword.bind(this)
+    // register-with-email-password
+    router.get(
+      '/reset-password/:token',
+      this.resetPassword.bind(this)
     );
 
     //Logging Info
@@ -47,60 +56,113 @@ class AuthController {
    * @example POST /api/auth/forgot-password
    */
   forgotPassword(request, response, next) {
+    var mailchimp_async = false;
     async.waterfall([
       (done) => {
-        userRepo.byEmail(request.body.email, (error, result) => {
+        userRepo.byEmail(request.body.email, (error, user) => {
 
           if (error) {
             logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
-            req.flash('error', 'User get by email failed');
             response.json({
               status: false,
               msg: 'User get by email failed',
               error: error,
               data: null
             });
+            done(error)
+          } else if (!user) {
+            response.json({
+              status: false,
+              msg: 'No account with email exists',
+              error: error,
+              data: null
+            });
+            done(new Error('No account with email exists'));
           } else {
-            if (!result) {
-              req.flash('error', 'No account with that email address exists.');
-              response.json({
-                status: false,
-                msg: 'No account with email exists',
-                error: error,
-                data: null
-              });
-            } else {
-              let newToken = utils.createHttpToken(result._id, 'forgot_password_token', '120', '*', 'forgot_password', 'marasco')
+            let newToken = utils.createHttpToken(user._id, 'forgot_password_token', '120', '*', 'forgot_password', 'marasco')
 
-              tokenRepo.insert(newToken, (error, token) => {
-                return done(error, token, result);
-              });
-            }
+            tokenRepo.insert(newToken, (error, token) => {
+              return done(error, token, user);
+            });
           }
         })
       },
       (token, user, done) => {
 
-        var mailOptions = {
-          to: user.email,
-          from: 'passwordreset@demo.com',
-          subject: 'Node.js Password Reset',
-          text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
-            'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-            'http://' + request.headers.host + '/reset/' + token + '\n\n' +
-            'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+        var html_content = 'Hello ' + user.firstName + ',<br/>' +
+          'You are receiving this because you (or someone else) have requested the reset of the password for your account.<br/><br/>' +
+          'Please click on the following link, or paste this into your browser to complete the process:<br/><br/>' +
+          'http://' + request.headers.host + '/api/auth/reset/' + token.value + '<br/><br/>' +
+          'If you did not request a password reset, please ignore this email or reply to us to let us know.  ' +
+          'This password reset is only valid for the next 30 minutes<br/><br/>' +
+          'Thanks,<br/>' +
+          'Maras,co Support<br/><br/>' +
+          '<b>P.S.</b> WE also love hearing from you and helping you with any issues ' +
+          'you have.  Please reply to this email if you want to ask a question or just say hi.<br/><br/>';
+
+        var message = {
+          to: [{
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`,
+            type: 'to'
+          }],
+          //headers: { "Reply-To": mandrillConfig.reply_to },
+          important: false,
+          // merge: true,
+          // merge_language: "mailchimp",
+          // merge_vars: [{
+          //   rcpt: user.email,
+          //   vars: [{
+          //     name: "merge2",
+          //     content: "merge2 content"
+          //   }]
+          // }],
+          // tags: [
+          //   "password-resets"
+          // ],
+          from_email: mandrillConfig.from_email,
+          //from: mandrillConfig.from_email,
+          from_name: mandrillConfig.from_name,
+          subject: 'Forgot Password Reset',
+          text: html_content,
+          html: html_content
+          // , google_analytics_domains: [
+          //   'maras.co'
+          // ],
+          // google_analytics_campaign: "message.from_email@example.com",
+          // metadata: {
+          //   "website": "www.example.com"
+          // },
+          // recipient_metadata: [{
+          //   rcpt: "recipient.email@example.com",
+          //   values: {
+          //     user_id: user.id
+          //   }
+          // }],
         };
 
-        mandrill.messages.send(mailOptions, (result) => {
+        mandrill.messages.send({ message: message, async: mailchimp_async }, (data) => {
+          logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] MESSAGE REQUESTED`, data);
+          //response.json({ status: true, error: null, data: result });
+          let emailResult = data[0];
 
+          if (emailResult.status !== 'sent') {
+            response.json({ status: true, error: emailResult, data: null });
+            return done(new Error(email.reject_reason))
+          }
+
+          return done(null, emailResult);
         }, (error) => {
-
+          done(error)
         });
       }
-    ], (error) => {
+    ], (error, result) => {
       if (error) {
+        logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
         return next(error)
       }
+      logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] OK`, result);
+      response.json({ status: true, error: null, data: result });
     });
   }
 
@@ -134,7 +196,7 @@ class AuthController {
   * Registers a user with email and password
   * @param {Request} request Request object
   * @param {Response} response Response
-  * @example POST /api/register-with-email-password'
+  * @example POST /api/auth/register-with-email-password'
   */
   registerWithEmailPassword(request, response) {
     logger.info(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`);
@@ -154,6 +216,30 @@ class AuthController {
       } else {
         logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`, result);
         response.json({ status: true, error: null, data: result });
+      }
+    });
+  }
+
+  /**
+ * Resets a password with a token
+ * @param {Request} request Request object
+ * @param {Response} response Response
+ * @example GET /api/auth/reset-password/:token
+ */
+  resetPassword(request, response) {
+    const token = request.params.token;
+    logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
+
+    tokenRepo.get(token, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
+        response.json(null);
+      } else {
+
+        //if token expired send error
+        //if token valid send OK and delete token
+        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
   }
