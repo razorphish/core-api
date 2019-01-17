@@ -325,6 +325,11 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
         });
       }
 
+      //Determine if user is in active status
+      if (user.status !== 'active' && user.status !=='pending') {
+        return callback(null, null, reasons.ACCOUNT_NOT_ACTIVE);
+      }
+
       /**
        * When socially authenticating we will not check password
        * Typically the user will have already been authenticated

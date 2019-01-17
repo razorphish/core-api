@@ -177,6 +177,36 @@ class UserRepository {
   }
 
   /**
+   * Gets users by email
+   * @param {string} email User email
+   * @param {requestCallback} callback Handles the response
+   * @example byEmail('me@here.com', (error, data) => {})
+   */
+  byEmail(email, callback) {
+    logger.debug(`${this._classInfo}.byEmail(${email})`);
+
+    UserModel.findOne(
+      { email: email },
+      null,
+      {
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
+        }
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byEmail::findOne`, error);
+        return callback(error);
+      });
+  }
+
+  /**
    * Gets users by refresh token
    * @param {string} token User token
    * @param {requestCallback} callback Handles the response

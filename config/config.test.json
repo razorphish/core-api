@@ -1,42 +1,47 @@
 {
-    "databaseConfig": {
-      "host": "127.0.0.1",
-      "port": "27017",
-      "database": "mydb_test",
-      "queryOptions": "",
-      "username": "mydb_user",
-      "password": "abcd1234"
+  "databaseConfig": {
+    "host": "127.0.0.1",
+    "port": "27017",
+    "database": "marasco",
+    "queryOptions": "?authSource=admin",
+    "username": "razorphish",
+    "password": "RaC0nt@Ur1+2"
+  },
+  "mailchimp": {
+    "apiKey": "449fb782f3b40ae6c93c5d46f5da475b-us3"
+  },
+  "mandrill": {
+    "apiKey": "4HXB52ELNM7qeEK5V1MpzA"
+  },
+  "winstonConfig": {
+    "file": {
+      "level": "silly",
+      "filename": "app.log",
+      "handleExceptions": true,
+      "json": true,
+      "maxsize": 5242880,
+      "maxFiles": 5,
+      "colorize": false,
+      "prettyPrint": true
     },
-    "winstonConfig": {
+    "console": {
+      "level": "error",
+      "handleExceptions": false,
+      "json": false,
+      "colorize": true,
+      "prettyPrint": true
+    },
+    "exceptionHandlers": {
       "file": {
-        "level": "silly",
-        "filename": "app.log",
-        "handleExceptions": true,
+        "filename": "exceptions.log",
         "json": true,
-        "maxsize": 5242880,
-        "maxFiles": 5,
-        "colorize": false,
         "prettyPrint": true
       },
       "console": {
-        "level": "error",
-        "handleExceptions": false,
-        "json": false,
-        "colorize": true,
+        "json": true,
+        "timestamp": true,
         "prettyPrint": true
-      },
-      "exceptionHandlers": {
-        "file": {
-          "filename": "exceptions.log",
-          "json": true,
-          "prettyPrint": true
-        },
-        "console": {
-          "json": true,
-          "timestamp": true,
-          "prettyPrint": true
-        }
       }
     }
   }
-  
+}

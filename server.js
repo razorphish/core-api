@@ -14,10 +14,16 @@ const express = require('express'),
   seeder = require('./app/database/seeder'),
   cors = require('cors'),
   passport = require('passport'),
-  logger = require('./lib/winston.logger');
+  logger = require('./lib/winston.logger'),
+  flash = require('express-flash'),
   authRoutes = require('./app/routes/oAuth2');
-  //authRoutesJwt = require('./app/routes/JWT');
-  
+//authRoutesJwt = require('./app/routes/JWT');
+
+//Instantiate libraries
+
+
+//====================================
+
 (app = express()), (port = 3000);
 
 class Server {
@@ -83,14 +89,34 @@ class Server {
     logger.debug('Cors Initialized');
   }
 
-  initViewEngine() {
-    const hbs = exphbs.create({
-      extname: '.hbs',
-      defaultLayout: 'master'
+  initCustomMiddleware() {
+    if (process.platform === 'win32') {
+      require('readline')
+        .createInterface({
+          input: process.stdin,
+          output: process.stdout
+        })
+        .on('SIGINT', () => {
+          logger.debug('SIGINT: Closing MongoDB connection');
+          database.close();
+        });
+    }
+
+    process.on('SIGINT', () => {
+      logger.debug('SIGINT: Closing MongoDB connection');
+      database.close();
     });
-    app.engine('hbs', hbs.engine);
-    app.set('view engine', 'hbs');
-    hbsLayouts.register(hbs.handlebars, {});
+  }
+
+  initDbSeeder() {
+    database.open(() => {
+      //Set NODE_ENV to 'development' and uncomment the following if to only run
+      //the seeder when in dev mode
+      //if (process.env.NODE_ENV === 'development') {
+      //  seeder.init();
+      //}
+      seeder.init();
+    });
   }
 
   initExpressMiddleWare() {
@@ -102,6 +128,7 @@ class Server {
     app.use(errorhandler());
 
     app.use(cookieParser());
+    app.use(flash());
     // app.use(cookieParser({
     //   key: "mysite.sid.uid.whatever",
     //   secret: 'secret123', //**SET ENCRYPTED SECRET IN ENV process.env["SESSION_SECRET"],
@@ -137,37 +164,7 @@ class Server {
       }
     });
   }
-
-  initCustomMiddleware() {
-    if (process.platform === 'win32') {
-      require('readline')
-        .createInterface({
-          input: process.stdin,
-          output: process.stdout
-        })
-        .on('SIGINT', () => {
-          logger.debug('SIGINT: Closing MongoDB connection');
-          database.close();
-        });
-    }
-
-    process.on('SIGINT', () => {
-      logger.debug('SIGINT: Closing MongoDB connection');
-      database.close();
-    });
-  }
-
-  initDbSeeder() {
-    database.open(() => {
-      //Set NODE_ENV to 'development' and uncomment the following if to only run
-      //the seeder when in dev mode
-      //if (process.env.NODE_ENV === 'development') {
-      //  seeder.init();
-      //}
-      seeder.init();
-    });
-  }
-
+  
   initPassport() {
     app.use(passport.initialize());
     app.use(passport.session());
@@ -179,7 +176,6 @@ class Server {
   initPublicRoutes() {
     //AM TODO
     //router.load(app, './publiccontrollers');
-
     app.post('/oauth/token', authRoutes.token);
     //app.post('/oauth/jwt-token', authRoutesJwt.token);
   }
@@ -192,6 +188,16 @@ class Server {
     app.all('/*', (req, res) => {
       res.sendFile(__dirname + '/public/index.html');
     });
+  }
+
+  initViewEngine() {
+    const hbs = exphbs.create({
+      extname: '.hbs',
+      defaultLayout: 'master'
+    });
+    app.engine('hbs', hbs.engine);
+    app.set('view engine', 'hbs');
+    hbsLayouts.register(hbs.handlebars, {});
   }
 }
 
