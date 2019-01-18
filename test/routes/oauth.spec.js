@@ -49,7 +49,7 @@ describe('oAuth Tests', () => {
     describe('/oauth/Token', () => {
         it('authenticate', function(done)  {
 
-            let clientId = 'web-ui';
+            let clientId = 'core-web-ui';
             let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -83,7 +83,7 @@ describe('oAuth Tests', () => {
 
         it('authenticate:invalid credentials', function(done)  {
 
-            let clientId = 'web-ui';
+            let clientId = 'core-web-ui';
             let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -145,7 +145,7 @@ describe('oAuth Tests', () => {
 
         it('authenticate:invalid client secret', function(done)  {
 
-            let clientId = 'web-ui';
+            let clientId = 'core-web-ui';
             let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -175,7 +175,7 @@ describe('oAuth Tests', () => {
 
         it('authenticate:client NOT TRUSTED', function(done)  {
 
-            let clientId = 'web-mobile';
+            let clientId = 'core-web-mobile';
             let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -205,7 +205,7 @@ describe('oAuth Tests', () => {
 
         it('authenticate:Username does not exist', function(done)  {
 
-            let clientId = 'web-ui';
+            let clientId = 'core-web-ui';
             let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -237,7 +237,7 @@ describe('oAuth Tests', () => {
 
         it('authenticate:Password does not exist', function(done)  {
 
-            let clientId = 'web-ui';
+            let clientId = 'core-web-ui';
             let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
             'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
             'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +

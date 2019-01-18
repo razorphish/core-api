@@ -18,14 +18,14 @@ describe('User Model Tests', () => {
         });
     });
 
-    it('should be invalid if status is missing', (done) => {
-        var model = new UserModel();
+    // it('should be invalid if status is missing', (done) => {
+    //     var model = new UserModel();
 
-        model.validate((err) => {
-            expect(err.errors.status).to.exist;
-            done();
-        });
-    });
+    //     model.validate((err) => {
+    //         expect(err.errors.status).to.exist;
+    //         done();
+    //     });
+    // });
 
     it('should be invalid if username is missing', (done) => {
         var model = new UserModel();
@@ -37,13 +37,13 @@ describe('User Model Tests', () => {
         });
     });
 
-    it('should be invalid if password is missing', (done) => {
-        var model = new UserModel();
+    // it('should be invalid if password is missing', (done) => {
+    //     var model = new UserModel();
 
-        model.validate((err) => {
-            expect(err.errors.password).to.exist;
-            done();
-        });
-    });
+    //     model.validate((err) => {
+    //         expect(err.errors.password).to.exist;
+    //         done();
+    //     });
+    // });
 
 });

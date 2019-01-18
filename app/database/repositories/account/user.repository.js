@@ -122,7 +122,7 @@ class UserRepository {
   authenticate(username, password, socialUser, callback) {
     logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
 
-    if (socialUser) {
+    if (typeof socialUser !== 'function' && socialUser) {
       logger.debug(`${this._classInfo}.authenticate(${socialUser})`);
       UserModel.getSociallyAuthenticated(socialUser, (err, user) => {
         if (err) {

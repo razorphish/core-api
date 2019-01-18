@@ -50,8 +50,8 @@ describe('Client Repository Tests', () => {
     });
 
     it('byClientId: valid', (done) => {
-        ClientRepository.byClientId('web-mobile', (err, client) => {
-            client.name.should.eql('Web.Mobile');
+        ClientRepository.byClientId('core-web-mobile', (err, client) => {
+            client.name.should.eql('@marasco/core-mobile-ui');
             done();
         });
     });
@@ -68,8 +68,7 @@ describe('Client Repository Tests', () => {
             ClientRepository.delete(data[0]._id, (err) => {
                 ClientRepository.all((err, clients) => {
                     clients.should.have.length(1);
-                    console.log(clients)
-                    clients[0].name.should.not.eql(clients[0].name);
+                    clients[0].name.should.not.eql(data[0].name);
                     done();
                 });
             });
@@ -79,8 +78,8 @@ describe('Client Repository Tests', () => {
     it('get', (done) => {
         ClientRepository.all((err, clients) => {
             ClientRepository.get(clients[0]._id, (err, client) => {
-                client.name.should.eql('Web.UI');
-                client.clientId.should.eql('web-ui');
+                client.name.should.eql('@marasco/core-web-ui');
+                client.clientId.should.eql('core-web-ui');
                 done();
             })
         });
@@ -142,7 +141,7 @@ describe('Client Repository Tests', () => {
     });
 
     it('verify : valid credentials', (done) => {
-        let clientId = 'web-ui';
+        let clientId = 'core-web-ui';
         let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
         'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
         'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -151,13 +150,13 @@ describe('Client Repository Tests', () => {
 
         ClientRepository.verify(clientId, clientSecret, origin,
             (err, client, reason) => {
-                client.name.should.eq('Web.UI');
+                client.name.should.eq('@marasco/core-web-ui');
                 done();
             });
     });
 
     it('verify : invalid credentials::Secret incorrect', (done) => {
-        let clientId = 'web-ui';
+        let clientId = 'core-web-ui';
         let clientSecret = '123456789';
         let origin = 'http://localhost:4200';
 
@@ -183,7 +182,7 @@ describe('Client Repository Tests', () => {
     });
 
     it('verify : invalid credentials::NOT TRUSTED', (done) => {
-        let clientId = 'web-mobile';
+        let clientId = 'core-web-mobile';
         let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
         'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
         'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
@@ -199,7 +198,7 @@ describe('Client Repository Tests', () => {
     });
 
     it('verify : invalid credentials::ORIGIN DISABLED', (done) => {
-        let clientId = 'web-ui';
+        let clientId = 'core-web-ui';
         let clientSecret = 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
         'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
         'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +

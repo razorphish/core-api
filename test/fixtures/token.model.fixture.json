@@ -9,7 +9,8 @@
                 "scope": "*",
                 "type": "bearer",
                 "expiresIn": 1800,
-                "dateExpire": "2019-06-06T16:00:07-07:00"
+                "dateExpire": "2019-06-06T16:00:07-07:00",
+                "protocol": "http"
             },
             {
                 "userId": "59b0767a8207af454caa2560",
@@ -19,7 +20,8 @@
                 "scope": "*",
                 "type": "bearer",
                 "expiresIn": 1800,
-                "dateExpire": "2019-07-06T16:00:07-07:00"
+                "dateExpire": "2019-07-06T16:00:07-07:00",
+                "protocol": "http"
             },
             {
                 "userId": "59b0767a8207af454caa2560",
@@ -29,7 +31,8 @@
                 "scope": "*",
                 "type": "bearer",
                 "expiresIn": 1800,
-                "dateExpire": "2019-09-06T16:00:07-07:00"
+                "dateExpire": "2019-09-06T16:00:07-07:00",
+                "protocol": "http"
             }
         ]
     }

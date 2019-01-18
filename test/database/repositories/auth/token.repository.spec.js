@@ -132,7 +132,8 @@ describe('Token Repository Tests', () => {
                 scope: '*',
                 type: "bearer",
                 expiresIn: 1800,
-                dateExpire: '2019-09-06T16:00:07-07:00'
+                dateExpire: '2019-09-06T16:00:07-07:00',
+                protocol: 'http'
             },
             (err, token) => {
                 Token.all((err, items) => {

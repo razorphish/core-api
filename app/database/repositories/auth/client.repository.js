@@ -97,9 +97,9 @@ class ClientRepository {
       .catch(error => {
         logger.error(
           `${this._classInfo}.getByClientId(${clientId})::findOne`,
-          err
+          error
         );
-        return callback(err);
+        return callback(error);
       });
   }
 

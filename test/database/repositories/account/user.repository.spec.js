@@ -79,14 +79,14 @@ describe('User Repository Tests', () => {
     });
 
     it('authenticate : valid credentials', (done) => {
-        User.authenticate('david@maras.co', 'Letme1n!',
+        User.authenticate('david@maras.co', 'Letme1n!', null,
             (err, data, reason) => {
                 done();
             });
     });
 
     it('authenticate : invalid credentials', (done) => {
-        User.authenticate('david@maras.co', 'password',
+        User.authenticate('david@maras.co', 'password', null,
             (err, data, reason) => {
                 reason.should.eq(1);
                 done();
@@ -173,7 +173,8 @@ describe('User Repository Tests', () => {
                     scope: "*",
                     type: "bearer",
                     expiresIn: 15552000,
-                    value: '123456789abcdefghi'
+                    value: '123456789abcdefghi',
+                    protocol: 'http'
                 }
             },
             (err, user) => {
@@ -215,7 +216,8 @@ describe('User Repository Tests', () => {
                     scope: "*",
                     type: "bearer",
                     expiresIn: 15552000,
-                    value: '123456789abcdefghi'
+                    value: '123456789abcdefghi',
+                    protocol: 'http'
                 }
             },
             (err, user) => {
@@ -294,7 +296,8 @@ describe('User Repository Tests', () => {
                 scope: "*",
                 type: "bearer",
                 expiresIn: 15552000,
-                value: '123456789abcdefghi'
+                value: '123456789abcdefghi',
+                protocol: 'http'
             }
 
             User.updateToken(result[0]._id, token, (err, user) => {
@@ -494,7 +497,8 @@ describe('User Repository Tests', () => {
                         scope: "*",
                         type: "bearer",
                         expiresIn: 15552000,
-                        value: '123456789abcdefghi'
+                        value: '123456789abcdefghi',
+                        protocol: 'http'
                     }
                 };
 
