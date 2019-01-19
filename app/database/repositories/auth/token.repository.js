@@ -4,6 +4,14 @@ const TokenModel = require('../../models/auth/token.model');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 /**
+ * This callback type is called `repositoryCallback` and is displayed as a global symbol.
+ *
+ * @callback repositoryCallback
+ * @param {*} error
+ * @param {*} data
+ */
+
+/**
  * Token repository
  */
 class TokenRepository {
@@ -192,6 +200,27 @@ class TokenRepository {
     model.save((err, data) => {
       if (err) {
         logger.error(`${this._classInfo}.insert()::save`, err);
+        return callback(err);
+      }
+
+      callback(null, data);
+    });
+  }
+
+  /**
+   * Search tokens by search query
+   * @param {any} query Query containting fields to obtain
+   * @param {Function} callback(err: Error, document)
+   *  Called after find
+   *  err {Error}: the output of the computation
+   *  data {any}: whether a change has occurred
+   */
+  search(query, callback) {
+    logger.debug(`${this._classInfo}.search(${query})`);
+
+    TokenModel.findOne(query, (err, data) => {
+      if (err) {
+        logger.error(`${this._classInfo}.search(${query})::findOne`, err);
         return callback(err);
       }
 

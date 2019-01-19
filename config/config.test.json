@@ -13,7 +13,7 @@
   "mandrill": {
     "apiKey": "4HXB52ELNM7qeEK5V1MpzA",
     "from_email": "david@maras.co",
-    "from_name": "Maras, co Support",
+    "from_name": "Maras.co Support",
     "reply_to": "david@maras.co"
   },
   "winstonConfig": {

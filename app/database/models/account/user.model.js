@@ -201,13 +201,17 @@ UserSchema.methods.changeStatus = function (status, callback) {
 
 //Compare password
 UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-    if (err) {
-      return callback(err);
-    }
+  if (!!candidatePassword) {
+    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+      if (err) {
+        return callback(err);
+      }
 
-    callback(null, isMatch);
-  });
+      callback(null, isMatch);
+    });
+  } else {
+    callback(new Error('Missing password'));
+  }
 };
 
 UserSchema.methods.incLoginAttempts = function (callback) {
@@ -326,7 +330,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
       }
 
       //Determine if user is in active status
-      if (user.status !== 'active' && user.status !=='pending') {
+      if (user.status !== 'active' && user.status !== 'pending') {
         return callback(null, null, reasons.ACCOUNT_NOT_ACTIVE);
       }
 

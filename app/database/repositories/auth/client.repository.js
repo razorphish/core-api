@@ -174,10 +174,7 @@ class ClientRepository {
 
     let clientSecret = utils.getUid(256);
 
-    let tokenHash = crypto
-      .createHash('sha1')
-      .update(clientSecret)
-      .digest('hex');
+    let tokenHash = utils.decodeHttpToken(clientSecret);
 
     let body = {
       clientSecret: tokenHash

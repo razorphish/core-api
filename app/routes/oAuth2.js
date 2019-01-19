@@ -57,10 +57,7 @@ server.exchange(
                 return done(null, false);
             }
 
-            var accessTokenHash = crypto
-                .createHash('sha1')
-                .update(client.clientSecret)
-                .digest('hex');
+            var accessTokenHash = utils.decodeHttpToken(client.clientSecret);
 
             if (localClient.clientSecret !== accessTokenHash) {
                 return done(null, false);
@@ -205,10 +202,7 @@ server.exchange(
         }
 
         // Validate the token
-        var refreshTokenHash = crypto
-            .createHash('sha1')
-            .update(refreshToken)
-            .digest('hex');
+        var refreshTokenHash = utils.decodeHttpToken(refreshToken);
 
         // Client Validated, now lets check User
         userRepo.byRefreshToken(refreshTokenHash, (err, user) => {
@@ -238,10 +232,7 @@ server.exchange(
             // Everything validated, return the token
             const token = utils.getUid(256);
 
-            var tokenHash = crypto
-                .createHash('sha1')
-                .update(token)
-                .digest('hex');
+            var tokenHash = utils.decodeHttpToken(token);
 
             var expiresIn = client.tokenLifeTime * 60;
             var expirationDate = new Date(

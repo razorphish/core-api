@@ -11,8 +11,8 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const userRepo = require('../../database/repositories/account/user.repository');
 const tokenRepo = require('../../database/repositories/auth/token.repository');
 const clientRepo = require('../../database/repositories/auth/client.repository');
-const crypto = require('crypto');
 const util = require('util');
+const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 
 var JWTopts = {}
@@ -129,10 +129,7 @@ passport.use(
   'user-bearer',
   new BearerStrategy(function (accessToken, done) {
 
-    var accessTokenHash = crypto
-      .createHash('sha1')
-      .update(accessToken)
-      .digest('hex');
+    var accessTokenHash = utils.decodeHttpToken(accessToken);
 
     tokenRepo.byToken(accessTokenHash, (error, token) => {
       if (error) {

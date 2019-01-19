@@ -9,6 +9,14 @@ const mandrill = require('../../../lib/mandrill.library').mandrill;
 const mandrillConfig = require('../../../lib/config.loader').mandrill;
 
 /**
+ * This callback type is called `requestCallback` and is displayed as a global symbol.
+ *
+ * @callback requestCallback
+ * @param {*} error
+ * @param {*} data
+ */
+
+/**
  * Auth Api Controller
  * http://.../api/auth
  * @author Antonio Marasco
@@ -56,6 +64,8 @@ class AuthController {
    * @example POST /api/auth/forgot-password
    */
   forgotPassword(request, response, next) {
+    logger.info(`${this._classInfo}.forgotPassword() [${this._routeName}]`);
+
     var mailchimp_async = false;
     async.waterfall([
       (done) => {
@@ -79,10 +89,11 @@ class AuthController {
             });
             done(new Error('No account with email exists'));
           } else {
-            let newToken = utils.createHttpToken(user._id, 'forgot_password_token', '120', '*', 'forgot_password', 'marasco')
+            let newToken = utils.createHttpToken(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
 
             tokenRepo.insert(newToken, (error, token) => {
-              return done(error, token, user);
+              //return done(error, token, user);
+              done(error, token, user);
             });
           }
         })
@@ -96,7 +107,7 @@ class AuthController {
           'If you did not request a password reset, please ignore this email or reply to us to let us know.  ' +
           'This password reset is only valid for the next 30 minutes<br/><br/>' +
           'Thanks,<br/>' +
-          'Maras,co Support<br/><br/>' +
+          'Maras.co Support<br/><br/>' +
           '<b>P.S.</b> WE also love hearing from you and helping you with any issues ' +
           'you have.  Please reply to this email if you want to ask a question or just say hi.<br/><br/>';
 
@@ -221,28 +232,117 @@ class AuthController {
   }
 
   /**
- * Resets a password with a token
- * @param {Request} request Request object
- * @param {Response} response Response
- * @example GET /api/auth/reset-password/:token
- */
+   * Resets a password with a token
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example GET /api/auth/reset-password/:token
+   */
   resetPassword(request, response) {
     const token = request.params.token;
-    logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
+    var mailchimp_async = false;
 
-    tokenRepo.get(token, (error, result) => {
-      if (error) {
-        logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
-        response.json(null);
-      } else {
+    logger.info(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`);
 
-        //if token expired send error
-        //if token valid send OK and delete token
-        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
-        response.json(result);
+    async.waterfall([
+      (done) => {
+        tokenRepo.search(
+          { value: token, dateExpire: { $gt: Date.now() } }
+          , (error, result) => {
+            if (error) {
+              logger.error(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`, error);
+              response.json(null);
+            } else {
+
+              //if token expired send error
+              //if token valid send OK and delete token
+              logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}] OK`, result);
+              result.expiresIn = 0;
+              result.dateExpire = Date.now;
+
+              result.save((error) => {
+                request.login(result, (error) => {
+                  done(error, result);
+                })
+              })
+            }
+          });
+      },
+      (token, done) => {
+        userRepo.get(token.userId, (error, user) => {
+
+          if (error) {
+            logger.error(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get()`, error);
+            response.json({
+              status: false,
+              msg: 'User get by id failed',
+              error: error,
+              data: null
+            });
+            done(error);
+          } else if (!user) {
+
+            response.json({
+              status: false,
+              msg: 'No account with this id exists',
+              error: error,
+              data: null
+            });
+
+            done(new Error('No account with id exists'));
+          } else {
+            done(null, user);
+          }
+        })
+      },
+      (user, done) => {
+        var html_content = 'Hello ' + user.firstName + ',<br/>' +
+          'This is a confirmation that the password for your account ' + user.username + ' has just been changed.<br/><br/>' +
+          'Thanks,<br/>' +
+          'Maras.co Support<br/><br/>' +
+          '<b>P.S.</b> WE also love hearing from you and helping you with any issues ' +
+          'you have.  Please reply to this email if you want to ask a question or just say hi.<br/><br/>';
+
+        var message = {
+          to: [{
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`,
+            type: 'to'
+          }],
+          headers: { "Reply-To": mandrillConfig.reply_to },
+          important: false,
+          from_email: mandrillConfig.from_email,
+          from_name: mandrillConfig.from_name,
+          subject: 'Your password has been changed',
+          text: html_content,
+          html: html_content
+        };
+
+        mandrill.messages.send({ message: message, async: mailchimp_async }, (data) => {
+          logger.debug(`${this._classInfo}.resetPassword() [${this._routeName}] MESSAGE REQUESTED`, data);
+          //response.json({ status: true, error: null, data: result });
+          let emailResult = data[0];
+
+          if (emailResult.status !== 'sent') {
+            response.json({ status: true, error: emailResult, data: null });
+            return done(new Error(email.reject_reason))
+          }
+
+          return done(null, emailResult);
+        }, (error) => {
+          done(error)
+        });
       }
+    ], (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
+        return next(error)
+      }
+      logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] OK`, result);
+      response.json({ status: true, error: null, data: result });
     });
   }
+
+  //End Class
 }
 
 module.exports = AuthController;
