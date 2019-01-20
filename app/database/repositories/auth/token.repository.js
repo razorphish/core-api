@@ -95,7 +95,7 @@ class TokenRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    TokenModel.remove(
+    TokenModel.deleteOne(
       {
         _id: id
       },

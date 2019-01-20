@@ -170,7 +170,7 @@ UserSchema.pre('save', function (next) {
   }
 
   bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
-    logger.info('user: got Salt?', salt)
+    logger.info('*** User.SCHEMA.save : got Salt?', salt)
     user.salt = salt;
 
     bcrypt.hash(user.password, salt, (err, hash) => {

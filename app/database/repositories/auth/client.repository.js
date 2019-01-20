@@ -1,9 +1,8 @@
 // Client Repository
 const mongoose = require('mongoose');
 const ClientModel = require('../../models/auth/client.model');
-const crypto = require('crypto');
 const logger = require('../../../../lib/winston.logger');
-const utils = require('../../../../lib/utils');
+const httpSign = require('../../../security/signers/http-sign');
 
 /**
  * This callback type is called `requestCallback` and is displayed as a global symbol.
@@ -152,7 +151,7 @@ class ClientRepository {
     logger.debug(`${this._classInfo}.insert()`, body);
 
     var model = new ClientModel(body);
-    model.clientSecret = utils.getUid(256);
+    model.clientSecret = httpSign.getUid(256);
 
     model.save((err, data) => {
       if (err) {
@@ -172,9 +171,9 @@ class ClientRepository {
   refreshToken(id, callback) {
     logger.debug(`${this._classInfo}.refreshToken(${id})`);
 
-    let clientSecret = utils.getUid(256);
+    let clientSecret = httpSign.getUid(256);
 
-    let tokenHash = utils.decodeHttpToken(clientSecret);
+    let tokenHash = httpSign.decode(clientSecret);
 
     let body = {
       clientSecret: tokenHash

@@ -8,9 +8,8 @@ const oauth2orize = require('oauth2orize'),
     clientRepo = require('../../app/database/repositories/auth/client.repository'),
     crypto = require('crypto'),
     logger = require('../../lib/winston.logger'),
-    utils = require('../../lib/utils'),
-    jwt_sign = require('../security/signers/jwt-sign'),
-    jwt = require('jsonwebtoken');
+    httpSign = require('../security/signers/http-sign'),
+    jwt_sign = require('../security/signers/jwt-sign');
 
 const oAuthProvider = 'oAuth2'
 
@@ -57,13 +56,13 @@ server.exchange(
                 return done(null, false);
             }
 
-            var accessTokenHash = utils.decodeHttpToken(client.clientSecret);
+            var accessTokenHash = httpSign.decode(client.clientSecret);
 
             if (localClient.clientSecret !== accessTokenHash) {
                 return done(null, false);
             }
             // Everything validated, return the token
-            const token = utils.getUid(256);
+            const token = httpSign.getUid(256);
 
             // Pass in a null for user id since there is no user with this grant type
             tokenRepo.insert(token, (error) => {
@@ -102,8 +101,8 @@ server.exchange(
                     logger.debug('*** userRepo.authenticate [auth] ok', reason);
 
                     // Everything validated, return the token
-                    const token = utils.createHttpToken(user.id, 'access_token', client.tokenLifeTime, scope);
-                    const refreshToken = utils.createHttpToken(user.id, 'refresh_token', client.refreshTokenLifeTime, scope);
+                    const token = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
+                    const refreshToken = httpSign.token(user.id, 'refresh_token', client.refreshTokenLifeTime, scope);
 
                     tokenRepo.insert(token, (error) => {
                         if (error) {
@@ -166,13 +165,19 @@ server.exchange('urn:ietf:params:oauth:grant-type:jwt-bearer',
 
             var Options = {
                 issuer: 'www.maras.co',
-                subject: 'mewho',
+                subject: 'auth_token',
                 audience: client._id.toString() // this should be provided by client
             }
 
-            var token = jwt_sign.sign({ 'token_type': 'jwt', 'expires_in': 3600, 'mouse': 'dead' }, Options);
+            //var token = jwt_sign.sign({ 'token_type': 'jwt', 'expires_in': 3600, 'mouse': 'dead' }, Options);
+            var token = jwt_sign.token(client._id.toString(), 'jwt_bearer_token', '30', '*', 'bearer', 'oAuth2', 'jwt', Options)
+            var refreshToken = jwt_sign.token(client._id.toString(), 'jwt_bearer_refresh_token', '30', '*', 'bearer', 'oAuth2', 'jwt', Options)
+            var expiresIn = client.tokenLifeTime * 60;
+            var expirationDate = new Date(
+                new Date().getTime() + expiresIn * 1000
+            ).toUTCString();
 
-            done(null, token, { 'token_type': 'foo', 'expires_in': 3600 })
+            done(null, token, mergeJWTParam(refreshToken, expirationDate, expiresIn, 'jwt'))
             // AccessToken.create(client, scope, function (err, accessToken) {
             //     if (err) { return done(err); }
             //     done(null, accessToken);
@@ -202,7 +207,7 @@ server.exchange(
         }
 
         // Validate the token
-        var refreshTokenHash = utils.decodeHttpToken(refreshToken);
+        var refreshTokenHash = httpSign.decode(refreshToken);
 
         // Client Validated, now lets check User
         userRepo.byRefreshToken(refreshTokenHash, (err, user) => {
@@ -230,17 +235,12 @@ server.exchange(
             logger.debug('*** token [Exchange:Refresh Token] OK');
 
             // Everything validated, return the token
-            const token = utils.getUid(256);
-
-            var tokenHash = utils.decodeHttpToken(token);
-
             var expiresIn = client.tokenLifeTime * 60;
             var expirationDate = new Date(
                 new Date().getTime() + expiresIn * 1000
             ).toUTCString();
 
-            var accessToken = {
-                value: tokenHash,
+            var accessToken = httpSign.sign({
                 userId: user.id,
                 type: 'bearer',
                 name: 'access_token',
@@ -249,8 +249,7 @@ server.exchange(
                 dateExpire: expirationDate,
                 expiresIn: expiresIn,
                 protocol: 'Http'
-            };
-
+            });
 
             tokenRepo.insert(accessToken, (error) => {
                 if (error) {
@@ -259,9 +258,9 @@ server.exchange(
 
                 return done(
                     null,
-                    token,
-                    refreshToken,
-                    mergeParam(user, refreshToken, expirationDate, expiresIn, oAuthProvider)
+                    token.value_,
+                    refreshToken.value_,
+                    mergeParam(user, refreshToken.value_, expirationDate, expiresIn, oAuthProvider)
                 );
             });
         });
@@ -299,6 +298,23 @@ function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
     if (user.status === 'awaitingPassword') {
         u.user.status = user.status;
     }
+    return u;
+}
+
+function mergeJWTParam(refreshToken, expires, expiresIn, signInProvider) {
+    let issuedAtTime = new Date().toUTCString();
+    var u = {
+        '.issued': issuedAtTime,
+        '.expires': expires,
+        expires_in: expiresIn,
+        expirationTime: expires,
+        issuedAtTime: issuedAtTime,
+        signInProvider: signInProvider,
+        user: {
+            refreshToken: refreshToken
+        }
+    };
+
     return u;
 }
 

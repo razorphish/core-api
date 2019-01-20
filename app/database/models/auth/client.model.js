@@ -3,8 +3,7 @@
  */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const crypto = require('crypto');
-const utils = require('../../../../lib/utils');
+const httpSign = require('../../../security/signers/http-sign');
 
 const ClientSchema = new Schema({
   name: { type: String, required: true },
@@ -70,7 +69,7 @@ ClientSchema.statics.getVerified = function(
       return callback(null, false, reasons.NOT_FOUND);
     }
 
-    var accessTokenHash = utils.decodeHttpToken(clientSecret);
+    var accessTokenHash = httpSign.decode(clientSecret);
 
     //Check correct secret::SECRET_INCORRECT
     if (client.clientSecret !== accessTokenHash) {

@@ -4,9 +4,9 @@ const async = require('async');
 const tokenRepo = require('../../../app/database/repositories/auth/token.repository');
 const userRepo = require('../../../app/database/repositories/account/user.repository');
 const logger = require('../../../lib/winston.logger');
-const utils = require('../../../lib/utils');
 const mandrill = require('../../../lib/mandrill.library').mandrill;
 const mandrillConfig = require('../../../lib/config.loader').mandrill;
+const httpSign = require('../../../app/security/signers/http-sign');
 
 /**
  * This callback type is called `requestCallback` and is displayed as a global symbol.
@@ -46,8 +46,14 @@ class AuthController {
       this.registerWithEmailPassword.bind(this)
     );
 
-    // register-with-email-password
+    // Reset password : GET (verifies token)
     router.get(
+      '/reset-password/:token',
+      this.verifyResetPasswordToken.bind(this)
+    );
+
+    // Reset password : POST (changes User password)
+    router.post(
       '/reset-password/:token',
       this.resetPassword.bind(this)
     );
@@ -79,20 +85,19 @@ class AuthController {
               error: error,
               data: null
             });
-            done(error)
+            done(error);
           } else if (!user) {
-            response.json({
-              status: false,
-              msg: 'No account with email exists',
-              error: error,
-              data: null
+            response.status(404).send({
+              status: 404, error: { errmsg: 'User does not exist' }, data: null
             });
-            done(new Error('No account with email exists'));
           } else {
-            let newToken = utils.createHttpToken(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
+            let newToken = httpSign.token(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
 
             tokenRepo.insert(newToken, (error, token) => {
               //return done(error, token, user);
+              if (!!token) {
+                token.value_ = newToken.value_
+              }
               done(error, token, user);
             });
           }
@@ -103,7 +108,7 @@ class AuthController {
         var html_content = 'Hello ' + user.firstName + ',<br/>' +
           'You are receiving this because you (or someone else) have requested the reset of the password for your account.<br/><br/>' +
           'Please click on the following link, or paste this into your browser to complete the process:<br/><br/>' +
-          'http://' + request.headers.host + '/api/auth/reset/' + token.value + '<br/><br/>' +
+          'http://' + request.headers.host + '/api/auth/reset/' + token.value_ + '<br/><br/>' +
           'If you did not request a password reset, please ignore this email or reply to us to let us know.  ' +
           'This password reset is only valid for the next 30 minutes<br/><br/>' +
           'Thanks,<br/>' +
@@ -172,7 +177,7 @@ class AuthController {
         logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
         return next(error)
       }
-      logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] OK`, result);
+      logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] OK`);
       response.json({ status: true, error: null, data: result });
     });
   }
@@ -197,7 +202,7 @@ class AuthController {
         });
       } else {
         request.logout();
-        logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
         response.json({ status: true, error: null, data: result });
       }
     });
@@ -225,20 +230,22 @@ class AuthController {
           data: null
         });
       } else {
-        logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`);
         response.json({ status: true, error: null, data: result });
       }
     });
   }
 
   /**
-   * Resets a password with a token
-   * @param {Request} request Request object
-   * @param {Response} response Response
-   * @example GET /api/auth/reset-password/:token
-   */
-  resetPassword(request, response) {
-    const token = request.params.token;
+ * Resets a password with a token
+ * @param {Request} request Request object
+ * @param {Response} response Response
+ * @example POST /api/auth/reset-password/:token
+ */
+  resetPassword(request, response, next) {
+    const token_ = request.params.token;
+    const token = httpSign.decode(token_);
+    const password = request.body.password;
     var mailchimp_async = false;
 
     logger.info(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`);
@@ -251,15 +258,13 @@ class AuthController {
             if (error) {
               logger.error(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`, error);
               response.json(null);
+            } else if (!result) {
+              logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`, 'Missing/invalid Token');
+              response.status(404).send({ status: false, error: { errmsg: 'Token is missing or invalid' }, data: null })
             } else {
+              logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::search() OK`);
 
-              //if token expired send error
-              //if token valid send OK and delete token
-              logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}] OK`, result);
-              result.expiresIn = 0;
-              result.dateExpire = Date.now;
-
-              result.save((error) => {
+              tokenRepo.delete(result._id, (error, deleteResult) => {
                 request.login(result, (error) => {
                   done(error, result);
                 })
@@ -271,32 +276,32 @@ class AuthController {
         userRepo.get(token.userId, (error, user) => {
 
           if (error) {
-            logger.error(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get()`, error);
-            response.json({
-              status: false,
-              msg: 'User get by id failed',
-              error: error,
-              data: null
-            });
+            logger.error(
+              `${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get()`, error);
+            response.json({ status: false, msg: 'User byId failed', error: error, data: null });
             done(error);
           } else if (!user) {
-
-            response.json({
-              status: false,
-              msg: 'No account with this id exists',
-              error: error,
-              data: null
-            });
-
-            done(new Error('No account with id exists'));
+            logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get() :: MISSING TOKEN USER`);
+            response.status(404).send({ status: false, error: { errmsg: 'Token is missing or invalid' }, data: null });
           } else {
-            done(null, user);
+            user.password = password;
+
+            user.save((error, result) => {
+              if (error) {
+                response.status(404).send({ status: false, msg: 'Reset Password: Save user failed', error: error, data: null })
+                return done(error);
+              }
+
+              return done(null, result);
+            })
           }
         })
       },
       (user, done) => {
         var html_content = 'Hello ' + user.firstName + ',<br/>' +
-          'This is a confirmation that the password for your account ' + user.username + ' has just been changed.<br/><br/>' +
+          'This is a confirmation that the password for your account ' +
+          user.username +
+          ' has just been changed.<br/><br/>' +
           'Thanks,<br/>' +
           'Maras.co Support<br/><br/>' +
           '<b>P.S.</b> WE also love hearing from you and helping you with any issues ' +
@@ -334,10 +339,63 @@ class AuthController {
       }
     ], (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
-        return next(error)
+        logger.error(`${this._classInfo}.resetPassword() [${this._routeName}]`, error);
+        return next(error);
       }
-      logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] OK`, result);
+      logger.debug(`${this._classInfo}.resetPassword() [${this._routeName}/reset-password POST] OK`);
+      response.json({ status: true, error: null, data: result });
+    });
+  }
+
+  /**
+   * Verifies a user's reset password token
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @param {any} next Next method (callback)
+   * @example GET /api/auth/verify-reset-password/:token
+   */
+  verifyResetPasswordToken(request, response, next) {
+    const token_ = request.params.token;
+    const token = httpSign.decode(token_);
+    logger.info(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]`);
+
+    async.waterfall([
+      (done) => {
+        tokenRepo.search(
+          { value: token, dateExpire: { $gt: Date.now() } }
+          , (error, result) => {
+            if (error) {
+              logger.error(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]`, error);
+              response.status(404).send({ status: false, error: error, data: null })
+            } else if (!result) {
+              logger.debug(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get() :: MISSING TOKEN`);
+              response.status(404).send({ status: false, error: { errmsg: 'Token is missing or invalid' }, data: null })
+              //done(error);
+            } else {
+              done(error, result);
+            }
+          });
+      },
+      (token, done) => {
+        userRepo.get(token.userId, (error, user) => {
+
+          if (error) {
+            logger.error(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get()`, error);
+            response.status(404).send({ status: false, error: error, data: null })
+          } else if (!user) {
+            logger.debug(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get() :: MISSING TOKEN USER`);
+            response.status(404).send({ status: false, error: { errmsg: 'Token User is missing or invalid' }, data: null })
+          } else {
+            done(null, user);
+          }
+        })
+      }
+    ], (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.verifyResetPasswordToken() [${this._routeName}]/verify`, error);
+        return next(error);
+      }
+      logger.debug(`${this._classInfo}.verifyResetPasswordToken() [${this._routeName}/reset-password/:token GET] OK`);
       response.json({ status: true, error: null, data: result });
     });
   }

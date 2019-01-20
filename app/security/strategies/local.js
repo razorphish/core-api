@@ -12,7 +12,7 @@ const userRepo = require('../../database/repositories/account/user.repository');
 const tokenRepo = require('../../database/repositories/auth/token.repository');
 const clientRepo = require('../../database/repositories/auth/client.repository');
 const util = require('util');
-const utils = require('../../../lib/utils');
+const httpSign = require('../signers/http-sign');
 const logger = require('../../../lib/winston.logger');
 
 var JWTopts = {}
@@ -129,7 +129,7 @@ passport.use(
   'user-bearer',
   new BearerStrategy(function (accessToken, done) {
 
-    var accessTokenHash = utils.decodeHttpToken(accessToken);
+    var accessTokenHash = httpSign.decode(accessToken);
 
     tokenRepo.byToken(accessTokenHash, (error, token) => {
       if (error) {

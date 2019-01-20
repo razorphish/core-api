@@ -8,7 +8,8 @@
     "password": "RaC0nt@Ur1+2"
   },
   "mailchimp": {
-    "apiKey": "449fb782f3b40ae6c93c5d46f5da475b-us3"
+    "apiKey": "449fb782f3b40ae6c93c5d46f5da475b-us3",
+    "listMarasco": "f1fb37cb8f"
   },
   "mandrill": {
     "apiKey": "4HXB52ELNM7qeEK5V1MpzA",
