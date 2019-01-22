@@ -212,7 +212,7 @@ class ClientsController {
                     msg: 'Operation failed',
                     error: {
                         code: error.code,
-                        errmsg: error.errmsg,
+                        message: error.errmsg,
                         index: error.index
                     },
                     data: null
@@ -251,7 +251,7 @@ class ClientsController {
                     msg: 'Update Failed',
                     error: {
                         code: error.code,
-                        errmsg: error.errmsg,
+                        message: error.errmsg,
                         index: error.index
                     },
                     data: null

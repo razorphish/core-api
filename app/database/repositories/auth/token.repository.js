@@ -185,17 +185,18 @@ class TokenRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new TokenModel();
+    var model = new TokenModel(body);
 
-    model.userId = body.userId;
-    model.loginProvider = body.loginProvider;
-    model.name = body.name;
-    model.value = body.value;
-    model.dateExpire = body.dateExpire;
-    model.expiresIn = body.expiresIn;
-    model.scope = body.scope;
-    model.type = body.type;
-    model.protocol = body.protocol;
+    // model.userId = body.userId;
+    // model.loginProvider = body.loginProvider;
+    // model.name = body.name;
+    // model.value = body.value;
+    // model.dateExpire = body.dateExpire;
+    // model.expiresIn = body.expiresIn;
+    // model.scope = body.scope;
+    // model.type = body.type;
+    // model.protocol = body.protocol;
+    // model.origin = body.origin;
 
     model.save((err, data) => {
       if (err) {

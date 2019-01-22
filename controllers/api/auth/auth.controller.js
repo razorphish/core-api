@@ -75,7 +75,9 @@ class AuthController {
     var mailchimp_async = false;
     async.waterfall([
       (done) => {
-        userRepo.byEmail(request.body.email, (error, user) => {
+        var query = !!request.body.email ? { email: request.body.email } : { username: request.body.username }
+
+        userRepo.search(query, (error, user) => {
 
           if (error) {
             logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
@@ -88,10 +90,11 @@ class AuthController {
             done(error);
           } else if (!user) {
             response.status(404).send({
-              status: 404, error: { errmsg: 'User does not exist' }, data: null
+              status: false, error: { message: 'User does not exist' }, data: null
             });
           } else {
             let newToken = httpSign.token(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
+            newToken.origin = request.headers.origin;
 
             tokenRepo.insert(newToken, (error, token) => {
               //return done(error, token, user);
@@ -108,7 +111,7 @@ class AuthController {
         var html_content = 'Hello ' + user.firstName + ',<br/>' +
           'You are receiving this because you (or someone else) have requested the reset of the password for your account.<br/><br/>' +
           'Please click on the following link, or paste this into your browser to complete the process:<br/><br/>' +
-          'http://' + request.headers.host + '/api/auth/reset/' + token.value_ + '<br/><br/>' +
+          token.origin + '/auth/reset-password/' + token.value_ + '<br/><br/>' +
           'If you did not request a password reset, please ignore this email or reply to us to let us know.  ' +
           'This password reset is only valid for the next 30 minutes<br/><br/>' +
           'Thanks,<br/>' +
@@ -260,7 +263,7 @@ class AuthController {
               response.json(null);
             } else if (!result) {
               logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`, 'Missing/invalid Token');
-              response.status(404).send({ status: false, error: { errmsg: 'Token is missing or invalid' }, data: null })
+              response.status(404).send({ status: false, error: { message: 'Token is missing or invalid' }, data: null })
             } else {
               logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::search() OK`);
 
@@ -282,7 +285,7 @@ class AuthController {
             done(error);
           } else if (!user) {
             logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get() :: MISSING TOKEN USER`);
-            response.status(404).send({ status: false, error: { errmsg: 'Token is missing or invalid' }, data: null });
+            response.status(404).send({ status: false, error: { message: 'Token is missing or invalid' }, data: null });
           } else {
             user.password = password;
 
@@ -369,7 +372,7 @@ class AuthController {
               response.status(404).send({ status: false, error: error, data: null })
             } else if (!result) {
               logger.debug(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get() :: MISSING TOKEN`);
-              response.status(404).send({ status: false, error: { errmsg: 'Token is missing or invalid' }, data: null })
+              response.status(404).send({ status: false, error: { message: 'Token is missing or invalid' }, data: null })
               //done(error);
             } else {
               done(error, result);
@@ -384,7 +387,7 @@ class AuthController {
             response.status(404).send({ status: false, error: error, data: null })
           } else if (!user) {
             logger.debug(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get() :: MISSING TOKEN USER`);
-            response.status(404).send({ status: false, error: { errmsg: 'Token User is missing or invalid' }, data: null })
+            response.status(404).send({ status: false, error: { message: 'Token User is missing or invalid' }, data: null })
           } else {
             done(null, user);
           }

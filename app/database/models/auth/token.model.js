@@ -12,6 +12,7 @@ const TokenSchema = new Schema({
   type: { type: String, required: true, trim: true },
   protocol: { type: String, required: true, trim: true },
   expiresIn: { type: Number, required: true },
+  origin: { type: String, required: false },
   dateExpire: { type: Date, required: false },
   dateCreated: { type: Date, required: true, default: Date.now },
   dateModified: { type: Date, required: true, default: Date.now }
@@ -31,7 +32,7 @@ TokenSchema.pre('save', function (next) {
   } else {
     token.dateModified = now;
   }
-  
+
   next();
 });
 

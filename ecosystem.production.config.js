@@ -15,7 +15,7 @@ module.exports = {
           followSymlinks: false
         },
         env: {
-          BIDDLER_LOG: 'true',
+          MARASCO_LOG: 'true',
           NODE_ENV: "production",
         },
         env_production : {

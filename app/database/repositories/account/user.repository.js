@@ -443,6 +443,38 @@ class UserRepository {
       });
   }
 
+    /**
+   * Search user by search query
+   * @param {any} query Query containting fields to obtain
+   * @param {Function} callback(err: Error, document)
+   *  Called after find
+   *  err {Error}: the output of the computation
+   *  data {any}: whether a change has occurred
+   */
+  search(query, callback) {
+    logger.debug(`${this._classInfo}.search(${JSON.stringify(query)})`);
+
+    UserModel.findOne(
+      query,
+      null,
+      {
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
+        }
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.search::findOne`, error);
+        return callback(error);
+      });
+  }
+
   /**
    * Updates an User
    * @param {string} id user id

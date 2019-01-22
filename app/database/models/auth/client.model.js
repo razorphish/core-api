@@ -15,8 +15,8 @@ const ClientSchema = new Schema({
     enum: ['ClientConfidential', 'Native'],
     required: true
   },
-  redirectUrl: { type : String, required: true, default: '/home'},
-  tokenProtocol: { type : String, enum: ['http', 'jwt'], required: true, default: 'http'},
+  redirectUrl: { type: String, required: true, default: '/home' },
+  tokenProtocol: { type: String, enum: ['http', 'jwt'], required: true, default: 'http' },
   allowedOrigins: { type: [String], required: true },
   tokenLifeTime: { type: Number, required: true },
   refreshTokenLifeTime: { type: Number, required: true },
@@ -53,7 +53,7 @@ var reasons = (ClientSchema.statics.failedVerification = {
   NOT_TRUSTED: 3
 });
 
-ClientSchema.statics.getVerified = function(
+ClientSchema.statics.getVerified = function (
   clientId,
   clientSecret,
   origin,
@@ -94,6 +94,9 @@ ClientSchema.statics.getVerified = function(
       return callback(null, false, reasons.ORIGIN_DISABLED);
     }
 
+    //Add origin to client
+    client.origin = origin;
+
     //Finally, check for Trust::NOT_TRUSTED
     if (!client.isTrusted) {
       return callback(null, false, reasons.NOT_TRUSTED);
@@ -102,5 +105,13 @@ ClientSchema.statics.getVerified = function(
     return callback(null, client);
   });
 };
+
+ClientSchema.virtual('origin').set( (value) => {
+  this._origin = value;
+});
+
+ClientSchema.virtual('origin').get( () => {
+  return this._origin;
+})
 
 module.exports = mongoose.model('Client', ClientSchema, 'clients');

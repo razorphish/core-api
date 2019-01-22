@@ -207,7 +207,7 @@ class WishlistItemController {
           msg: 'Update Failed',
           error: {
             code: error.code,
-            errmsg: error.errmsg,
+            message: error.errmsg,
             index: error.index
           },
           data: null
