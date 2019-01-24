@@ -81,17 +81,9 @@ class AuthController {
 
           if (error) {
             logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
-            response.json({
-              status: false,
-              msg: 'User get by email failed',
-              error: error,
-              data: null
-            });
-            done(error);
+            response.status(500).send(error);
           } else if (!user) {
-            response.status(404).send({
-              status: false, error: { message: 'User does not exist' }, data: null
-            });
+            response.status(404).send({ error: { message: 'User does not exist' } });
           } else {
             let newToken = httpSign.token(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
             newToken.origin = request.headers.origin;
@@ -162,12 +154,10 @@ class AuthController {
 
         mandrill.messages.send({ message: message, async: mailchimp_async }, (data) => {
           logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] MESSAGE REQUESTED`, data);
-          //response.json({ status: true, error: null, data: result });
           let emailResult = data[0];
 
           if (emailResult.status !== 'sent') {
-            response.json({ status: true, error: emailResult, data: null });
-            return done(new Error(email.reject_reason))
+            response.status(500).send(new Error(email.reject_reason));
           }
 
           return done(null, emailResult);
@@ -181,7 +171,7 @@ class AuthController {
         return next(error)
       }
       logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] OK`);
-      response.json({ status: true, error: null, data: result });
+      response.json(result);
     });
   }
 
@@ -197,16 +187,11 @@ class AuthController {
     tokenRepo.deleteByUserId(request.body.user._id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg: 'Logout failed',
-          error: error,
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         request.logout();
         logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
-        response.json({ status: true, error: null, data: result });
+        response.json(result);
       }
     });
   }
@@ -223,18 +208,10 @@ class AuthController {
     userRepo.insert(request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg:
-            'Insert failed' + error.code === 11000
-              ? ': Username or Email already exist'
-              : '',
-          error: error,
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`);
-        response.json({ status: true, error: null, data: result });
+        response.json(result);
       }
     });
   }
@@ -260,10 +237,10 @@ class AuthController {
           , (error, result) => {
             if (error) {
               logger.error(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`, error);
-              response.json(null);
+              response.status(500).send(error);
             } else if (!result) {
               logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]`, 'Missing/invalid Token');
-              response.status(404).send({ status: false, error: { message: 'Token is missing or invalid' }, data: null })
+              response.status(404).send({ error: { message: 'Token is missing or invalid' } })
             } else {
               logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::search() OK`);
 
@@ -281,17 +258,16 @@ class AuthController {
           if (error) {
             logger.error(
               `${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get()`, error);
-            response.json({ status: false, msg: 'User byId failed', error: error, data: null });
-            done(error);
+            response.status(500).send(error);
           } else if (!user) {
             logger.debug(`${this._classInfo}.resetPassword(${token}) [${this._routeName}]::get() :: MISSING TOKEN USER`);
-            response.status(404).send({ status: false, error: { message: 'Token is missing or invalid' }, data: null });
+            response.status(404).send({ error: { message: 'User is missing or invalid' } });
           } else {
             user.password = password;
 
             user.save((error, result) => {
               if (error) {
-                response.status(404).send({ status: false, msg: 'Reset Password: Save user failed', error: error, data: null })
+                response.status(404).send({ error: { message: 'Reset Password: Save user failed' } })
                 return done(error);
               }
 
@@ -327,12 +303,10 @@ class AuthController {
 
         mandrill.messages.send({ message: message, async: mailchimp_async }, (data) => {
           logger.debug(`${this._classInfo}.resetPassword() [${this._routeName}] MESSAGE REQUESTED`, data);
-          //response.json({ status: true, error: null, data: result });
           let emailResult = data[0];
 
           if (emailResult.status !== 'sent') {
-            response.json({ status: true, error: emailResult, data: null });
-            return done(new Error(email.reject_reason))
+            response.status(500).send(new Error(email.reject_reason));
           }
 
           return done(null, emailResult);
@@ -346,7 +320,7 @@ class AuthController {
         return next(error);
       }
       logger.debug(`${this._classInfo}.resetPassword() [${this._routeName}/reset-password POST] OK`);
-      response.json({ status: true, error: null, data: result });
+      response.json(result);
     });
   }
 
@@ -369,10 +343,10 @@ class AuthController {
           , (error, result) => {
             if (error) {
               logger.error(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]`, error);
-              response.status(404).send({ status: false, error: error, data: null })
+              response.status(500).send(error);
             } else if (!result) {
               logger.debug(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get() :: MISSING TOKEN`);
-              response.status(404).send({ status: false, error: { message: 'Token is missing or invalid' }, data: null })
+              response.status(404).send({ error: { message: 'Token is missing or invalid' } })
               //done(error);
             } else {
               done(error, result);
@@ -384,10 +358,10 @@ class AuthController {
 
           if (error) {
             logger.error(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get()`, error);
-            response.status(404).send({ status: false, error: error, data: null })
+            response.status(500).send(error);
           } else if (!user) {
             logger.debug(`${this._classInfo}.verifyResetPasswordToken(${token}) [${this._routeName}]::get() :: MISSING TOKEN USER`);
-            response.status(404).send({ status: false, error: { message: 'Token User is missing or invalid' }, data: null })
+            response.status(404).send({ error: { message: 'Token User is missing or invalid' } })
           } else {
             done(null, user);
           }
@@ -399,7 +373,7 @@ class AuthController {
         return next(error);
       }
       logger.debug(`${this._classInfo}.verifyResetPasswordToken() [${this._routeName}/reset-password/:token GET] OK`);
-      response.json({ status: true, error: null, data: result });
+      response.json(result);
     });
   }
 

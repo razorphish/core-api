@@ -30,7 +30,7 @@ class RoleRepository {
     all(callback) {
         logger.debug(`${this._classInfo}.all()`);
 
-        Role.find()
+        RoleModel.find()
             .then(data => {
                 callback(null, data);
             })

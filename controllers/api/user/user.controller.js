@@ -38,11 +38,20 @@ class UserController {
       this.allPaged.bind(this)
     );
 
+    //Basic
     router.get(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
+    );
+
+    //Details
+    router.get(
+      '/details/:id',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole(['superadmin']),
+      this.details.bind(this)
     );
 
     router.post(
@@ -90,16 +99,7 @@ class UserController {
     repo.addDevice(request.params.id, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.addDevice() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: error.code,
-            message: error.errmsg,
-            index: error.index
-          },
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`, result);
         response.json({ status: true, msg: null, error: null, data: result });
@@ -120,24 +120,13 @@ class UserController {
     repo.all((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-        response.status(500).json({ message: 'Internal server error' });
+        response.status(500).send(error);
         //next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
         response.json(result);
       }
     });
-
-    // UserModel.find()
-    //   .then(data => {
-    //     response.json(data);
-    //   })
-    //   .catch(error => {
-    //     console.log('yay')
-    //     //response.status(500).json({ message: 'Internal server error' });
-    //     next(error)
-    //     console.error(error);
-    //   });
   }
 
   /**
@@ -160,7 +149,7 @@ class UserController {
       //response.setHeader('X-InlineCount', result.count);
       if (error) {
         logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, result);
         response.json(result);
@@ -182,7 +171,7 @@ class UserController {
     repo.byRole(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.byRole() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.byRole() [${this._routeName}] OK`, result);
         response.json(result);
@@ -204,10 +193,31 @@ class UserController {
     repo.delete(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-        response.json({ status: false });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
-        response.json({ status: true });
+        response.json(result);
+      }
+    });
+  }
+
+    /**
+   * Gets a user by its id with Details
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example GET /api/user/:id
+   */
+  details(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
+
+    repo.details(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
+        response.status(500).send(error);
+      } else {
+        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
+        response.json(result);
       }
     });
   }
@@ -225,7 +235,7 @@ class UserController {
     repo.get(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
         response.json(result);
@@ -245,18 +255,10 @@ class UserController {
     repo.insert(request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg:
-            'Insert failed' + error.code === 11000
-              ? ': Username or Email already exist'
-              : '',
-          error: error,
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
-        response.json({ status: true, error: null, data: result });
+        response.json(result);
       }
     });
   }
@@ -274,16 +276,7 @@ class UserController {
     repo.update(id, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
-        response.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: error.code,
-            message: error.errmsg,
-            index: error.index
-          },
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, result);
         response.json(result);

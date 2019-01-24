@@ -1,17 +1,17 @@
-//Account Api
-const repo = require('../../../app/database/repositories/account/account.repository');
+//Roles Api
+const repo = require('../../../app/database/repositories/auth/role.repository');
+const util = require('util');
 const utils = require('../../../lib/utils');
-const logger = require('../../../lib/winston.logger');
 const passport = require('passport');
+const logger = require('../../../lib/winston.logger');
 
 /**
- * account Api Controller
- * http://.../api/account
- * @author Antonio Marasco
+ * Roles Api Controller
+ * http://.../api/role
  */
-class AccountController {
+class RolesController {
     /**
-     * Constructor for accounts
+     * Constructor for Roles
      * @param {router} router Node router framework
      */
     constructor(router) {
@@ -39,7 +39,6 @@ class AccountController {
             utils.isInRole('admin'),
             this.insert.bind(this)
         );
-
         router.put(
             '/:id',
             passport.authenticate('user-bearer', { session: false }),
@@ -54,15 +53,15 @@ class AccountController {
         );
 
         //Logging Info
-        this._classInfo = '*** [account].controller';
-        this._routeName = '/api/account';
+        this._classInfo = '*** [role].controller';
+        this._routeName = '/api/role';
     }
 
     /**
-     * Gets all accounts
+     * Gets all roles
      * @param {Request} [request] Request object
      * @param {Response} response Response
-     * @example GET /api/account
+     * @example GET /api/role
      * @returns {pointer} res.json
      */
     all(request, response, next) {
@@ -72,7 +71,6 @@ class AccountController {
             if (error) {
                 logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
                 response.status(500).send(error);
-                //next(error);
             } else {
                 logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
                 response.json(result);
@@ -81,14 +79,14 @@ class AccountController {
     }
 
     /**
-     * Gets all accounts paginated
+     * Gets all roles paginated
      * @param {Request} request Request object {Default:10}
      * @param {Request} [request.params.top=10]
      * @param {Response} response Response
-     * @example /api/account/page/2/10
-     * @description /api/account/page/{page number}/{# per page}
+     * @example /api/role/page/2/10
+     * @description /api/role/page/{page number}/{# per page}
      */
-    allPaged(request, response) {
+    allPaged(request, response, next) {
         logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
 
         const topVal = request.params.top,
@@ -109,10 +107,10 @@ class AccountController {
     }
 
     /**
-     * Deletes a account
+     * Deletes a role
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @example DELETE /api/account/:id
+     * @example DELETE /api/role/:id
      * @returns {status: true|false} via res pointer
      */
     delete(request, response) {
@@ -131,10 +129,10 @@ class AccountController {
     }
 
     /**
-     * Gets a account by its id
+     * Gets a role by its id
      * @param {Request} request Request object
      * @param {Response} response Response
-     * @example GET /api/account/:id
+     * @example GET /api/role/:id
      */
     get(request, response) {
         const id = request.params.id;
@@ -152,10 +150,10 @@ class AccountController {
     }
 
     /**
-     * Inserts a account
+     * Inserts a role
      * @param {Request} request Request object
      * @param {Response} response Response
-     * @example POST /api/account
+     * @example POST /api/role
      */
     insert(request, response) {
         logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
@@ -193,4 +191,4 @@ class AccountController {
     }
 }
 
-module.exports = AccountController;
+module.exports = RolesController;

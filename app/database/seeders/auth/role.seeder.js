@@ -14,6 +14,11 @@ class RoleSeeder {
 
         var roles = [
             {
+                _id: '5c48caeffc13ae064600000a',
+                name: 'SuperAdmin',
+                normalizedName: 'SUPERADMIN'
+            },
+            {
                 _id: '59af3138fc13ae21640000ca',
                 name: 'Admin',
                 normalizedName: 'ADMIN'

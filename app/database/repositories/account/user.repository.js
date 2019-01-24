@@ -222,7 +222,6 @@ class UserRepository {
         select: {
           password: 0,
           salt: 0,
-          refreshToken: 0,
           loginAttempts: 0,
           lockUntil: 0
         }
@@ -313,6 +312,32 @@ class UserRepository {
         logger.error(`${this._classInfo}.delete(${id})::remove`, error);
         return callback(error);
       });
+  }
+
+  /**
+   * Gets a single User details
+   * @param {string} id user id
+   * @param {requestCallback} callback Handles the response
+   * @example get('123456789', (error, data) => {})
+   */
+  details(id, callback) {
+    logger.debug(`${this._classInfo}.get(${id})`);
+
+    UserModel.findById(
+      id,
+      null,
+      {
+        select: {
+          password: 0
+        }
+      })
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.get(${id})`, error);
+        return callback(error);
+      })
   }
 
   /**
@@ -443,14 +468,14 @@ class UserRepository {
       });
   }
 
-    /**
-   * Search user by search query
-   * @param {any} query Query containting fields to obtain
-   * @param {Function} callback(err: Error, document)
-   *  Called after find
-   *  err {Error}: the output of the computation
-   *  data {any}: whether a change has occurred
-   */
+  /**
+ * Search user by search query
+ * @param {any} query Query containting fields to obtain
+ * @param {Function} callback(err: Error, document)
+ *  Called after find
+ *  err {Error}: the output of the computation
+ *  data {any}: whether a change has occurred
+ */
   search(query, callback) {
     logger.debug(`${this._classInfo}.search(${JSON.stringify(query)})`);
 

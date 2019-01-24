@@ -13,6 +13,7 @@ const TokenSchema = new Schema({
   protocol: { type: String, required: true, trim: true },
   expiresIn: { type: Number, required: true },
   origin: { type: String, required: false },
+  forceRefresh: { type: Boolean, required: false },
   dateExpire: { type: Date, required: false },
   dateCreated: { type: Date, required: true, default: Date.now },
   dateModified: { type: Date, required: true, default: Date.now }

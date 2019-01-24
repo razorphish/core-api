@@ -94,7 +94,7 @@ server.exchange(
                     `*** userRepo.authenticate [auth] user:${user}, reason:${reason}`,
                     err
                 );
-                return done(err);
+                return done(err, false);
             } else {
                 if (user) {
                     logger.verbose('*** userRepo.authenticate [auth] user', user);
@@ -225,7 +225,7 @@ server.exchange(
 
             //Check for refresh token expiration
             if (new Date() > user.refreshToken.dateExpire) {
-                logger.debug('*** token [Exchange:Refresh Token] EXPIRED');
+                logger.debug('*** token [Exchange:Refresh Token] NOT EXPIRED');
                 //Force user to login
                 return done(null, false);
             }
@@ -235,32 +235,18 @@ server.exchange(
             logger.debug('*** token [Exchange:Refresh Token] OK');
 
             // Everything validated, return the token
-            var expiresIn = client.tokenLifeTime * 60;
-            var expirationDate = new Date(
-                new Date().getTime() + expiresIn * 1000
-            ).toUTCString();
+            const newAccessToken = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
 
-            var accessToken = httpSign.sign({
-                userId: user.id,
-                type: 'bearer',
-                name: 'access_token',
-                loginProvider: 'oAuth2',
-                scope: scope || '*',
-                dateExpire: expirationDate,
-                expiresIn: expiresIn,
-                protocol: 'Http'
-            });
-
-            tokenRepo.insert(accessToken, (error) => {
+            tokenRepo.insert(newAccessToken, (error) => {
                 if (error) {
                     return done(error);
                 }
 
                 return done(
                     null,
-                    token.value_,
-                    refreshToken.value_,
-                    mergeParam(user, refreshToken.value_, expirationDate, expiresIn, oAuthProvider)
+                    newAccessToken.value_,
+                    refreshToken,
+                    mergeParam(user, refreshToken, newAccessToken.dateExpire, newAccessToken.expiresIn, oAuthProvider)
                 );
             });
         });

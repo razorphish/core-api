@@ -76,8 +76,7 @@ class ClientsController {
         repo.all((error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-                response.status(500).json({ message: 'Internal server error' });
-                //next(error);
+                response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
                 response.json(result);
@@ -105,7 +104,7 @@ class ClientsController {
             //response.setHeader('X-InlineCount', result.count);
             if (error) {
                 logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
-                response.json(null);
+                response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, result);
                 response.json(result);
@@ -127,7 +126,7 @@ class ClientsController {
         repo.delete(id, (error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-                response.json({ status: false });
+                response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
                 response.json({ status: true });
@@ -148,7 +147,7 @@ class ClientsController {
         repo.get(id, (error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
-                response.json(null);
+                response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
                 response.json(result);
@@ -168,15 +167,7 @@ class ClientsController {
         repo.insert(request.body, (error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-                response.json({
-                    status: false,
-                    msg:
-                        'Insert failed' + error.code === 11000
-                            ? ': Username or Email already exist'
-                            : '',
-                    error: error,
-                    data: null
-                });
+                response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
                 response.json({ status: true, error: null, data: result });
@@ -207,16 +198,7 @@ class ClientsController {
                     }]`,
                     error
                 );
-                response.json({
-                    status: false,
-                    msg: 'Operation failed',
-                    error: {
-                        code: error.code,
-                        message: error.errmsg,
-                        index: error.index
-                    },
-                    data: null
-                });
+                response.status(500).send(error);
             } else {
                 logger.debug(
                     `${this._classInfo}.refreshToken(${request.params.id}) [${this._routeName}] OK`,
@@ -246,16 +228,7 @@ class ClientsController {
         repo.update(id, request.body, (error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
-                response.json({
-                    status: false,
-                    msg: 'Update Failed',
-                    error: {
-                        code: error.code,
-                        message: error.errmsg,
-                        index: error.index
-                    },
-                    data: null
-                });
+                response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, result);
                 response.json(result);
