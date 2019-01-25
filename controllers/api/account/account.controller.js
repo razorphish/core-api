@@ -74,7 +74,7 @@ class AccountController {
                 response.status(500).send(error);
                 //next(error);
             } else {
-                logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
+                logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
                 response.json(result);
             }
         });
@@ -102,7 +102,7 @@ class AccountController {
                 logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
                 response.status(500).send(error);
             } else {
-                logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, result);
+                logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
                 response.json(result);
             }
         });
@@ -124,7 +124,7 @@ class AccountController {
                 logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
                 response.status(500).send(error);
             } else {
-                logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+                logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`);
                 response.json(result);
             }
         });
@@ -145,7 +145,7 @@ class AccountController {
                 logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
                 response.status(500).send(error);
             } else {
-                logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
+                logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`);
                 response.json(result);
             }
         });
@@ -165,7 +165,7 @@ class AccountController {
                 logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
                 response.status(500).send(error);
             } else {
-                logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
+                logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
                 response.json(result);
             }
         });
@@ -186,7 +186,7 @@ class AccountController {
                 logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
                 response.status(500).send(error);
             } else {
-                logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, result);
+                logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);
                 response.json(result);
             }
         });

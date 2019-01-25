@@ -101,8 +101,13 @@ server.exchange(
                     logger.debug('*** userRepo.authenticate [auth] ok', reason);
 
                     // Everything validated, return the token
-                    const token = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
-                    const refreshToken = httpSign.token(user.id, 'refresh_token', client.refreshTokenLifeTime, scope);
+                    const token = httpSign.token(
+                        user.id, 'access_token', client.tokenLifeTime, scope, null, null, null,
+                        client.requestBody.forceRefresh, client.origin);
+                    const refreshToken = httpSign.token(
+                        user.id, 'refresh_token', client.refreshTokenLifeTime, scope, null, null, null,
+                        client.requestBody.forceRefresh, client.origin);
+
 
                     tokenRepo.insert(token, (error) => {
                         if (error) {
@@ -230,12 +235,23 @@ server.exchange(
                 return done(null, false);
             }
 
+            //User has implied that they have opted out of refreshtoken (Stay signed in)
+            if (!user.refreshToken.forceRefresh) {
+                logger.debug('*** token [Exchange:Refresh Token] USER DOES NOT REQUIRE REFRESH');
+                //Force user to login
+                return done(null, false);
+            }
+
             //NOW everything checks out
             //lets issue new access token, and for good measure a new refresh
             logger.debug('*** token [Exchange:Refresh Token] OK');
 
             // Everything validated, return the token
-            const newAccessToken = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
+            //const newAccessToken = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
+
+            const newAccessToken = httpSign.token(
+                user.id, 'access_token', client.tokenLifeTime, scope, null, null, null,
+                true, user.refreshToken.origin);
 
             tokenRepo.insert(newAccessToken, (error) => {
                 if (error) {

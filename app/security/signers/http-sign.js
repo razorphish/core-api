@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 module.exports = {
-    token: (userId, name, tokenLifeTime, scope, type, provider, protocol) => {
+    token: (userId, name, tokenLifeTime, scope, type, provider, protocol, forceRefresh, origin) => {
         var expiresIn = tokenLifeTime * 60;
         var expirationDate = new Date(
             new Date().getTime() + expiresIn * 1000
@@ -15,7 +15,9 @@ module.exports = {
             scope: scope || '*',
             dateExpire: expirationDate,
             expiresIn: expiresIn,
-            protocol: protocol || 'http'
+            protocol: protocol || 'http',
+            forceRefresh: forceRefresh || true,
+            origin: origin || ''
         };
 
         return module.exports.sign(accessToken);

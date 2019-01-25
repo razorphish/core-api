@@ -51,7 +51,8 @@ class RoleRepository {
         logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
         RoleModel
-            .find({},
+            .find(
+                {},
                 null,
                 {
                     skip: skip,

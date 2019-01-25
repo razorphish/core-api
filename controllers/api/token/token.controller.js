@@ -1,79 +1,73 @@
-//Clients Api
-const repo = require('../../../app/database/repositories/auth/client.repository');
+//Tokens Api
+const repo = require('../../../app/database/repositories/auth/token.repository');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 const passport = require('passport');
 
 /**
- * Client Api Controller
- * http://.../api/clients
+ * Token Controller
+ * http://.../api/tokens
  * @author Antonio Marasco
  */
-class ClientsController {
+class TokensController {
     /**
-     * Constructor for Clients
+     * Constructor for tokens
      * @param {router} router Node router framework
      */
     constructor(router) {
         router.get(
             '/',
             passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
+            utils.isInRole('superadmin'),
             this.all.bind(this)
         );
         router.get(
             '/page/:skip/:top',
             passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
+            utils.isInRole('superadmin'),
             this.allPaged.bind(this)
         );
         router.get(
             '/:id',
             passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
+            utils.isInRole('superadmin'),
             this.get.bind(this)
         );
         router.post(
             '/',
             passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
+            utils.isInRole('superadmin'),
             this.insert.bind(this)
-        );
-        router.post(
-            '/:id/rt',
-            passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
-            this.refreshToken.bind(this)
         );
         router.put(
             '/:id',
             passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
+            utils.isInRole('superadmin'),
             this.update.bind(this)
         );
         router.delete(
             '/:id',
             passport.authenticate('user-bearer', { session: false }),
-            utils.isInRole('admin'),
+            utils.isInRole('superadmin'),
             this.delete.bind(this)
         );
 
         //Logging Info
-        this._classInfo = '*** [Client].controller';
-        this._routeName = '/api/client';
+        this._classInfo = '*** [Token].controller';
+        this._routeName = '/api/token';
     }
 
     /**
-     * Gets all clients
+     * Gets all tokens
      * @param {Request} [request] Request object
      * @param {Response} response Response
-     * @example GET /api/client
+     * @example GET /api/token
      * @returns {pointer} res.json
      */
     all(request, response, next) {
         logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
-        repo.all((error, result) => {
+        repo.details((error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
                 response.status(500).send(error);
@@ -85,12 +79,12 @@ class ClientsController {
     }
 
     /**
-     * Gets all clients paginated
+     * Gets all tokens paginated
      * @param {Request} request Request object {Default:10}
      * @param {Request} [request.params.top=10]
      * @param {Response} response Response
-     * @example /api/client/page/2/10
-     * @description /api/client/page/{page number}/{# per page}
+     * @example /api/token/page/2/10
+     * @description /api/token/page/{page number}/{# per page}
      */
     allPaged(request, response) {
         logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
@@ -113,10 +107,10 @@ class ClientsController {
     }
 
     /**
-     * Deletes a client
+     * Deletes a token
      * @param {Request} request Request object
      * @param {Response} response Response object
-     * @example DELETE /api/client/:id
+     * @example DELETE /api/token/:id
      * @returns {status: true|false} via res pointer
      */
     delete(request, response) {
@@ -135,16 +129,16 @@ class ClientsController {
     }
 
     /**
-     * Gets a client by its id
+     * Gets a token by its id
      * @param {Request} request Request object
      * @param {Response} response Response
-     * @example GET /api/client/:id
+     * @example GET /api/token/:id
      */
     get(request, response) {
         const id = request.params.id;
         logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
 
-        repo.get(id, (error, result) => {
+        repo.detailsById(id, (error, result) => {
             if (error) {
                 logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
                 response.status(500).send(error);
@@ -156,10 +150,10 @@ class ClientsController {
     }
 
     /**
-     * Inserts a client
+     * Inserts a token
      * @param {Request} request Request object
      * @param {Response} response Response
-     * @example POST /api/client
+     * @example POST /api/token
      */
     insert(request, response) {
         logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
@@ -176,41 +170,7 @@ class ClientsController {
     }
 
     /**
-    * Refresh client token
-    * @param {Request} request Request object
-    * @param {Response} response Response
-    * @example POST /api/client/:id/rt
-    */
-    refreshToken(request, response) {
-        logger.info(
-            `${this._classInfo}.refreshToken(${request.params.id}) [${this._routeName}]`
-        );
-
-        if (!request.params.id) {
-            throw new Error(' Client Id required');
-        }
-
-        repo.refreshToken(request.params.id, (error, result) => {
-            if (error) {
-                logger.error(
-                    `${this._classInfo}.refreshToken(${request.params.id}) [${
-                    this._routeName
-                    }]`,
-                    error
-                );
-                response.status(500).send(error);
-            } else {
-                logger.debug(
-                    `${this._classInfo}.refreshToken(${request.params.id}) [${this._routeName}] OK`,
-                    result
-                );
-                response.json(result);
-            }
-        });
-    }
-
-    /**
-     * Updates a client
+     * Updates a token
      * @param {Request} request Request object
      * @param {Response} response Response object
      * @example PUT /api/user/:id
@@ -231,4 +191,4 @@ class ClientsController {
     }
 }
 
-module.exports = ClientsController;
+module.exports = TokensController;

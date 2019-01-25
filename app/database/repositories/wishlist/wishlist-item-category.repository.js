@@ -32,9 +32,11 @@ class WishlistItemCategoryRepository {
     all(callback) {
         logger.debug(`${this._classInfo}.all()`);
 
-        WishlistItemCategoryModel.find({}, {
-            accountId: 0
-        })
+        WishlistItemCategoryModel.find(
+            {},
+            {
+                accountId: 0
+            })
             .then(data => {
                 callback(null, data);
             })

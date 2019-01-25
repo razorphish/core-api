@@ -24,139 +24,232 @@ class TokenRepository {
   }
 
   /**
- * Gets all Users
+ * Gets all tokens
  * @param {function} callback Callback function for all
  */
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    TokenModel.countDocuments((err, count) => {
-      logger.debug(`${this._classInfo}.all()::count`, count);
-
-      TokenModel.find({}, {}, (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.all()::find`, err);
-          return callback(err, null);
-        }
-
-        callback(null, {
-          count: count,
-          data: data
-        });
+    TokenModel.find()
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.all::find`, error);
+        callback(error);
       });
-    });
   }
 
   /**
-   * Gets a single User
+   * Gets a single token by its token value
    * @param {object} accessToken Token value
    * @param {function} callback Callback function for success/fail
    */
   byToken(accessToken, callback) {
     logger.debug(`${this._classInfo}.byToken(${accessToken})`);
 
-    TokenModel.findOne({ value: accessToken }, (err, docs) => {
-      if (err) {
-        logger.error(
-          `${this._classInfo}.byToken(${accessToken})::findOne`,
-          err
-        );
-        return callback(err);
-      }
-
-      callback(null, docs);
-    });
+    TokenModel.findOne({ value: accessToken })
+      .then((docs) => {
+        callback(null, docs);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byToken(${accessToken})::findOne`, error);
+        return callback(error);
+      });
   }
 
   /**
-   * Gets a single User
+   * Gets token(s) by user id
    * @param {object} id Id of entity
    * @param {function} callback Callback function for success/fail
    */
   byUserId(userId, callback) {
-    logger.debug(`${this._classInfo}.getByUserId(${userId})`);
+    logger.debug(`${this._classInfo}.byUserId(${userId})`);
 
-    //TokenModel.find({ userId: new ObjectId(userId) }, (err, data) => {
-    let query = { userId: userId };
-    TokenModel.find(query, (err, docs) => {
-      if (err) {
-        logger.error(`${this._classInfo}.all(${userId})::findOne`, err);
-        return callback(err);
-      }
-      callback(null, docs);
-    });
+    TokenModel
+      .find(
+        {
+          userId: userId
+        }
+      )
+      .then((docs) => {
+        callback(null, docs);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byUserId(${userId})::find`, error);
+        return callback(error);
+      });
   }
 
   /**
-   * Delete an item by id
+   * Delete an tokens by id
    * @param {string} id Id of item to delete
    * @param {function} callback function on success/fail
    */
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    TokenModel.deleteOne(
-      {
-        _id: id
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.delete(${id})::remove`, err);
-          return callback(err, null);
+    TokenModel
+      .deleteOne(
+        {
+          _id: id
         }
+      )
+      .then((data) => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.delete(${id})::remove`, error);
+        return callback(error, null);
+      });
   }
 
   /**
-   * Delete an item by id
+   * Delete all tokens by it's value (hash)
    * @param {string} tokenHash Hash of item to delete
    * @param {function} callback function on success/fail
    */
   deleteByTokenHash(tokenHash, callback) {
     logger.debug(`${this._classInfo}.deleteByTokenHash(${tokenHash})`);
 
-    TokenModel.remove(
-      {
-        value: tokenHash
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(
-            `${this._classInfo}.deleteByTokenHash(${tokenHash}):;remove`,
-            err
-          );
-          return callback(err, null);
+    TokenModel
+      .remove(
+        {
+          value: tokenHash
         }
+      )
+      .then((data) => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.deleteByTokenHash(${tokenHash})::remove`, error);
+        return callback(error, null);
+      });
   }
 
   /**
-   * Delete an item by id
+   * Delete all tokens by user id
    * @param {string} userId userId of token(s) to delete
    * @param {function} callback function on success/fail
    */
   deleteByUserId(userId, callback) {
     logger.debug(`${this._classInfo}.deleteByUserId(${userId})`);
 
-    TokenModel.remove(
-      {
-        userId: userId
-      },
-      (err, data) => {
-        if (err) {
-          logger.error(
-            `${this._classInfo}.deleteByUserId(${userId})::remove`,
-            err
-          );
-          return callback(err, null);
+    TokenModel
+      .remove(
+        {
+          userId: userId
         }
+      )
+      .then((data) => {
         callback(null, data);
-      }
-    );
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.deleteByUserId(${userId})::remove`, error);
+        return callback(error, null);
+      });
+  }
+
+  /**
+   * Gets a token with User Info
+   * @param {function} callback Callback function for success/fail
+   */
+  details(callback) {
+    logger.debug(`${this._classInfo}.details()`);
+
+    TokenModel
+      .find(
+        {}
+      )
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email username status'
+      })
+      .then((docs) => {
+        callback(null, docs);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.details(${id})::find`, error);
+        return callback(error);
+      });
+  }
+
+  /**
+   * Gets a token with User Info
+   * @param {object} id Id of entity
+   * @param {function} callback Callback function for success/fail
+   */
+  detailsById(id, callback) {
+    logger.debug(`${this._classInfo}.detailsById(${id})`);
+
+    TokenModel
+      .findById(
+        id
+      )
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email username status'
+      })
+      .then((docs) => {
+        callback(null, docs);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.detailsById(${id})::findById`, error);
+        return callback(error);
+      })
+  }
+
+  /**
+   * Gets a single token with User Info by its token value
+   * @param {object} accessToken Token value
+   * @param {function} callback Callback function for success/fail
+   */
+  detailsByToken(accessToken, callback) {
+    logger.debug(`${this._classInfo}.detailsByToken(${accessToken})`);
+
+    TokenModel
+      .findOne(
+        {
+          value: accessToken
+        }
+      )
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email username status'
+      })
+      .then((docs) => {
+        callback(null, docs);
+      }).catch(error => {
+        logger.error(`${this._classInfo}.detailsByToken(${id})::findOne`, error);
+        return callback(error);
+      })
+  }
+
+  /**
+   * Gets all tokens with User Info by a user's id
+   * @param {object} userId User Id 
+   * @param {function} callback Callback function for success/fail
+   */
+  detailsByUserId(userId, callback) {
+    logger.debug(`${this._classInfo}.detailsByUserId(${userId})`);
+
+    TokenModel
+      .find(
+        {
+          userId: userId
+        }
+      )
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email username status'
+      })
+      .then((docs) => {
+        callback(null, docs);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.detailsByUserId(${userId})::find`, error);
+        return callback(error);
+      });
   }
 
   /**
@@ -167,14 +260,17 @@ class TokenRepository {
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
 
-    TokenModel.findById(id, (err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.get(${id})::findById`, err);
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
+    TokenModel
+      .findById(
+        id
+      )
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.get(${id})::findById`, error);
+        return callback(error);
+      });
   }
 
   /**
@@ -186,17 +282,6 @@ class TokenRepository {
     logger.debug(`${this._classInfo}.insert()`, body);
 
     var model = new TokenModel(body);
-
-    // model.userId = body.userId;
-    // model.loginProvider = body.loginProvider;
-    // model.name = body.name;
-    // model.value = body.value;
-    // model.dateExpire = body.dateExpire;
-    // model.expiresIn = body.expiresIn;
-    // model.scope = body.scope;
-    // model.type = body.type;
-    // model.protocol = body.protocol;
-    // model.origin = body.origin;
 
     model.save((err, data) => {
       if (err) {
@@ -219,14 +304,17 @@ class TokenRepository {
   search(query, callback) {
     logger.debug(`${this._classInfo}.search(${query})`);
 
-    TokenModel.findOne(query, (err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.search(${query})::findOne`, err);
-        return callback(err);
-      }
-
-      callback(null, data);
-    });
+    TokenModel
+      .findOne(
+        query,
+      )
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.search(${query})::findOne`, error);
+        return callback(error);
+      });
   }
 }
 
