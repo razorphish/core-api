@@ -151,7 +151,8 @@ class ClientRepository {
     logger.debug(`${this._classInfo}.insert()`, body);
 
     var model = new ClientModel(body);
-    model.clientSecret = httpSign.getUid(256);
+    //encode hash
+    model.clientSecret = httpSign.decode(model.clientSecret);
 
     model.save((err, data) => {
       if (err) {

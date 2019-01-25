@@ -14,9 +14,8 @@ class UserFeeder {
 
     var users = [
       {
-        _id: {
-          $oid: '597e782cfc13ae628f00000d'
-        },
+        _id: '597e782cfc13ae628f00000d',
+        applicationId: '5c4b1303fc13ae60b4000002',
         firstName: 'Antonio',
         lastName: 'Marasco',
         email: 'david@maras.co',
@@ -42,7 +41,7 @@ class UserFeeder {
             normalizedName: 'USER'
           }
         ],
-        account: {
+        accountId: {
           _id: '59af3138fc13ae21640000ca',
           statusId: 'active'
         }
@@ -56,6 +55,7 @@ class UserFeeder {
 
     for (i = 0; i < l; i++) {
       var user = new User({
+        _id: users[i]._id,
         firstName: users[i].firstName,
         lastName: users[i].lastName,
         email: users[i].email,
@@ -72,7 +72,8 @@ class UserFeeder {
         facebook: users[i].facebook,
         instagram: users[i].instagram,
         account: users[i].account,
-        status: 'active'
+        status: 'active',
+        applicationId: users[i].applicationId
       });
 
       user.save((err, user) => {

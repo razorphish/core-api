@@ -45,23 +45,23 @@ const DeviceSchema = new Schema({
 });
 
 const UserSchema = new Schema({
+  applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
+  //accountId: { type: Schema.Types.ObjectId, required: true, ref: 'Account' },
   firstName: { type: String, required: false, trim: true },
   lastName: { type: String, required: false, trim: true },
-  email: { type: String, required: true, trim: true, index: { unique: true } },
-  email_lower: { type: String, required: true, trim: true, index: { unique: true }, lowercase: true },
+  email: { type: String, required: true, trim: true },
+  email_lower: { type: String, required: true, trim: true, lowercase: true },
   homePhone: { type: String, required: false, trim: true },
   username: {
     type: String,
     required: true,
-    trim: true,
-    index: { unique: true }
+    trim: true
   },
   username_lower: {
     type: String,
     required: true,
     trim: true,
-    lowercase: true,
-    index: { unique: true }
+    lowercase: true
   },
   avatar: { type: String, required: false, trim: true },
   social: { type: Social.schema, required: false },
@@ -84,9 +84,11 @@ const UserSchema = new Schema({
     enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'awaitingPassword'],
     default: 'pending',
     required: true
-  },
-  account: { type: Schema.Types.ObjectId }
+  }
 });
+
+//Composite Key
+UserSchema.index({ applicationId: 1, username: 1 }, { unique: true })
 
 /**
  * Validates that array has no more than 2 elements
