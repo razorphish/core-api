@@ -15,7 +15,6 @@ class UserFeeder {
     var users = [
       {
         _id: '597e782cfc13ae628f00000d',
-        applicationId: '5c4b1303fc13ae60b4000002',
         firstName: 'Antonio',
         lastName: 'Marasco',
         email: 'david@maras.co',
@@ -39,6 +38,11 @@ class UserFeeder {
             _id: '59af3138fc13ae21640000c9',
             name: 'User',
             normalizedName: 'USER'
+          },
+          {
+            _id: '5c48caeffc13ae064600000a',
+            name: 'SuperAdmin',
+            normalizedName: 'SUPERADMIN'
           }
         ],
         accountId: {
@@ -51,7 +55,7 @@ class UserFeeder {
     var l = users.length,
       i;
 
-    User.remove({});
+    User.deleteMany({});
 
     for (i = 0; i < l; i++) {
       var user = new User({
@@ -72,8 +76,7 @@ class UserFeeder {
         facebook: users[i].facebook,
         instagram: users[i].instagram,
         account: users[i].account,
-        status: 'active',
-        applicationId: users[i].applicationId
+        status: 'active'
       });
 
       user.save((err, user) => {

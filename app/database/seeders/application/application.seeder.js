@@ -14,10 +14,22 @@ class ApplicationFeeder {
 
         var items = [
             {
+                _id: '5c4b1303fc13ae60b4000001',
+                name: 'Maras.co',
+                statusId: 'active',
+                url: 'https://www.maras.co'
+            },
+            {
                 _id: '5c4b1303fc13ae60b4000000',
                 name: 'Twittles',
                 statusId: 'pending',
                 url: 'https://twittles.maras.co'
+            },
+            {
+                _id: '5c4b1303fc13ae60b4000003',
+                name: 'Maras.co Admin',
+                statusId: 'active',
+                url: 'https://admin.maras.co'
             },
             {
                 _id: '5c4b1303fc13ae60b4000002',
@@ -54,7 +66,7 @@ class ApplicationFeeder {
         var l = items.length,
             i;
 
-        model.remove({});
+        model.deleteMany({});
 
         for (i = 0; i < l; i++) {
             var item = new model({

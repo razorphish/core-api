@@ -21,7 +21,7 @@ class WishlistCategoryFeeder {
         var l = wishlistCategories.length,
             i;
 
-        WishlistCategory.remove({});
+        WishlistCategory.deleteMany({});
 
         for (i = 0; i < l; i++) {
             var wishlistCategory = new WishlistCategory({

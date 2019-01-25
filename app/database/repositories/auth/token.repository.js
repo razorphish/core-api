@@ -113,7 +113,7 @@ class TokenRepository {
     logger.debug(`${this._classInfo}.deleteByTokenHash(${tokenHash})`);
 
     TokenModel
-      .remove(
+      .deleteOne(
         {
           value: tokenHash
         }
@@ -136,7 +136,7 @@ class TokenRepository {
     logger.debug(`${this._classInfo}.deleteByUserId(${userId})`);
 
     TokenModel
-      .remove(
+      .deleteMany(
         {
           userId: userId
         }

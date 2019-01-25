@@ -43,7 +43,7 @@ class RoleSeeder {
         var l = roles.length,
             i;
 
-        Role.remove({});
+        Role.deleteMany({});
 
         for (i = 0; i < l; i++) {
             var role = new Role({

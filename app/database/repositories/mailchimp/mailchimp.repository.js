@@ -99,7 +99,7 @@ class MailChimpRepository {
  */
   delete(id, callback) {
     console.log('*** MailChimp.repository.delete');
-    MailChimpModel.remove(
+    MailChimpModel.deleteOne(
       {
         _id: id
       },

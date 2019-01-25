@@ -34,7 +34,11 @@ class ClientRepository {
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
-    ClientModel.find()
+    ClientModel.find(
+      {},
+      {
+        hash: 0
+      })
       .then(data => {
         callback(null, data);
       })
@@ -64,7 +68,8 @@ class ClientRepository {
             salt: 0,
             refreshToken: 0,
             loginAttempts: 0,
-            lockUntil: 0
+            lockUntil: 0,
+            hash: 0
           },
           top: top,
           sort: { name: 1 }
@@ -88,7 +93,13 @@ class ClientRepository {
   byClientId(clientId, callback) {
     logger.debug(`${this._classInfo}.getByClientId(${clientId})`);
 
-    ClientModel.findOne({ clientId: clientId })
+    ClientModel.findOne(
+      {
+        clientId: clientId
+      },
+      {
+        hash: 0
+      })
       .then(data => {
 
         callback(null, data);
@@ -113,6 +124,8 @@ class ClientRepository {
     ClientModel.deleteOne(
       {
         _id: id
+      }, {
+        hash: 0
       },
       (err, data) => {
         if (err) {
@@ -124,6 +137,24 @@ class ClientRepository {
     );
   }
 
+    /**
+   * Gets a single item with details
+   * @param {object} id Id of entity
+   * @param {function} callback Callback function for success/fail
+   */
+  detail(id, callback) {
+    logger.debug(`${this._classInfo}.get(${id})`);
+
+    ClientModel.findById(id, (err, data) => {
+      if (err) {
+        logger.error(`${this._classInfo}.get(${id})::findById`, err);
+        return callback(err);
+      }
+      // get client Id
+      callback(null, data);
+    });
+  }
+
   /**
    * Gets a single item
    * @param {object} id Id of entity
@@ -132,7 +163,9 @@ class ClientRepository {
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
 
-    ClientModel.findById(id, (err, data) => {
+    ClientModel.findById(id, {
+      hash: 0
+    }, (err, data) => {
       if (err) {
         logger.error(`${this._classInfo}.get(${id})::findById`, err);
         return callback(err);
@@ -152,7 +185,7 @@ class ClientRepository {
 
     var model = new ClientModel(body);
     //encode hash
-    model.clientSecret = httpSign.decode(model.clientSecret);
+    model.clientSecret = httpSign.decode(model.hash);
 
     model.save((err, data) => {
       if (err) {
@@ -172,18 +205,21 @@ class ClientRepository {
   refreshToken(id, callback) {
     logger.debug(`${this._classInfo}.refreshToken(${id})`);
 
-    let clientSecret = httpSign.getUid(256);
+    let hash = httpSign.getUid(256);
 
-    let tokenHash = httpSign.decode(clientSecret);
+    let clientSecret = httpSign.decode(hash);
 
     let body = {
-      clientSecret: tokenHash
+      clientSecret: clientSecret,
+      hash: hash
     }
 
     ClientModel.findOneAndUpdate(
       { _id: id },
       body,
-      { new: true },
+      {
+        new: true
+      },
       (err, item) => {
         if (err) {
           logger.error(`${this._classInfo}.refreshToken(${id})::findById`, err);
@@ -192,7 +228,7 @@ class ClientRepository {
 
         //returns User data
         callback(null, {
-          tokenHash: clientSecret,
+          hash: item.hash,
           clientSecret: item.clientSecret
         });
       });

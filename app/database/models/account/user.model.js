@@ -45,7 +45,6 @@ const DeviceSchema = new Schema({
 });
 
 const UserSchema = new Schema({
-  applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
   //accountId: { type: Schema.Types.ObjectId, required: true, ref: 'Account' },
   firstName: { type: String, required: false, trim: true },
   lastName: { type: String, required: false, trim: true },

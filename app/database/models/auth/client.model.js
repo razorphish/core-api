@@ -6,6 +6,7 @@ const Schema = mongoose.Schema;
 const httpSign = require('../../../security/signers/http-sign');
 
 const ClientSchema = new Schema({
+  applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
   name: { type: String, required: true },
   clientId: { type: String, required: true, index: { unique: true } },
   clientSecret: { type: String, required: true },
@@ -20,6 +21,7 @@ const ClientSchema = new Schema({
   allowedOrigins: { type: [String], required: true },
   tokenLifeTime: { type: Number, required: true },
   refreshTokenLifeTime: { type: Number, required: true },
+  hash: { type: String, required: true },
   // allowedLoginAttempts: { type: Number, required: false, default: 0 },
   // daysToLock: { type: Number, required: false, default: 0 },
   dateCreated: { type: Date, required: true, default: Date.now },
