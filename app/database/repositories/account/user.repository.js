@@ -341,7 +341,7 @@ class UserRepository {
         path: 'applicationId',
         select: '_id name'
       })
-      .populate({ path: 'tokens', select: '_id name ' })
+      .populate({ path: 'tokens', select: '_id name origin expiresIn dateCreated dateExpire' })
       .then(data => {
         callback(null, data);
       })
