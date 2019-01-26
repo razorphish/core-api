@@ -133,10 +133,10 @@ class WishlistItemCategoryController {
     repo.delete(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-        response.json({ status: false });
+        response.json(result);
       } else {
         logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`);
-        response.json({ status: true });
+        response.json(result);
       }
     });
   }
@@ -182,7 +182,7 @@ class WishlistItemCategoryController {
         });
       } else {
         logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
-        response.json({ status: true, error: null, data: result });
+        response.json(result);
       }
     });
   }

@@ -15,6 +15,7 @@ class UserFeeder {
     var users = [
       {
         _id: '597e782cfc13ae628f00000d',
+        applicationId: '5c4b1303fc13ae60b4000003',
         firstName: 'Antonio',
         lastName: 'Marasco',
         email: 'david@maras.co',
@@ -76,7 +77,8 @@ class UserFeeder {
         facebook: users[i].facebook,
         instagram: users[i].instagram,
         account: users[i].account,
-        status: 'active'
+        status: 'active',
+        applicationId: users[i].applicationId
       });
 
       user.save((err, user) => {

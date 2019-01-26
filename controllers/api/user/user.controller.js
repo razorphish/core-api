@@ -4,6 +4,7 @@
  */
 
 const repo = require('../../../app/database/repositories/account/user.repository');
+const tokenRepo = require('../../../app/database/repositories/auth/token.repository')
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
@@ -25,7 +26,7 @@ class UserController {
     router.get(
       '/',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
+      utils.isInRole('superadmin'),
       this.all.bind(this)
     );
 
@@ -34,21 +35,13 @@ class UserController {
     router.get(
       '/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
+      utils.isInRole('superadmin'),
       this.allPaged.bind(this)
-    );
-
-    //Basic
-    router.get(
-      '/:id',
-      passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
-      this.get.bind(this)
     );
 
     //Details
     router.get(
-      '/details/:id',
+      '/:id/details',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['superadmin']),
       this.details.bind(this)
@@ -57,28 +50,45 @@ class UserController {
     router.post(
       '/',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
+      utils.isInRole('superadmin'),
       this.insert.bind(this)
     );
 
     router.put(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
+      utils.isInRole('superadmin'),
       this.update.bind(this)
     );
 
     router.post(
       '/:id/devices',
       passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
       this.addDevice.bind(this)
+    );
+
+    router.get(
+      '/:id/tokens',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
+      this.tokens.bind(this)
     );
 
     router.delete(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
       utils.isInRole('admin'),
       this.delete.bind(this)
+    );
+
+    //Basic
+    router.get(
+      '/:id',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
+      this.get.bind(this)
     );
 
     //Logging Info
@@ -102,7 +112,7 @@ class UserController {
         response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`);
-        response.json({ status: true, msg: null, error: null, data: result });
+        response.json(result);
       }
     });
   }
@@ -201,12 +211,12 @@ class UserController {
     });
   }
 
-    /**
-   * Gets a user by its id with Details
-   * @param {Request} request Request object
-   * @param {Response} response Response
-   * @example GET /api/user/:id
-   */
+  /**
+ * Gets a user by its id with Details
+ * @param {Request} request Request object
+ * @param {Response} response Response
+ * @example GET /api/user/:id
+ */
   details(request, response) {
     const id = request.params.id;
     logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
@@ -258,6 +268,27 @@ class UserController {
         response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
+  * Gets a user's tokens
+  * @param {Request} request Request object
+  * @param {Response} response Response
+  * @example GET /api/user/:id
+  */
+  tokens(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.tokens(${id}) [${this._routeName}]`);
+
+    tokenRepo.byUserId(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.tokens() [${this._routeName}]`, error);
+        response.status(500).send(error);
+      } else {
+        logger.debug(`${this._classInfo}.tokens() [${this._routeName}] OK`);
         response.json(result);
       }
     });

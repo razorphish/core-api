@@ -3,6 +3,7 @@ const async = require('async');
 
 const tokenRepo = require('../../../app/database/repositories/auth/token.repository');
 const userRepo = require('../../../app/database/repositories/account/user.repository');
+const applicationRepo = require('../../../app/database/repositories/application/application.repository');
 const logger = require('../../../lib/winston.logger');
 const mandrill = require('../../../lib/mandrill.library').mandrill;
 const mandrillConfig = require('../../../lib/config.loader').mandrill;
@@ -205,15 +206,40 @@ class AuthController {
   registerWithEmailPassword(request, response) {
     logger.info(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`);
 
-    userRepo.insert(request.body, (error, result) => {
+    async.waterfall([
+      (done) => {
+        applicationRepo.get(request.body.applicationId, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else if (!result) {
+            logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]::get() :: MISSING APPLICATION`);
+            response.status(404).send({ error: { message: 'Application is missing or invalid' } });
+          }else {
+            logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`);
+            return done(null, result);
+          }
+        });
+      },
+      (application, done) => {
+        userRepo.insert(request.body, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`);
+            return done(null, result);
+          }
+        });
+      }
+    ], (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
-        response.status(500).send(error);
-      } else {
-        logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`);
-        response.json(result);
+        return next(error);
       }
-    });
+      logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}/register-with-email-password POST] OK`);
+      response.json(result);
+    })
   }
 
   /**

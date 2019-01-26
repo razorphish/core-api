@@ -133,10 +133,10 @@ class WishlistItemController {
     repo.delete(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-        response.json({ status: false });
+        response.status(404).send(error);
       } else {
         logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
-        response.json({ status: true });
+        response.json(result);
       }
     });
   }
@@ -154,7 +154,7 @@ class WishlistItemController {
     repo.get(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).send(error)
       } else {
         logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
         response.json(result);
@@ -174,15 +174,10 @@ class WishlistItemController {
     repo.insert(request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg: 'Insert failed',
-          error: error,
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
-        response.json({ status: true, error: null, data: result });
+        response.json(result);
       }
     });
   }
@@ -202,16 +197,7 @@ class WishlistItemController {
     repo.update(id, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
-        response.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: error.code,
-            message: error.errmsg,
-            index: error.index
-          },
-          data: null
-        });
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, result);
         response.json(result);

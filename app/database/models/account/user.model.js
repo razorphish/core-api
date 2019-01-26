@@ -45,7 +45,7 @@ const DeviceSchema = new Schema({
 });
 
 const UserSchema = new Schema({
-  //accountId: { type: Schema.Types.ObjectId, required: true, ref: 'Account' },
+  applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
   firstName: { type: String, required: false, trim: true },
   lastName: { type: String, required: false, trim: true },
   email: { type: String, required: true, trim: true },
@@ -84,7 +84,7 @@ const UserSchema = new Schema({
     default: 'pending',
     required: true
   }
-});
+}, { toJSON: { virtuals: true } });
 
 //Composite Key
 UserSchema.index({ applicationId: 1, username: 1 }, { unique: true })
@@ -152,6 +152,16 @@ function traverseUser(user) {
 UserSchema.virtual('isLocked').get(function () {
   // check for a future lockUntil timestamp
   return !!(this.lockUntil && this.lockUntil > Date.now());
+});
+
+UserSchema.virtual('tokens', {
+  ref: 'Token', // The model to use
+  localField: '_id', // Find people where `localField`
+  foreignField: 'userId', // is equal to `foreignField`
+  // If `justOne` is true, 'members' will be a single doc as opposed to
+  // an array. `justOne` is false by default.
+  justOne: false,
+  options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 //PRE-SAVE

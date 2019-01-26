@@ -65,7 +65,8 @@ class UserRepository {
       salt: 0,
       refreshToken: 0,
       loginAttempts: 0,
-      lockUntil: 0
+      lockUntil: 0,
+      isLocked: 0
     })
       .then(data => {
         callback(null, data);
@@ -96,7 +97,8 @@ class UserRepository {
             salt: 0,
             refreshToken: 0,
             loginAttempts: 0,
-            lockUntil: 0
+            lockUntil: 0,
+            isLocked: 0
           },
           top: top,
           sort: { lastName: 1 }
@@ -194,7 +196,8 @@ class UserRepository {
           salt: 0,
           refreshToken: 0,
           loginAttempts: 0,
-          lockUntil: 0
+          lockUntil: 0,
+          isLocked: 0
         }
       })
       .then((data) => {
@@ -223,7 +226,8 @@ class UserRepository {
           password: 0,
           salt: 0,
           loginAttempts: 0,
-          lockUntil: 0
+          lockUntil: 0,
+          isLocked: 0
         }
       })
       .then((data) => {
@@ -253,7 +257,8 @@ class UserRepository {
           salt: 0,
           refreshToken: 0,
           loginAttempts: 0,
-          lockUntil: 0
+          lockUntil: 0,
+          isLocked: 0
         }
       })
       .then((data) => {
@@ -283,7 +288,8 @@ class UserRepository {
           salt: 0,
           refreshToken: 0,
           loginAttempts: 0,
-          lockUntil: 0
+          lockUntil: 0,
+          isLocked: 0
         }
       })
       .then((data) => {
@@ -331,6 +337,11 @@ class UserRepository {
           password: 0
         }
       })
+      .populate({
+        path: 'applicationId',
+        select: '_id name'
+      })
+      .populate({ path: 'tokens', select: '_id name ' })
       .then(data => {
         callback(null, data);
       })
