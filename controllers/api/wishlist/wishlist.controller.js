@@ -29,6 +29,13 @@ class WishlistController {
     );
 
     router.get(
+      '/details',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('admin'),
+      this.allDetails.bind(this)
+    );
+
+    router.get(
       '/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
@@ -40,6 +47,13 @@ class WishlistController {
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
+    );
+
+    router.get(
+      '/:id/details',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole(['admin', 'user']),
+      this.getDetails.bind(this)
     );
 
     router.post(
@@ -82,15 +96,36 @@ class WishlistController {
     repo.all((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-        response.status(500).json({ message: 'Internal server error' });
+        response.status(500).json(error);
         //next(error);
       } else {
-        logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
         response.json(result);
       }
     });
   }
 
+  /**
+   * Gets all Wishlist
+   * @param {Request} [request] Request object
+   * @param {Response} response Response
+   * @example GET /api/wishlist
+   * @returns {pointer} res.json
+   */
+  allDetails(request, response, next) {
+    logger.info(`${this._classInfo}.all() [${this._routeName}]`);
+
+    repo.allDetails((error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
+        response.status(500).json(error);
+        //next(error);
+      } else {
+        logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
   /**
    * Gets all Wishlist paginated
    * @param {Request} request Request object {Default:10}
@@ -111,9 +146,9 @@ class WishlistController {
       //response.setHeader('X-InlineCount', result.count);
       if (error) {
         logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
         response.json(result);
       }
     });
@@ -133,10 +168,10 @@ class WishlistController {
     repo.delete(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-        response.json({ status: false });
+        response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
-        response.json({ status: true });
+        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`);
+        response.json(result);
       }
     });
   }
@@ -154,9 +189,30 @@ class WishlistController {
     repo.get(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
+   * Gets a single wishlist details
+   * @param {string} id wishlist id
+   * @param {requestCallback} callback Handles the response
+   * @example getDetails('123456789', (error, data) => {})
+   */
+  getDetails(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.getDetails(${id}) [${this._routeName}]`);
+
+    repo.getDetails(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.getDetails() [${this._routeName}]`, error);
+        response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.getDetails() [${this._routeName}] OK`);
         response.json(result);
       }
     });
@@ -174,14 +230,9 @@ class WishlistController {
     repo.insert(request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg: 'Insert failed',
-          error: error,
-          data: null
-        });
+        response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
         response.json({ status: true, error: null, data: result });
       }
     });
@@ -200,18 +251,9 @@ class WishlistController {
     repo.update(id, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
-        response.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: error.code,
-            message: error.errmsg,
-            index: error.index
-          },
-          data: null
-        });
+        response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`, result);
+        logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);
         response.json(result);
       }
     });

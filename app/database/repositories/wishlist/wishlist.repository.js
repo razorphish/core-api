@@ -45,6 +45,31 @@ class WishlistRepository {
     }
 
     /**
+     * Gets all Wishlists with details
+     * @param {requestCallback} callback Handles the response
+     * @example all((error, data) => {})
+     */
+    allDetails(callback) {
+        logger.debug(`${this._classInfo}.all()`);
+
+        WishlistModel.find({},
+            {
+                accountId: 0
+            })
+            .populate({
+                path: 'userId',
+                select: '_id firstName lastName email username'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.all::find`, error);
+                callback(error);
+            });
+    }
+
+    /**
      * Gets all Wishlists paginated
      * @param {number} [skip=10] Page number
      * @param {number} [top=10] Per Page
@@ -116,6 +141,33 @@ class WishlistRepository {
             })
             .catch(error => {
                 logger.error(`${this._classInfo}.get(${id})`, error);
+                return callback(error);
+            })
+    }
+
+    /**
+    * Gets a single User details
+    * @param {string} id user id
+    * @param {requestCallback} callback Handles the response
+    * @example get('123456789', (error, data) => {})
+    */
+    getDetails(id, callback) {
+        logger.debug(`${this._classInfo}.getDetails(${id})`);
+
+        WishlistModel.findById(
+            id,
+            null,
+            {
+            })
+            .populate({
+                path: 'userId',
+                select: '_id firstName lastName email username'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.getDetails(${id})`, error);
                 return callback(error);
             })
     }

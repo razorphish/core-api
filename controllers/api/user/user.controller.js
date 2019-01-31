@@ -76,6 +76,13 @@ class UserController {
     );
 
     router.delete(
+      '/:id/tokens',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
+      this.deleteTokens.bind(this)
+    );
+
+    router.delete(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('superadmin'),
@@ -210,23 +217,44 @@ class UserController {
       }
     });
   }
+  
+    /**
+   * Deletes a user's tokens
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @example DELETE /api/user/:id/tokens
+   * @returns {status: true|false} via res pointer
+   */
+  deleteTokens(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.deleteTokens(${id}) [${this._routeName}]`);
 
+    tokenRepo.deleteByUserId(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.deleteTokens() [${this._routeName}]`, error);
+        response.status(500).send(error);
+      } else {
+        logger.debug(`${this._classInfo}.deleteTokens() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
   /**
  * Gets a user by its id with Details
  * @param {Request} request Request object
  * @param {Response} response Response
- * @example GET /api/user/:id
+ * @example GET /api/user/:id/tokens
  */
   details(request, response) {
     const id = request.params.id;
-    logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
+    logger.info(`${this._classInfo}.details(${id}) [${this._routeName}]`);
 
     repo.details(id, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
+        logger.error(`${this._classInfo}.details() [${this._routeName}]`, error);
         response.status(500).send(error);
       } else {
-        logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`);
+        logger.debug(`${this._classInfo}.details() [${this._routeName}] OK`);
         response.json(result);
       }
     });

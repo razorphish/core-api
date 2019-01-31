@@ -82,7 +82,7 @@ class WishlistItemController {
     repo.all((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-        response.status(500).json({ message: 'Internal server error' });
+        response.status(500).json(error);
         //next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`, result);
@@ -111,7 +111,7 @@ class WishlistItemController {
       //response.setHeader('X-InlineCount', result.count);
       if (error) {
         logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`, result);
         response.json(result);
@@ -133,7 +133,7 @@ class WishlistItemController {
     repo.delete(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-        response.status(404).send(error);
+        response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
         response.json(result);

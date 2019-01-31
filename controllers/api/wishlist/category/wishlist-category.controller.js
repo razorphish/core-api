@@ -82,7 +82,7 @@ class WishlistItemCategoryController {
     repo.all((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-        response.status(500).json({ message: 'Internal server error' });
+        response.status(500).json(error);
         //next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
@@ -111,7 +111,7 @@ class WishlistItemCategoryController {
       //response.setHeader('X-InlineCount', result.count);
       if (error) {
         logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
         response.json(result);
@@ -154,7 +154,7 @@ class WishlistItemCategoryController {
     repo.get(id, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.get() [${this._routeName}]`, error);
-        response.json(null);
+        response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`);
         response.json(result);
@@ -174,12 +174,7 @@ class WishlistItemCategoryController {
     repo.insert(request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-        response.json({
-          status: false,
-          msg: 'Insert failed',
-          error: error,
-          data: null
-        });
+        response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
         response.json(result);
@@ -200,16 +195,7 @@ class WishlistItemCategoryController {
     repo.update(id, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
-        response.json({
-          status: false,
-          msg: 'Update Failed',
-          error: {
-            code: error.code,
-            message: error.errmsg,
-            index: error.index
-          },
-          data: null
-        });
+        response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);
         response.json(result);
