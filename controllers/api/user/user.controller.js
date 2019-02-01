@@ -24,6 +24,13 @@ class UserController {
    */
   constructor(router) {
     router.get(
+      '/details',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
+      this.allDetails.bind(this)
+    );
+
+    router.get(
       '/',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('superadmin'),
@@ -147,6 +154,28 @@ class UserController {
   }
 
   /**
+ * Gets all users and details
+ * @param {Request} [request] Request object
+ * @param {Response} response Response
+ * @example GET /api/user
+ * @returns {pointer} res.json
+ */
+  allDetails(request, response, next) {
+    logger.info(`${this._classInfo}.allDetails() [${this._routeName}]`);
+
+    repo.allDetails((error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.allDetails() [${this._routeName}]`, error);
+        response.status(500).send(error);
+        //next(error);
+      } else {
+        logger.debug(`${this._classInfo}.allDetails() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
    * Gets all users paginated
    * @param {Request} request Request object {Default:10}
    * @param {Request} [request.params.top=10]
@@ -217,14 +246,14 @@ class UserController {
       }
     });
   }
-  
-    /**
-   * Deletes a user's tokens
-   * @param {Request} request Request object
-   * @param {Response} response Response object
-   * @example DELETE /api/user/:id/tokens
-   * @returns {status: true|false} via res pointer
-   */
+
+  /**
+ * Deletes a user's tokens
+ * @param {Request} request Request object
+ * @param {Response} response Response object
+ * @example DELETE /api/user/:id/tokens
+ * @returns {status: true|false} via res pointer
+ */
   deleteTokens(request, response) {
     const id = request.params.id;
     logger.info(`${this._classInfo}.deleteTokens(${id}) [${this._routeName}]`);

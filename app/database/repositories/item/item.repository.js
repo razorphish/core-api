@@ -1,9 +1,10 @@
-// Wishlist Repository
-const WishlistModel = require('../../models/wishlist/wishlist.model');
+// Item Repository
+const ItemModel = require('../../models/Item/Item.model');
 const logger = require('../../../../lib/winston.logger');
 
 /**
- * This callback type is called `requestCallback` and is displayed as a global symbol.
+ * This callback type is called `requestCallback` a
+ * nd is displayed as a global symbol.
  *
  * @callback requestCallback
  * @param {*} error
@@ -11,28 +12,28 @@ const logger = require('../../../../lib/winston.logger');
  */
 
 /**
- * Wishlist Repository
+ * Item Repository
  * @author Antonio Marasco
- * @class Wishlist Repository
+ * @class Item Repository
  */
-class WishlistRepository {
+class ItemRepository {
     /**
      * Constructor for client
      */
     constructor() {
         //Logging Info
-        this._classInfo = '*** [Wishlist].repository';
+        this._classInfo = '*** [Item].repository';
     }
 
     /**
-     * Gets all Wishlists
+     * Gets all Items
      * @param {requestCallback} callback Handles the response
      * @example all((error, data) => {})
      */
     all(callback) {
         logger.debug(`${this._classInfo}.all()`);
 
-        WishlistModel.find({}, {
+        ItemModel.find({}, {
             accountId: 0
         })
             .then(data => {
@@ -45,14 +46,14 @@ class WishlistRepository {
     }
 
     /**
-     * Gets all Wishlists with details
+     * Gets all Items with details
      * @param {requestCallback} callback Handles the response
      * @example all((error, data) => {})
      */
     allDetails(callback) {
         logger.debug(`${this._classInfo}.allDetails()`);
 
-        WishlistModel.find({},
+        ItemModel.find({},
             {
                 accountId: 0
             })
@@ -70,7 +71,7 @@ class WishlistRepository {
     }
 
     /**
-     * Gets all Wishlists paginated
+     * Gets all Items paginated
      * @param {number} [skip=10] Page number
      * @param {number} [top=10] Per Page
      * @param {requestCallback} callback Handles the response
@@ -79,7 +80,7 @@ class WishlistRepository {
     allPaged(skip, top, callback) {
         logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-        WishlistModel
+        ItemModel
             .find({},
                 null,
                 {
@@ -101,15 +102,15 @@ class WishlistRepository {
     }
 
     /**
-     * Delete a Wishlist by id
-     * @param {string} id Wishlist Id
+     * Delete a Item by id
+     * @param {string} id Item Id
      * @param {requestCallback} callback Handles the response
      * @example delete('123456789', (error, data) => {})
      */
     delete(id, callback) {
         logger.debug(`${this._classInfo}.delete(${id})`);
 
-        WishlistModel.deleteOne({ _id: id })
+        ItemModel.deleteOne({ _id: id })
             .then((data) => {
                 callback(null, data);
             })
@@ -120,15 +121,15 @@ class WishlistRepository {
     }
 
     /**
-     * Gets a single Wishlist
-     * @param {string} id Wishlist id
+     * Gets a single Item
+     * @param {string} id Item id
      * @param {requestCallback} callback Handles the response
      * @example get('123456789', (error, data) => {})
      */
     get(id, callback) {
         logger.debug(`${this._classInfo}.get(${id})`);
 
-        WishlistModel.findById(
+        ItemModel.findById(
             id,
             null,
             {
@@ -146,15 +147,15 @@ class WishlistRepository {
     }
 
     /**
-    * Gets a single User details
-    * @param {string} id user id
+    * Gets a single item details
+    * @param {string} id item id
     * @param {requestCallback} callback Handles the response
     * @example get('123456789', (error, data) => {})
     */
     getDetails(id, callback) {
         logger.debug(`${this._classInfo}.getDetails(${id})`);
 
-        WishlistModel.findById(
+        ItemModel.findById(
             id,
             null,
             {
@@ -173,15 +174,15 @@ class WishlistRepository {
     }
 
     /**
-     * Inserts a Wishlist
-     * @param {object} body Wishlist data
+     * Inserts a Item
+     * @param {object} body Item data
      * @param {requestCallback} callback Handles the response
      * @example insert({property: value}, (error, data) => {})
      */
     insert(body, callback) {
         logger.debug(`${this._classInfo}.insert()`, body);
 
-        WishlistModel.create(body)
+        ItemModel.create(body)
             .then(data => {
                 callback(null, data);
             })
@@ -192,21 +193,21 @@ class WishlistRepository {
     }
 
     /**
-     * Updates an Wishlist
-     * @param {string} id Wishlist id
-     * @param {object} body Wishlist data
+     * Updates an Item
+     * @param {string} id Item id
+     * @param {object} body Item data
      * @param {requestCallback} callback Handles the response
      * @example update('1234', {body:data}, (error, data) => {})
      */
     update(id, body, callback) {
         logger.debug(`${this._classInfo}.update(${id})`);
 
-        WishlistModel.findOneAndUpdate(
+        ItemModel.findOneAndUpdate(
             { _id: id },
             body,
             { new: true })
             .then(data => {
-                //returns Wishlist data
+                //returns Item data
                 callback(null, data);
             })
             .catch(error => {
@@ -216,4 +217,4 @@ class WishlistRepository {
     }
 }
 
-module.exports = new WishlistRepository();
+module.exports = new ItemRepository();

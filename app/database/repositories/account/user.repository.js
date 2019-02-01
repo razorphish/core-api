@@ -78,6 +78,31 @@ class UserRepository {
   }
 
   /**
+ * Gets all Users with details
+ * @param {requestCallback} callback Handles the response
+ * @example all((error, data) => {})
+ */
+  allDetails(callback) {
+    logger.debug(`${this._classInfo}.all()`);
+
+    UserModel.find({},
+      {
+        password: 0
+      })
+      .populate({
+        path: 'applicationId',
+        select: '_id name'
+      })
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.all::find`, error);
+        callback(error);
+      });
+  }
+
+  /**
    * Gets all Users paginated
    * @param {number} [skip=10] Page number
    * @param {number} [top=10] Per Page
@@ -341,7 +366,10 @@ class UserRepository {
         path: 'applicationId',
         select: '_id name'
       })
-      .populate({ path: 'tokens', select: '_id name origin expiresIn dateCreated dateExpire' })
+      .populate({
+        path: 'tokens',
+        select: '_id name origin expiresIn dateCreated dateExpire'
+      })
       .then(data => {
         callback(null, data);
       })
