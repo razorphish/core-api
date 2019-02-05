@@ -1,0 +1,51 @@
+{
+    "databaseConfig": {
+      "host": "127.0.0.1",
+      "port": "27017",
+      "database": "marasco",
+      "queryOptions": "?authSource=admin",
+      "username": "razorphish",
+      "password": "RaC0nt@Ur1+2"
+    },
+    "mailchimp": {
+      "apiKey": "449fb782f3b40ae6c93c5d46f5da475b-us3",
+      "listMarasco": "f1fb37cb8f"
+    },
+    "mandrill": {
+      "apiKey": "4HXB52ELNM7qeEK5V1MpzA",
+      "from_email": "david@maras.co",
+      "from_name": "Maras.co Support",
+      "reply_to": "david@maras.co"
+    },
+    "winstonConfig": {
+      "file": {
+        "level": "error",
+        "filename": "app.log",
+        "handleExceptions": true,
+        "json": true,
+        "maxsize": 5242880,
+        "maxFiles": 5,
+        "colorize": false,
+        "prettyPrint": true
+      },
+      "console": {
+        "level": "error",
+        "handleExceptions": false,
+        "json": false,
+        "colorize": true,
+        "prettyPrint": true
+      },
+      "exceptionHandlers": {
+        "file": {
+          "filename": "exceptions.log",
+          "json": true,
+          "prettyPrint": true
+        },
+        "console": {
+          "json": true,
+          "timestamp": true,
+          "prettyPrint": true
+        }
+      }
+    }
+  }
