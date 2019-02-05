@@ -33,7 +33,7 @@ module.exports = {
     deploy : {
       production : {
         user : 'node',
-        host : ['172.23.5.249', '172.23.5.248'],
+        host : ['192.241.195.22'],
         ref  : 'origin/master',
         repo : 'https://github.com/razorphish/core-api',
         path : '/var/www/api.maras.co/html',
@@ -45,7 +45,7 @@ module.exports = {
       },
       development : {
         user : 'node',
-        host : '172.23.5.247',
+        host : '127.0.0.1',
         ref  : 'origin/master',
         repo : 'https://github.com/razorphish/core-api',
         path : '/var/www/local.api.maras.co/html',
