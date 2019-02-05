@@ -144,6 +144,14 @@ $ sudo pm2 startup
 $ sudo pm2 save
 $ sudo pm2 show 0 
 ```
+
+### Update PM2 after Update Node version
+```
+cd /to/root/of/your/project
+npm rebuild
+npm i -g pm2 && pm2 update
+```
+
 The first command 'sudo pm2 startup' will analyze your pm2 processes and provide you with a command to run 
 in order to make the startup script official.  Typically, the command will just 'sudo pm2 save' which will
 save the reboot script in a dump file.  In addition, it will also give you a command to remove the script.

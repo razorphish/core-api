@@ -60,7 +60,7 @@ class Server {
       'http://admin.local.biddler.com',
       'https://app.biddler.com',
       'http://app.biddler.com',
-      'https://admin.marasc.co',
+      'https://admin.maras.co',
       'https://www.maras.co',
       'https://wishlistPremiere.maras.co',
       'https://twittles.maras.co',

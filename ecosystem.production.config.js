@@ -8,7 +8,7 @@ module.exports = {
       // First application
       {
         name      : 'api.maras.co',
-        script    : './server.js',
+        script    : 'server.js',
         watch : true,
         ignore_watch : ["node_modules", "logs", "./package-lock.json"],
         watch_options: {
