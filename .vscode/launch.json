@@ -8,13 +8,13 @@
             "type": "node",
             "request": "attach",
             "name": "Attach",
-            "port": 3000
+            "port": 3001
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome",
-            "url": "http://localhost:3000",
+            "url": "http://localhost:3001",
             "webRoot": "${workspaceFolder}"
         },
         {
