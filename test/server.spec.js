@@ -14,11 +14,11 @@ let should = chai.should();
 
 // describe('**NODEJS SERVER**', function () {
 
-//     const url = 'http://localhost:3001';
+//     const url = 'http://localhost:3002';
 //     const postData = ''
 //     const options = {
 //         hostname: 'http://localhost',
-//         port: 3000,
+//         port: 3002,
 //         path: '/api/about',
 //         method: 'GET',
 //         headers: {
@@ -28,7 +28,7 @@ let should = chai.should();
 //     }
 
 //     before(() => {
-//         server.listen(3000);
+//         server.listen(3002);
 //     });
 
 //     describe('/::Main page', () => {
