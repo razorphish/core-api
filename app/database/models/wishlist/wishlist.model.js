@@ -21,7 +21,7 @@ const WishlistSchema = new Schema({
     items: { type: Schema.Types.ObjectId, ref: 'WishlistItem' },
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
-});
+}, { toJSON: { virtuals: true } });
 
 ///PRE _SAVE
 WishlistSchema.pre('save', function (next) {
@@ -46,4 +46,13 @@ WishlistSchema.virtual('shares', {
     } // Query options, see http://bit.ly/mongoose-query-options
 });
 
-module.exports = mongoose.model('Wishlist', WishlistSchema, 'wishlist');
+WishlistSchema.virtual('notifications', {
+    ref: 'WishlistNotification', // The model to use
+    localField: '_id', // Find people where `localField`
+    foreignField: 'wishlistId', // is equal to `foreignField`
+    // If `justOne` is true, 'members' will be a single doc as opposed to
+    // an array. `justOne` is false by default.
+    justOne: false
+});
+
+module.exports = mongoose.model('Wishlist', WishlistSchema, 'wishlists');

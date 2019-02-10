@@ -24,5 +24,5 @@ WishlistItemSchema.pre('save', function (next) {
 });
 
 
-module.exports = mongoose.model('WishlistItem', WishlistItemSchema, 'wishlistItem');
+module.exports = mongoose.model('WishlistItem', WishlistItemSchema, 'wishlistItems');
 

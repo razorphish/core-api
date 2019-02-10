@@ -22,6 +22,8 @@ Core api library for all Maras,co based apis
 
 * [Server Blocks (Web server)](https://www.digitalocean.com/community/tutorials/how-to-set-up-nginx-server-blocks-virtual-hosts-on-ubuntu-16-04)
 
+* [Certbot](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-14-04)
+
 ## Setup Git
 Follow the instructions below to setup git for [deployments](https://stackoverflow.com/questions/6448242/git-push-error-insufficient-permission-for-adding-an-object-to-repository-datab)
 

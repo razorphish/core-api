@@ -8,5 +8,5 @@ const WishlistPreferenceSchema = new Schema({
     currencyUnitSymbol: { type: String, required: true, default: '$' }
 });
 
-module.exports = mongoose.model('WishlistPreference', WishlistPreferenceSchema, 'wishlistPreference');
+module.exports = mongoose.model('WishlistPreference', WishlistPreferenceSchema, 'wishlistPreferences');
 

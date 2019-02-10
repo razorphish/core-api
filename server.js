@@ -51,6 +51,7 @@ class Server {
     var whiteList = [
       'http://localhost:8080',
       'http://localhost:4200',
+      'http://localhost:4201', //admin.maras.co
       'http://localhost:60000',
       'http://localhost:60001',
       'http://admin.biddler.com',

@@ -14,5 +14,5 @@ WishlistItemCategorySchema.pre('save', function (next) {
     next();
 });
 
-module.exports = mongoose.model('WishlistItemCategory', WishlistItemCategorySchema, 'wishlistItemCategory');
+module.exports = mongoose.model('WishlistItemCategory', WishlistItemCategorySchema, 'wishlistItemCategories');
 

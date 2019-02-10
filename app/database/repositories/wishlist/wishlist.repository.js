@@ -1,5 +1,6 @@
 // Wishlist Repository
 const WishlistModel = require('../../models/wishlist/wishlist.model');
+const WishlistNotificationModel = require('../../models/wishlist/wishlist-notification.model');
 const logger = require('../../../../lib/winston.logger');
 
 /**
@@ -52,13 +53,14 @@ class WishlistRepository {
     allDetails(callback) {
         logger.debug(`${this._classInfo}.allDetails()`);
 
-        WishlistModel.find({},
-            {
-                accountId: 0
-            })
+        WishlistModel.find({})
             .populate({
                 path: 'userId',
                 select: '_id firstName lastName email username'
+            })
+            .populate({
+                path: 'notifications',
+                select: 'endpoint keys expirationTime'
             })
             .then(data => {
                 callback(null, data);
@@ -163,6 +165,10 @@ class WishlistRepository {
                 path: 'userId',
                 select: '_id firstName lastName email username'
             })
+            .populate({
+                path: 'notifications',
+                select: 'endpoint keys expirationTime'
+            })
             .then(data => {
                 callback(null, data);
             })
@@ -187,6 +193,25 @@ class WishlistRepository {
             })
             .catch(error => {
                 logger.error(`${this._classInfo}.insert()::save`, error);
+                callback(error);
+            });
+    }
+
+    /**
+     * Inserts a Wishlist
+     * @param {object} body Wishlist data
+     * @param {requestCallback} callback Handles the response
+     * @example insert({property: value}, (error, data) => {})
+     */
+    insertNotification(body, callback) {
+        logger.debug(`${this._classInfo}.insertNotification()`, body);
+
+        WishlistNotificationModel.create(body)
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.insertNotification()::save`, error);
                 callback(error);
             });
     }

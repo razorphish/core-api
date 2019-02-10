@@ -22,7 +22,7 @@ class ClientSeeder {
         isTrusted: true,
         applicationType: 'ClientConfidential',
         allowedOrigins: [
-          'http://localhost:4200',
+          'http://localhost:4201',
           'chrome-extension://aejoelaoggembcahagimdiliamlcdmfm',
           'file://',
           'https://admin.maras.co'

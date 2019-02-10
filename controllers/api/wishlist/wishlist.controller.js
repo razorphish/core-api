@@ -57,6 +57,11 @@ class WishlistController {
     );
 
     router.post(
+      '/:id/notification',
+      this.insertNotification.bind(this)
+    );
+
+    router.post(
       '/',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
@@ -233,7 +238,27 @@ class WishlistController {
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
-        response.json({ status: true, error: null, data: result });
+        response.json(result);
+      }
+    });
+  }
+
+    /**
+   * Inserts a notification for a wishlist
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example POST /api/wishlist
+   */
+  insertNotification(request, response) {
+    logger.info(`${this._classInfo}.insertNotification() [${this._routeName}]`);
+
+    repo.insertNotification(request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.insertNotification() [${this._routeName}]`, error);
+        response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.insertNotification() [${this._routeName}] OK`);
+        response.json(result);
       }
     });
   }
