@@ -5,7 +5,10 @@ const WishlistPreferenceSchema = new Schema({
     includePriceWhenSharing: { type: Boolean, required: true, default: false },
     markPurchasedItem: { type: Boolean, required: true, default: true },
     hideFromMe: { type: Boolean, required: true, default: true },
-    currencyUnitSymbol: { type: String, required: true, default: '$' }
+    currencyUnitSymbol: { type: String, required: true, default: '$' },
+    notifyOnAddItem: { type: Boolean, required: true, default: true },
+    notifyOnRemoveItem: { type: Boolean, required: true, default: false },
+    notifyOnClose: { type: Boolean, required: true, default: false }
 });
 
 module.exports = mongoose.model('WishlistPreference', WishlistPreferenceSchema, 'wishlistPreferences');

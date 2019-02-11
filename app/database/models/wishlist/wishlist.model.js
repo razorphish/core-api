@@ -19,6 +19,7 @@ const WishlistSchema = new Schema({
         default: 'Public'
     },
     items: { type: Schema.Types.ObjectId, ref: 'WishlistItem' },
+    dateExpire: { type: Date, required: false },
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
 }, { toJSON: { virtuals: true } });
