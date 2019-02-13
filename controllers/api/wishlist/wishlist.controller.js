@@ -7,6 +7,8 @@ const repo = require('../../../app/database/repositories/wishlist/wishlist.repos
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
+const webPush = require('web-push');
+const webPushConfig = require('../../../lib/config.loader').webPush;
 
 /**
  * WishlistApi Controller
@@ -59,6 +61,11 @@ class WishlistController {
     router.post(
       '/:id/notification',
       this.insertNotification.bind(this)
+    );
+
+    router.post(
+      '/:id/notification/push',
+      this.pushNotification.bind(this)
     );
 
     router.post(
@@ -243,12 +250,12 @@ class WishlistController {
     });
   }
 
-    /**
-   * Inserts a notification for a wishlist
-   * @param {Request} request Request object
-   * @param {Response} response Response
-   * @example POST /api/wishlist
-   */
+  /**
+ * Inserts/Subscribes a notification for a wishlist
+ * @param {Request} request Request object
+ * @param {Response} response Response
+ * @example POST /api/wishlist
+ */
   insertNotification(request, response) {
     logger.info(`${this._classInfo}.insertNotification() [${this._routeName}]`);
 
@@ -259,6 +266,41 @@ class WishlistController {
       } else {
         logger.debug(`${this._classInfo}.insertNotification() [${this._routeName}] OK`);
         response.json(result);
+      }
+    });
+  }
+
+  /**
+   * Push a notification for a wishlist
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example POST /api/wishlist
+   */
+  pushNotification(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.pushNotification() [${this._routeName}]`);
+
+    repo.getDetails(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+        response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.pushNotification() [${this._routeName}] OK`);
+
+        const payload = JSON.stringify({
+          title: result.name
+        });
+
+        result.notifications.forEach(subscription => {
+
+          webPush.sendNotification(subscription, payload)
+            .catch((error) => {
+              logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+              response.status(500).json(error);
+            });
+        });
+
+        response.status(201).json({});
       }
     });
   }

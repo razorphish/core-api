@@ -6,6 +6,7 @@ const UserSeeder = require('./seeders/account/user.seeder');
 const WishlistCategorySeeder = require('./seeders/wishlist/wishlist-category.seeder');
 const RoleSeeder = require('./seeders/auth/role.seeder');
 const ApplicationSeeder = require('./seeders/application/application.seeder');
+const WishlistAppSettingsSeeder = require('./seeders/wishlist/wishlist-app-settings.seeder');
 /////////////////////////////////////////////////////
 
 const logger = require('../../lib/winston.logger');
@@ -55,6 +56,10 @@ class DBSeeder {
         // Application Seeder
         logger.info(`${this._classInfo}.seed() -- Application Seeder`);
         ApplicationSeeder.seed();
+
+        //Wishlist Settings application Seeder
+        logger.info(`${this._classInfo}.seed() -- Wishlist Application Settings Seeder`);
+        WishlistAppSettingsSeeder.seed();
     }
 }
 

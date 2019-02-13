@@ -47,5 +47,10 @@
           "prettyPrint": true
         }
       }
+    },
+    "webPush": {
+      "publicKey": "BDCIWOBrQvMpw0lY7p87qO-HkSxGAunOAj9sInXZCJ42GRrj1nmd7zUyFdfaoOPolKJfvHIvzfyv0D25uWh0ydQ",
+      "privateKey": "omSWGpqwpFKJZGkhuUXrUNuLt6cG0uq_MMgz8L5DPKc",
+      "email": "david@maras.co"
     }
   }

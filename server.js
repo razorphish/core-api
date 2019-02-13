@@ -15,6 +15,8 @@ const express = require('express'),
   cors = require('cors'),
   passport = require('passport'),
   logger = require('./lib/winston.logger'),
+  webPush = require('web-push');
+  webPushConfig = require('./lib/config.loader').webPush;
   authRoutes = require('./app/routes/oAuth2');
 //authRoutesJwt = require('./app/routes/JWT');
 
@@ -34,6 +36,7 @@ class Server {
     this.initCustomMiddleware();
     this.initDbSeeder();
     this.initSecureRoutes();
+    this.initWebPush();
     this.start();
   }
 
@@ -167,7 +170,7 @@ class Server {
       }
     });
   }
-  
+
   initPassport() {
     app.use(passport.initialize());
     app.use(passport.session());
@@ -201,6 +204,13 @@ class Server {
     app.engine('hbs', hbs.engine);
     app.set('view engine', 'hbs');
     hbsLayouts.register(hbs.handlebars, {});
+  }
+
+  initWebPush() {
+    webPush.setVapidDetails(
+      `mailto:${webPushConfig.email}`,
+      webPushConfig.publicKey,
+      webPushConfig.privateKey);
   }
 }
 
