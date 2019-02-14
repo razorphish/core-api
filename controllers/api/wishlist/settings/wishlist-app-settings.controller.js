@@ -23,8 +23,8 @@ class WishlistAppSettingsController {
     constructor(router) {
         router.get(
             '/',
-            //passport.authenticate('user-bearer', { session: false }),
-            //utils.isInRole('admin'),
+            passport.authenticate('user-bearer', { session: false }),
+            utils.isInRole('admin'),
             this.all.bind(this)
         );
 
@@ -54,6 +54,20 @@ class WishlistAppSettingsController {
             passport.authenticate('user-bearer', { session: false }),
             utils.isInRole(['admin', 'user']),
             this.update.bind(this)
+        );
+
+        router.put(
+            '/:id/notification/:notificationId/action/:actionId',
+            passport.authenticate('user-bearer', { session: false }),
+            utils.isInRole(['admin', 'user']),
+            this.updateNotificationAction.bind(this)
+        );
+
+        router.put(
+            '/:id/notification/:notificationId',
+            passport.authenticate('user-bearer', { session: false }),
+            utils.isInRole(['admin', 'user']),
+            this.updateNotification.bind(this)
         );
 
         router.delete(
@@ -198,6 +212,53 @@ class WishlistAppSettingsController {
                 response.status(500).json(error);
             } else {
                 logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);
+                response.json(result);
+            }
+        });
+    }
+
+        /**
+     * Updates a notification action
+     * @param {Request} request Request object
+     * @param {Response} response Response object
+     * @example PUT /api/wishlist/settings/:id
+     */
+    updateNotification(request, response) {
+        const id = request.params.id;
+        const notificationId = request.params.notificationId;
+
+        logger.info(`${this._classInfo}.updateNotification(${id}) [${this._routeName}]`);
+
+        repo.updateNotification(id, notificationId, request.body, (error, result) => {
+            if (error) {
+                logger.error(`${this._classInfo}.updateNotification() [${this._routeName}]`, error, request.body);
+                response.status(500).json(error);
+            } else {
+                logger.debug(`${this._classInfo}.updateNotification() [${this._routeName}] OK`);
+                response.json(result);
+            }
+        });
+    }
+
+    /**
+     * Updates a notification action
+     * @param {Request} request Request object
+     * @param {Response} response Response object
+     * @example PUT /api/wishlist/settings/:id
+     */
+    updateNotificationAction(request, response) {
+        const id = request.params.id;
+        const notificationId = request.params.notificationId;
+        const actionId = request.params.actionId;
+
+        logger.info(`${this._classInfo}.updateNotificationAction(${id}) [${this._routeName}]`);
+
+        repo.updateNotificationAction(id, notificationId, actionId, request.body, (error, result) => {
+            if (error) {
+                logger.error(`${this._classInfo}.updateNotificationAction() [${this._routeName}]`, error, request.body);
+                response.status(500).json(error);
+            } else {
+                logger.debug(`${this._classInfo}.updateNotificationAction() [${this._routeName}] OK`);
                 response.json(result);
             }
         });

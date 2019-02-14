@@ -160,6 +160,72 @@ class WishlistAppSettingsRepository {
                 return callback(error);
             });
     }
+
+    /**
+    * Updates a notification
+    * @param {string} id Wishlist id
+    * @param {string} notificationId Notificaiton Id
+    * @param {object} body Wishlist data
+    * @param {requestCallback} callback Handles the response
+    * @example update('1234', {body:data}, (error, data) => {})
+    */
+    updateNotification(id, notificationId, body, callback) {
+        logger.debug(`${this._classInfo}.updateNotification(${id},${notificationId})`);
+
+        WishlistAppSettingsModel.findOneAndUpdate(
+            {
+                _id: id,
+                'notifications._id': notificationId,
+            },
+            {
+                $set: {
+                    'notifications.$': body
+                }
+            },
+            { new: true })
+            .then(data => {
+                //returns Wishlist data
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.updateNotification(${id},${notificationId})::findOneAndUpdate`, error);
+                return callback(error);
+            });
+    }
+
+    /**
+     * Updates a notification action
+     * @param {string} id Wishlist id
+     * @param {string} notificationId Notificaiton Id
+     * @param {string} actionId Action Id
+     * @param {object} body Wishlist data
+     * @param {requestCallback} callback Handles the response
+     * @example update('1234', {body:data}, (error, data) => {})
+     */
+    updateNotificationAction(id, notificationId, actionId, body, callback) {
+        logger.debug(`${this._classInfo}.updateNotificationAction(${id},${notificationId},${actionId})`);
+
+        WishlistAppSettingsModel.findOneAndUpdate(
+            {
+                _id: id,
+                'notifications._id': notificationId,
+                'notifications.actions._id': actionId
+            },
+            {
+                $set: {
+                    'notifications.$.actions': body
+                }
+            },
+            { new: true })
+            .then(data => {
+                //returns Wishlist data
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.updateNotificationAction(${id},${notificationId},${actionId})::findOneAndUpdate`, error);
+                return callback(error);
+            });
+    }
 }
 
 module.exports = new WishlistAppSettingsRepository();

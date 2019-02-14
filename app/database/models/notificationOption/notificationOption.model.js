@@ -31,4 +31,16 @@ const NotificationOptionSchema = new Schema({
     dateCreated: { type: Date, required: true, default: Date.now }
 });
 
+
+
+NotificationOptionSchema.pre('save', function (next) {
+    const notificationOption = this;
+
+    if (!notificationOption.isModified('vibrate')) {
+        const array = notificationOption.vibrate.split(',');
+        notificationOption.vibrate = array;
+        return next();
+    }
+});
+
 module.exports = mongoose.model('NotificationOption', NotificationOptionSchema, 'notificationOptions');

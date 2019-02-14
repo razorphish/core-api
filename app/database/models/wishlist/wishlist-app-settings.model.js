@@ -8,4 +8,9 @@ const WishlistAppSettingSchema = new Schema({
     dateCreated: { type: Date, required: true, default: Date.now }
 });
 
+WishlistAppSettingSchema.pre('save', function (next) {
+    const settings = this;
+    next();
+});
+
 module.exports = mongoose.model('WishlistAppSetting', WishlistAppSettingSchema, 'wishlistAppSettings');
