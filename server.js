@@ -55,6 +55,7 @@ class Server {
       'http://localhost:8080',
       'http://localhost:4200',
       'http://localhost:4201', //admin.maras.co
+      'http://localhost:4203', //wishlist.maras.co
       'http://localhost:60000',
       'http://localhost:60001',
       'http://admin.biddler.com',
@@ -63,10 +64,9 @@ class Server {
       'chrome-extension://aejoelaoggembcahagimdiliamlcdmfm',
       'http://admin.local.biddler.com',
       'https://app.biddler.com',
-      'http://app.biddler.com',
       'https://admin.maras.co',
       'https://www.maras.co',
-      'https://wishlistPremiere.maras.co',
+      'https://wishlist.maras.co',
       'https://twittles.maras.co',
       'file://'
     ];
