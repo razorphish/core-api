@@ -144,6 +144,9 @@ function traverseUser(user) {
       user_.username_lower = user.email.toLowerCase();
       user_.avatar = user.photoUrl;
       break;
+    default:
+      user_.username_lower = user.email.toLowerCase();
+      break;
   }
 
   return user_;
@@ -162,7 +165,7 @@ UserSchema.virtual('tokens', {
   // an array. `justOne` is false by default.
   justOne: false,
   //options: { sort: { 'dateExpire': -1 }//, limit: 5 
-   //} // Query options, see http://bit.ly/mongoose-query-options
+  //} // Query options, see http://bit.ly/mongoose-query-options
 });
 
 //PRE-SAVE
@@ -254,9 +257,15 @@ var reasons = (UserSchema.statics.failedLogin = {
   ACCOUNT_NOT_ACTIVE: 3
 });
 
-UserSchema.statics.getAuthenticated = function (username, password, callback) {
+UserSchema.statics.getAuthenticated = function (username, password, applicationId, callback) {
 
-  this.findOne({ username: username })
+  var query = { username: username };
+
+  if (!!applicationId) {
+    query.applicationId = applicationId;
+  }
+
+  this.findOne(query)
     .then(user => {
       if (!user) {
         return callback(null, null, reasons.NOT_FOUND);
@@ -318,8 +327,13 @@ UserSchema.statics.getAuthenticated = function (username, password, callback) {
 
 UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
   var socialUser_ = traverseUser(socialUser);
+  var query = { email: socialUser.email };
 
-  this.findOneAndUpdate({ email: socialUser.email }, socialUser_,
+  if (!!socialUser.applicationId) {
+    query.applicationId = socialUser.applicationId;
+  }
+
+  this.findOneAndUpdate(query, socialUser_,
     {
       upsert: true,
       new: true,
@@ -343,7 +357,8 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
 
       //Determine if user is in active status
       if (user.status !== 'active' && user.status !== 'pending') {
-        return callback(null, null, reasons.ACCOUNT_NOT_ACTIVE);
+        //reasons.ACCOUNT_NOT_ACTIVE
+        return callback(null, null, 'Account not active');
       }
 
       /**

@@ -16,6 +16,10 @@ const oAuthProvider = 'oAuth2'
 // Create OAuth 2.0 server
 const server = oauth2orize.createServer();
 
+// server.grant(oauth2orize.grant.code((client, redirectUri, user, ares, done) => {
+
+// }));
+
 // Register serialialization and deserialization functions.
 //
 // When a client redirects a user to user authorization endpoint, an
@@ -88,53 +92,58 @@ server.exchange(
     oauth2orize.exchange.password((client, username, password, scope, done) => {
         logger.info('*** userRepo.authenticate [Exchange:Password]');
 
-        userRepo.authenticate(username, password, client.requestBody.socialUser || null, (err, user, reason) => {
-            if (err) {
-                logger.error(
-                    `*** userRepo.authenticate [auth] user:${user}, reason:${reason}`,
-                    err
-                );
-                return done(err, false);
-            } else {
-                if (user) {
-                    logger.verbose('*** userRepo.authenticate [auth] user', user);
-                    logger.debug('*** userRepo.authenticate [auth] ok', reason);
-
-                    // Everything validated, return the token
-                    const token = httpSign.token(
-                        user.id, 'access_token', client.tokenLifeTime, scope, null, null, null,
-                        client.requestBody.forceRefresh, client.origin);
-                    const refreshToken = httpSign.token(
-                        user.id, 'refresh_token', client.refreshTokenLifeTime, scope, null, null, null,
-                        client.requestBody.forceRefresh, client.origin);
-
-
-                    tokenRepo.insert(token, (error) => {
-                        if (error) {
-                            return done(error);
-                        }
-
-                        //AM BUG
-                        //Save client refresh token
-                        userRepo.updateToken(user.id, refreshToken, (err, resp) => {
-                            //Let's do nothing as user will just NOT
-                            //have a refresh token for the time being
-                        });
-                        user.refreshToken = refreshToken.value_;
-
-                        return done(
-                            null,
-                            token.value_,
-                            refreshToken.value_,
-                            mergeParam(user, refreshToken.value_, token.dateExpire, token.expiresIn, oAuthProvider)
-                        );
-                    });
+        userRepo.authenticate(
+            username,
+            password,
+            client.requestBody.socialUser || null,
+            { applicationId: client.requestBody.applicationId },
+                (err, user, reason) => {
+                if(err) {
+                    logger.error(
+                        `*** userRepo.authenticate [auth] user:${user}, reason:${reason}`,
+                        err
+                    );
+                    return done(err, false);
                 } else {
-                    logger.debug('*** userRepo.authenticate [Auth] DENIED', reason);
-                    return done(null, false);
+                    if(user) {
+                        logger.verbose('*** userRepo.authenticate [auth] user', user);
+                        logger.debug('*** userRepo.authenticate [auth] ok', reason);
+
+                        // Everything validated, return the token
+                        const token = httpSign.token(
+                            user.id, 'access_token', client.tokenLifeTime, scope, null, null, null,
+                            client.requestBody.forceRefresh, client.origin);
+                        const refreshToken = httpSign.token(
+                            user.id, 'refresh_token', client.refreshTokenLifeTime, scope, null, null, null,
+                            client.requestBody.forceRefresh, client.origin);
+
+
+                        tokenRepo.insert(token, (error) => {
+                            if (error) {
+                                return done(error);
+                            }
+
+                            //AM BUG
+                            //Save client refresh token
+                            userRepo.updateToken(user.id, refreshToken, (err, resp) => {
+                                //Let's do nothing as user will just NOT
+                                //have a refresh token for the time being
+                            });
+                            user.refreshToken = refreshToken.value_;
+
+                            return done(
+                                null,
+                                token.value_,
+                                refreshToken.value_,
+                                mergeParam(user, refreshToken.value_, token.dateExpire, token.expiresIn, oAuthProvider)
+                            );
+                        });
+                    } else {
+                        logger.debug('*** userRepo.authenticate [Auth] DENIED', reason);
+                        return done(null, false);
+                    }
                 }
-            }
-        });
+            });
     })
 );
 

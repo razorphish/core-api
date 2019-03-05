@@ -146,12 +146,12 @@ class UserRepository {
  * @param {requestCallback} callback Handles the response
  * @example authenticate('myusername', 'password', (error, data)=>{})
  */
-  authenticate(username, password, socialUser, callback) {
+  authenticate(username, password, socialUser, params, callback) {
     logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
 
     if (typeof socialUser !== 'function' && socialUser) {
       logger.debug(`${this._classInfo}.authenticate(${socialUser})`);
-      UserModel.getSociallyAuthenticated(socialUser, (err, user) => {
+      UserModel.getSociallyAuthenticated(socialUser, (err, user, reason) => {
         if (err) {
           logger.error(
             `${this._classInfo}.getSociallyAuthenticated(${socialUser})`,
@@ -163,13 +163,15 @@ class UserRepository {
         if (user) {
           callback(null, user);
           return;
+        } else {
+          callback(reason, null)
         }
       });
       return;
     }
 
     logger.debug(`${this._classInfo}.authenticate(${username}, ${password})`);
-    UserModel.getAuthenticated(username, password, (err, user, reason) => {
+    UserModel.getAuthenticated(username, password, params.applicationId, (err, user, reason) => {
       if (err) {
         logger.error(
           `${this._classInfo}.authenticate(${username}, ${password})`,
@@ -419,13 +421,26 @@ class UserRepository {
     logger.debug(`${this._classInfo}.insert()`, body);
 
     //Created
-    body.status = !!body.password ? 'active' : 'awaitingPassword';
+    //if no password present usually means user authenticated
+    //via 3rd party (facebook)
+    if (!!body.colo && body.colo === 'mobile'){
+      body.status = 'pending'; 
+    } else {
+      body.status = !!body.password ? 'active' : 'awaitingPassword';
+    }
     body.email_lower = body.email.toLowerCase();
     body.username_lower = body.username.toLowerCase();
 
     UserModel.create(body)
       .then(data => {
-        callback(null, data);
+        //return a watered down version of user
+        callback(null, {
+          username: data.username,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          applicationId: data.applicationId
+        });
       })
       .catch(error => {
         logger.error(`${this._classInfo}.insert()::save`, error);

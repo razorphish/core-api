@@ -105,12 +105,12 @@ class ClientSeeder {
       {
         applicationId: '5c4b1303fc13ae60b4000002',
         name: '@marasco/wishlist-mobile-ui',
-        clientId: 'wishlist-mobile-ui',
+        clientId: 'wishlistPremiere-pwa',
         clientSecret: '4e99ef5c40909679542901fabc2f833e9064ad5a',
         isTrusted: true,
         applicationType: 'Native',
         allowedOrigins: [
-          'http://localhost:4200',
+          'http://localhost:4203',
           'chrome-extension://aejoelaoggembcahagimdiliamlcdmfm',
           'file://',
           'https://wishlist.maras.co'
