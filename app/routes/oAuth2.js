@@ -296,13 +296,14 @@ function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
             homePhone: user.homePhone,
             avatar: user.avatar,
             roles: user.roles || [],
-            calendars: user.calendars || [],
             addresses: user.addresses || [],
             twitter: user.twitter,
             facebook: user.facebook,
             instagram: user.instagram,
             devices: user.devices || [],
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
+            wishlists: user.wishlists,
+            wishlistItemCategories: user.wishlistItemCategories
         }
     };
 

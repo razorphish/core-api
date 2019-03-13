@@ -103,6 +103,27 @@ class WishlistRepository {
     }
 
     /**
+     * Gets a user by a role
+     * @param {string} userId UserId to get user by
+     * @param {requestCallback} callback Handles the response
+     * @example byRole('User', (error, data) => {})
+     */
+    byUser(userId, callback) {
+        logger.debug(`${this._classInfo}.byUser(${JSON.stringify(role)})`);
+
+        WishlistModel.find(
+            { userId: userId }
+        )
+            .then((data) => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.byUser::find`, error);
+                callback(error);
+            });
+    }
+
+    /**
      * Delete a Wishlist by id
      * @param {string} id Wishlist Id
      * @param {requestCallback} callback Handles the response
@@ -135,7 +156,11 @@ class WishlistRepository {
             null,
             {
                 select: {
-                    accountId: 1
+                    _id: 1,
+                    statusId: 1,
+                    privacy: 1,
+                    name: 1,
+                    preferences: 1 
                 }
             })
             .then(data => {

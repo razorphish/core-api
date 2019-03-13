@@ -12,7 +12,7 @@ const WishlistSchema = new Schema({
         enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'deleted'],
         default: 'active'
     },
-    Privacy: {
+    privacy: {
         type: String,
         required: true,
         enum: ['Private', 'Public'],

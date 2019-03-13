@@ -45,7 +45,7 @@ class WishlistItemCategoryController {
     router.post(
       '/',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
+      //utils.isInRole('admin'),
       this.insert.bind(this)
     );
 

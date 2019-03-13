@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ImageSchema = new Schema({
-    data: { type: Buffer, required: true },
+    data: { type: Buffer, required: false },
+    url: { type: String },
     contentType: { type: String }, //image/pneg
     mimeType: { type: String }, //.png
     fileName: { type: String }, //image.png
@@ -12,4 +13,3 @@ const ImageSchema = new Schema({
 });
 
 module.exports = mongoose.model('Image', ImageSchema, 'images');
-

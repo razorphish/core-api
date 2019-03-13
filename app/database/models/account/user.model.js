@@ -157,8 +157,31 @@ UserSchema.virtual('isLocked').get(function () {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
+//Add User Virtual Reference Objects
 UserSchema.virtual('tokens', {
   ref: 'Token', // The model to use
+  localField: '_id', // Find people where `localField`
+  foreignField: 'userId', // is equal to `foreignField`
+  // If `justOne` is true, 'members' will be a single doc as opposed to
+  // an array. `justOne` is false by default.
+  justOne: false,
+  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
+  //} // Query options, see http://bit.ly/mongoose-query-options
+});
+
+UserSchema.virtual('wishlists', {
+  ref: 'Wishlist', // The model to use
+  localField: '_id', // Find people where `localField`
+  foreignField: 'userId', // is equal to `foreignField`
+  // If `justOne` is true, 'members' will be a single doc as opposed to
+  // an array. `justOne` is false by default.
+  justOne: false,
+  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
+  //} // Query options, see http://bit.ly/mongoose-query-options
+});
+
+UserSchema.virtual('wishlistItemCategories', {
+  ref: 'WishlistItemCategory', // The model to use
   localField: '_id', // Find people where `localField`
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
@@ -266,6 +289,14 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
   }
 
   this.findOne(query)
+    .populate({
+      path: 'wishlists',
+      select: '_id userId name preferences statusId privacy items dateExpire'
+    })
+    .populate({
+      path: 'wishlistItemCategories',
+      select: '_id name'
+    })
     .then(user => {
       if (!user) {
         return callback(null, null, reasons.NOT_FOUND);
@@ -338,6 +369,14 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
       upsert: true,
       new: true,
       //rawResult: true
+    })
+    .populate({
+      path: 'wishlists',
+      select: '_id userId name preferences statusId privacy items dateExpire'
+    })
+    .populate({
+      path: 'wishlistItemCategories',
+      select: '_id name'
     })
     .then(user => {
       if (!user) {
