@@ -84,7 +84,9 @@ const UserSchema = new Schema({
     default: 'pending',
     required: true
   }
-}, { toJSON: { virtuals: true } });
+}, {
+    toJSON: { virtuals: true }
+  });
 
 //Composite Key
 UserSchema.index({ applicationId: 1, username: 1 }, { unique: true })
@@ -291,7 +293,7 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
   this.findOne(query)
     .populate({
       path: 'wishlists',
-      select: '_id userId name preferences statusId privacy items dateExpire'
+      select: '_id name preferences statusId privacy items dateExpire'
     })
     .populate({
       path: 'wishlistItemCategories',
@@ -372,11 +374,11 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
     })
     .populate({
       path: 'wishlists',
-      select: '_id userId name preferences statusId privacy items dateExpire'
+      select: '_id name preferences statusId privacy items dateExpire -userId'
     })
     .populate({
       path: 'wishlistItemCategories',
-      select: '_id name'
+      select: '_id name -userId'
     })
     .then(user => {
       if (!user) {

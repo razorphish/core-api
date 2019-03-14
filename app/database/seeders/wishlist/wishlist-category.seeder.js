@@ -14,6 +14,7 @@ class WishlistCategoryFeeder {
 
         var wishlistCategories = [
             {
+                userId: '597e782cfc13ae628f00000d',
                 name: 'Miscellaneous'
             }
         ];

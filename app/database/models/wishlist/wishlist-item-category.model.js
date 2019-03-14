@@ -6,7 +6,7 @@ const WishlistItemCategorySchema = new Schema({
     name: { type: String, required: true, trim: true },
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
-}, { toJSON: { virtuals: true } });
+});
 
 WishlistItemCategorySchema.pre('save', function (next) {
     if (this.dateModified) {
