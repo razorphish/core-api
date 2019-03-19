@@ -26,7 +26,8 @@ class WishlistCategoryFeeder {
 
         for (i = 0; i < l; i++) {
             var wishlistCategory = new WishlistCategory({
-                name: wishlistCategories[i].name
+                name: wishlistCategories[i].name,
+                userId: wishlistCategories[i].userId
             });
 
             wishlistCategory.save((err, user) => {
