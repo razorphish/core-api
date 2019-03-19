@@ -293,7 +293,8 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
   this.findOne(query)
     .populate({
       path: 'wishlists',
-      select: '_id name preferences statusId privacy items dateExpire'
+      select: '_id name preferences statusId privacy items dateExpire items',
+      populate: { path: 'items', select: '_id name categoryId price quantity url notes purchased image statusId sortOrder' }
     })
     .populate({
       path: 'wishlistItemCategories',

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Preference = require('./wishlist-preference.model');
+const WishlistItem = require('./wishlist-item.model');
 
 const WishlistSchema = new Schema({
     name: { type: String, required: true, trim: true },
@@ -18,7 +19,7 @@ const WishlistSchema = new Schema({
         enum: ['Private', 'Public'],
         default: 'Public'
     },
-    items: { type: Schema.Types.ObjectId, ref: 'WishlistItem' },
+    //items: { type: [WishlistItem.schema], ref: 'WishlistItem' },
     dateExpire: { type: Date, required: false },
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
@@ -54,6 +55,20 @@ WishlistSchema.virtual('notifications', {
     // If `justOne` is true, 'members' will be a single doc as opposed to
     // an array. `justOne` is false by default.
     justOne: false
+});
+
+WishlistSchema.virtual('items', {
+    ref: 'WishlistItem', // The model to use
+    localField: '_id', // Find people where `localField`
+    foreignField: 'wishlistId', // is equal to `foreignField`
+    // If `justOne` is true, 'members' will be a single doc as opposed to
+    // an array. `justOne` is false by default.
+    justOne: false,
+    // options: {
+    //     sort: {
+    //         sortOrder: 1
+    //     }
+    // } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 module.exports = mongoose.model('Wishlist', WishlistSchema, 'wishlists');
