@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "concurrently \"npm run tsc:w\" \"nodemon server.js\"",
+    "start:ios": "node server.js",
     "startdev": "concurrently \"SET NODE_ENV=dev\" \"nodemon server.js\"",
     "test": "mocha test/**/*.spec.js --exit --recursive --reporter spec",
     "testcat": "mocha --reporter nyan",
