@@ -64,11 +64,11 @@ WishlistSchema.virtual('items', {
     // If `justOne` is true, 'members' will be a single doc as opposed to
     // an array. `justOne` is false by default.
     justOne: false,
-    // options: {
-    //     sort: {
-    //         sortOrder: 1
-    //     }
-    // } // Query options, see http://bit.ly/mongoose-query-options
+    options: {
+        sort: {
+            sortOrder: 1
+        }
+    } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 module.exports = mongoose.model('Wishlist', WishlistSchema, 'wishlists');

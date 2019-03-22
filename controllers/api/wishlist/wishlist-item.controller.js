@@ -2,9 +2,10 @@
 /**
  * Wishlist Api
  */
+const async = require('async');
+const passport = require('passport');
 
 const repo = require('../../../app/database/repositories/wishlist/wishlist-item.repository');
-const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 
@@ -54,6 +55,13 @@ class WishlistItemController {
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.update.bind(this)
+    );
+
+    router.post(
+      '/:id/item/:itemId/sort',
+      passport.authenticate('user-bearer', { session: false }),
+      //utils.isInRole(['admin', 'user']),
+      this.sort.bind(this)
     );
 
     router.delete(
@@ -168,26 +176,54 @@ class WishlistItemController {
    * @param {Response} response Response
    * @example POST /api/wishlist/:id/item
    */
-  insert(request, response) {
+  insert(request, response, next) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
 
-    repo.insert(request.body, (error, result) => {
+    async.waterfall([
+      (done) => {
+        repo.all((error, data) => {
+          let itemCount = 0;
+          if (error) {
+            logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            if (data) {
+              itemCount = data.length;
+            }
+
+            done(null, itemCount)
+          }
+        })
+      },
+      (itemCount, done) => {
+        request.body.sortOrder = itemCount;
+
+        repo.insert(request.body, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
+            return done(null, result)
+          }
+        });
+      }
+    ], (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-        response.status(500).send(error);
-      } else {
-        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`, result);
-        response.json(result);
+        return next(error)
       }
-    });
+      logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
+      response.json(result);
+    })
   }
 
   /**
-   * Updates a wishlist
-   * @param {Request} request Request object
-   * @param {Response} response Response object
-   * @example PUT /api/wishlist/:id/item/:itemId
-   */
+ * Updates a wishlist
+ * @param {Request} request Request object
+ * @param {Response} response Response object
+ * @example PUT /api/wishlist/:id/item/:itemId
+ */
   update(request, response) {
     const id = request.params.id; //wishlist id
     const itemId = request.params.itemId; //wishlist item id
@@ -203,6 +239,81 @@ class WishlistItemController {
         response.json(result);
       }
     });
+  }
+
+  /**
+   * Sorts a wishlist
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @example PUT /api/wishlist/:id/item/:itemId
+   */
+  sort(request, response, next) {
+    const wishlistId = request.params.id; //wishlist id
+    const itemId = request.params.itemId; //wishlist item id
+
+    logger.info(`${this._classInfo}.sort(${wishlistId}) [${this._routeName}]`);
+
+    async.waterfall([
+      (done) => {
+        repo.byWishlistId(wishlistId, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.sort() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            done(null, result);
+          }
+        })
+      },
+      (wishlistItems, done) => {
+        const rangeIndex = request.body.oldIndex - request.body.newIndex;
+        const oldIndex = request.body.oldIndex;
+        const newIndex = request.body.newIndex;
+        const sortIncrementUp = rangeIndex > -1
+
+        wishlistItems.forEach((wishlistItem) => {
+          let sortOrder = wishlistItem.sortOrder;
+
+          if (wishlistItem.sortOrder === oldIndex) {
+            wishlistItem.sortOrder = newIndex;
+          } else {
+            if (sortIncrementUp) {
+              if (sortOrder >= newIndex && sortOrder < oldIndex) {
+                wishlistItem.sortOrder = sortOrder + 1;
+              }
+            } else {
+              if (sortOrder > oldIndex && sortOrder <= newIndex) {
+                wishlistItem.sortOrder = sortOrder - 1;
+              }
+            }
+          }
+        })
+
+        return done(null, wishlistItems);
+      },
+      (sortedWishlistItems, done) => {
+
+        repo.sort(sortedWishlistItems, (error, data) => {
+          if (error) {
+            logger.error(`${this._classInfo}.sort() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            done(null, sortedWishlistItems);
+          }
+        })
+      },
+      (updatedWishlistItems, done) => {
+        updatedWishlistItems.sort((a,b) => (a.sortOrder > b.sortOrder) ? 1 : ((b.sortOrder > a.sortOrder) ? -1 : 0));
+        done(null, updatedWishlistItems);
+      }
+    ], (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
+        return next(error)
+      }
+      logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
+      response.json(result);
+    })
+
   }
 }
 

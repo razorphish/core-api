@@ -1,6 +1,7 @@
 // WishlistItem Repository
 const WishlistItemModel = require('../../models/wishlist/wishlist-item.model');
 const logger = require('../../../../lib/winston.logger');
+const async = require('async');
 
 /**
  * This callback type is called `requestCallback` and is displayed as a global symbol.
@@ -76,6 +77,29 @@ class WishlistItemRepository {
     }
 
     /**
+     * Gets items by wishlist id
+     * @param {string} wishlistId Wishlist Id
+     * @param {requestCallback} callback Handles the response
+     * @example byEmail('me@here.com', (error, data) => {})
+     */
+    byWishlistId(wishlistId, callback) {
+        logger.debug(`${this._classInfo}.byWishlistId(${wishlistId})`);
+
+        WishlistItemModel.find(
+            {
+                wishlistId: wishlistId
+            },
+            null)
+            .then((data) => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.byWishlistId::findOne`, error);
+                return callback(error);
+            });
+    }
+
+    /**
      * Delete a WishlistItem by id
      * @param {string} id WishlistItem Id
      * @param {requestCallback} callback Handles the response
@@ -140,6 +164,36 @@ class WishlistItemRepository {
     }
 
     /**
+     * sorts wishlist items
+     * @param {array} items WishlistItem id
+     * @param {requestCallback} callback Handles the response
+     * @example update('1234', {body:data}, (error, data) => {})
+     */
+    sort(items, callback) {
+        logger.debug(`${this._classInfo}.sort()`);
+
+        async.eachSeries(items, (item, done) => {
+            WishlistItemModel.findOneAndUpdate(
+                { _id: item._id },
+                { $set: {
+                    sortOrder: item.sortOrder
+                }},
+                // { item },
+                { new: true })
+                .then(data => {
+                    //returns WishlistItem data
+                    done();
+                });
+        }, (error) => {
+            if (error) {
+                callback(error);
+            } else {
+                return callback();
+            }
+        })
+    }
+
+    /**
      * Updates an Wishlist
      * @param {string} id WishlistItem id
      * @param {object} body WishlistItem data
@@ -152,7 +206,7 @@ class WishlistItemRepository {
         WishlistItemModel.findOneAndUpdate(
             { _id: id },
             body,
-            { new: true })
+            { new: false })
             .then(data => {
                 //returns WishlistItem data
                 callback(null, data);
