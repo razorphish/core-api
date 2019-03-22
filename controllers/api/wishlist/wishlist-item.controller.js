@@ -178,10 +178,11 @@ class WishlistItemController {
    */
   insert(request, response, next) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
+    const wishlistId = request.body.wishlistId;
 
     async.waterfall([
       (done) => {
-        repo.all((error, data) => {
+        repo.byWishlistId(wishlistId, (error, data) => {
           let itemCount = 0;
           if (error) {
             logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
@@ -302,7 +303,7 @@ class WishlistItemController {
         })
       },
       (updatedWishlistItems, done) => {
-        updatedWishlistItems.sort((a,b) => (a.sortOrder > b.sortOrder) ? 1 : ((b.sortOrder > a.sortOrder) ? -1 : 0));
+        updatedWishlistItems.sort((a, b) => (a.sortOrder > b.sortOrder) ? 1 : ((b.sortOrder > a.sortOrder) ? -1 : 0));
         done(null, updatedWishlistItems);
       }
     ], (error, result) => {
