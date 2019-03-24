@@ -398,7 +398,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
       }
 
       //Determine if user is in active status
-      if (user.status !== 'active' && user.status !== 'pending') {
+      if (user.status !== 'active' && user.status !== 'pending' && user.status !== 'awaitingPassword') {
         //reasons.ACCOUNT_NOT_ACTIVE
         return callback(null, null, 'Account not active');
       }
