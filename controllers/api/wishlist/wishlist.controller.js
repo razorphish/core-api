@@ -25,8 +25,8 @@ class WishlistController {
   constructor(router) {
     router.get(
       '/',
-      //passport.authenticate('user-bearer', { session: false }),
-      //utils.isInRole('admin'),
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('admin'),
       this.all.bind(this)
     );
 
@@ -78,7 +78,7 @@ class WishlistController {
     router.put(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
+      //utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
