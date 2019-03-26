@@ -87,7 +87,8 @@ class WishlistItemRepository {
 
         WishlistItemModel.find(
             {
-                wishlistId: wishlistId
+                wishlistId: wishlistId,
+                statusId: { $ne: 'deleted'}
             },
             null)
             .then((data) => {
@@ -175,9 +176,11 @@ class WishlistItemRepository {
         async.eachSeries(items, (item, done) => {
             WishlistItemModel.findOneAndUpdate(
                 { _id: item._id },
-                { $set: {
-                    sortOrder: item.sortOrder
-                }},
+                {
+                    $set: {
+                        sortOrder: item.sortOrder
+                    }
+                },
                 // { item },
                 { new: true })
                 .then(data => {
@@ -205,8 +208,8 @@ class WishlistItemRepository {
 
         WishlistItemModel.findOneAndUpdate(
             { _id: id },
-            body,
-            { new: false })
+            { $set: body },
+            { new: true })
             .then(data => {
                 //returns WishlistItem data
                 callback(null, data);

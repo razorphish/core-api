@@ -294,7 +294,11 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
     .populate({
       path: 'wishlists',
       select: '_id name preferences statusId privacy items dateExpire items',
-      populate: { path: 'items', select: '_id name categoryId price quantity url notes purchased image statusId sortOrder' }
+      populate: {
+        path: 'items',
+        match: { statusId: { $ne: 'deleted' } },
+        select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+      }
     })
     .populate({
       path: 'wishlistItemCategories',
@@ -375,11 +379,16 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
     })
     .populate({
       path: 'wishlists',
-      select: '_id name preferences statusId privacy items dateExpire -userId'
+      select: '_id name preferences statusId privacy items dateExpire items',
+      populate: {
+        path: 'items',
+        match: { statusId: { $ne: 'deleted' } },
+        select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+      }
     })
     .populate({
       path: 'wishlistItemCategories',
-      select: '_id name -userId'
+      select: '_id name'
     })
     .then(user => {
       if (!user) {

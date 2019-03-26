@@ -53,7 +53,7 @@ class WishlistItemController {
     router.put(
       '/:id/item/:itemId',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
+      //utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
@@ -67,7 +67,7 @@ class WishlistItemController {
     router.delete(
       '/:id/item/:itemId',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('admin'),
+      //utils.isInRole('admin'),
       this.delete.bind(this)
     );
 
@@ -135,13 +135,28 @@ class WishlistItemController {
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
-    const id = request.params.id;
-    logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
+    // const id = request.params.id;
+    // logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
-    repo.delete(id, (error, result) => {
+    // repo.delete(id, (error, result) => {
+    //   if (error) {
+    //     logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
+    //     response.status(500).json(error);
+    //   } else {
+    //     logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+    //     response.json(result);
+    //   }
+    // });
+    const id = request.params.id; //wishlist id
+    const itemId = request.params.itemId; //wishlist item id
+
+    logger.info(`${this._classInfo}.delete(${id}, ${itemId}) [${this._routeName}]`);
+    request.body.statusId = 'deleted';
+
+    repo.update(itemId, request.body, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
-        response.status(500).json(error);
+        logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error, request.body);
+        response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
         response.json(result);
@@ -229,9 +244,9 @@ class WishlistItemController {
     const id = request.params.id; //wishlist id
     const itemId = request.params.itemId; //wishlist item id
 
-    logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
+    logger.info(`${this._classInfo}.update(${id}, ${itemId}) [${this._routeName}]`);
 
-    repo.update(id, request.body, (error, result) => {
+    repo.update(itemId, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
         response.status(500).send(error);
