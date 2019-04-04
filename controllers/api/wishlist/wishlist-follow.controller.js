@@ -22,42 +22,42 @@ class WishlistFollowController {
    */
   constructor(router) {
     router.get(
-      '/',
+      '/:id/follow',
       //passport.authenticate('user-bearer', { session: false }),
       //utils.isInRole('admin'),
       this.all.bind(this)
     );
 
     router.get(
-      '/page/:skip/:top',
+      '/:id/follow/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.allPaged.bind(this)
     );
 
     router.get(
-      '/:id',
+      ':id/follow/:followId',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
     );
 
     router.post(
-      '/',
+      '/:id/follow',
       passport.authenticate('user-bearer', { session: false }),
       //utils.isInRole('admin'),
       this.insert.bind(this)
     );
 
     router.put(
-      '/:id',
+      '/:id/follow/:followId',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
     router.delete(
-      '/:id',
+      '/:id/follow/:followId',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
       this.delete.bind(this)
