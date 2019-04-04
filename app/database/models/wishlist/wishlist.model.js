@@ -71,4 +71,16 @@ WishlistSchema.virtual('items', {
     } // Query options, see http://bit.ly/mongoose-query-options
 });
 
+WishlistSchema.virtual('follows', {
+    ref: 'WishlistFollow', // The model to use
+    localField: '_id', // Find people where `localField`
+    foreignField: 'wishlistId', // is equal to `foreignField`
+    // If `justOne` is true, 'members' will be a single doc as opposed to
+    // an array. `justOne` is false by default.
+    justOne: false,
+    options: {
+
+    } // Query options, see http://bit.ly/mongoose-query-options
+});
+
 module.exports = mongoose.model('Wishlist', WishlistSchema, 'wishlists');

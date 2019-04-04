@@ -8,7 +8,8 @@ const WishlistPreferenceSchema = new Schema({
     currencyUnitSymbol: { type: String, required: true, default: '$' },
     notifyOnAddItem: { type: Boolean, required: true, default: true },
     notifyOnRemoveItem: { type: Boolean, required: true, default: false },
-    notifyOnClose: { type: Boolean, required: true, default: false }
+    notifyOnCompletion: { type: Boolean, required: true, default: false },
+    notifyOnClose: { type: Boolean, required: true, default: false },
 });
 
 module.exports = mongoose.model('WishlistPreference', WishlistPreferenceSchema, 'wishlistPreferences');
