@@ -76,6 +76,31 @@ class WishlistFollowRepository {
     }
 
     /**
+     * Gets items by wishlist id
+     * @param {string} wishlistId Wishlist Id
+     * @param {requestCallback} callback Handles the response
+     * @example byEmail('me@here.com', (error, data) => {})
+     */
+    byWishlistIdUserId(wishlistId, userId, callback) {
+        logger.debug(`${this._classInfo}.byWishlistIdUserId(${wishlistId})`);
+
+        WishlistFollowModel.find(
+            {
+                wishlistId: wishlistId,
+                userId: userId,
+                statusId: { $ne: 'deleted' }
+            },
+            null)
+            .then((data) => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.byWishlistIdUserId::findOne`, error);
+                return callback(error);
+            });
+    }
+
+    /**
      * Delete a WishlistFollow by id
      * @param {string} id WishlistFollow Id
      * @param {requestCallback} callback Handles the response

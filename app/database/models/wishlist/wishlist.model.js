@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Preference = require('./wishlist-preference.model');
-const WishlistItem = require('./wishlist-item.model');
 
 const WishlistSchema = new Schema({
     name: { type: String, required: true, trim: true },

@@ -53,6 +53,7 @@ class Server {
   initCors() {
     var whiteList = [
       'http://localhost:8080',
+      'http://127.0.0.1:8080',
       'http://localhost:4200',
       'http://localhost:4201', //admin.maras.co
       'http://localhost:4203', //wishlist.maras.co

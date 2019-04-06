@@ -7,6 +7,7 @@ const repo = require('../../../app/database/repositories/wishlist/wishlist-follo
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
+const async = require('async');
 
 /**
  * Wishlist Follow for items Api Controller
@@ -170,16 +171,49 @@ class WishlistFollowController {
    */
   insert(request, response) {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
+    const wishlistId = request.body.wishlistId;
+    const userId = request.body.userId;
 
-    repo.insert(request.body, (error, result) => {
+    //Let's make sure notification doesn't already exist
+    async.waterfall([
+      (done) => {
+        repo.byWishlistIdUserId(wishlistId, userId, (error, data) => {
+          let itemCount = 0;
+          if (error) {
+            logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            if (data) {
+              itemCount = data.length;
+            }
+
+            done(null, itemCount)
+          }
+        })
+      },
+      (itemCount, done) => {
+        if (itemCount === 0) {
+          repo.insert(request.body, (error, result) => {
+            if (error) {
+              logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
+              response.status(500).json(error);
+            } else {
+              logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
+              return done(null, result)
+            }
+          });
+        } else {
+          return done(null, request.body)
+        }
+      }
+    ], (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.insert() [${this._routeName}]`, error);
-        response.status(500).json(error);
-      } else {
-        logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
-        response.json(result);
+        return next(error)
       }
-    });
+      logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
+      response.json(result);
+    })
   }
 
   /**

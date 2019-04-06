@@ -8,7 +8,6 @@ const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 const webPush = require('web-push');
-const webPushConfig = require('../../../lib/config.loader').webPush;
 
 /**
  * WishlistApi Controller

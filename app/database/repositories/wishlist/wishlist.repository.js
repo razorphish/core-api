@@ -160,8 +160,19 @@ class WishlistRepository {
                     statusId: 1,
                     privacy: 1,
                     name: 1,
-                    preferences: 1 
+                    preferences: 1,
+                    items: 1,
+                    dateExpire: 1
                 }
+            })
+            .populate({
+                path: 'items',
+                match: { statusId: { $ne: 'deleted' } },
+                select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+            })
+            .populate({
+                path: 'follows',
+                select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion'
             })
             .then(data => {
                 callback(null, data);
