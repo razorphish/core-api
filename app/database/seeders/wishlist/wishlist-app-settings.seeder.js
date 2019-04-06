@@ -1,4 +1,4 @@
-const WishlistAppSettingsModel = require('../../models/wishlist/wishlist-app-settings.model');
+const WishlistAppSettings = require('../../models/wishlist/wishlist-app-settings.model');
 const logger = require('../../../../lib/winston.logger');
 
 class WishlistAppSettingsFeeder {
@@ -76,14 +76,14 @@ class WishlistAppSettingsFeeder {
         var l = wishlistAppSettings.length,
             i;
 
-        WishlistAppSettingsModel.deleteMany({});
+        WishlistAppSettings.deleteMany({});
 
         for (i = 0; i < l; i++) {
-            var wishlistAppSettings = new WishlistAppSettingsModel({
+            var wishlistAppSetting = new WishlistAppSettings({
                 notifications: wishlistAppSettings[i].notifications
             });
 
-            wishlistAppSettings.save((err, user) => {
+            wishlistAppSetting.save((err, user) => {
                 //logger.verbose(`${this._classInfo}.seed()`, user);
 
                 if (err) {
@@ -91,7 +91,7 @@ class WishlistAppSettingsFeeder {
                 } else {
                     logger.debug(
                         `${this._classInfo}.seed() OK`,
-                        `${wishlistAppSettings._id}`
+                        `${wishlistAppSetting._id}`
                     );
                 }
             });

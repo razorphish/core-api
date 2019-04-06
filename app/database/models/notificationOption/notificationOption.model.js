@@ -39,8 +39,8 @@ NotificationOptionSchema.pre('save', function (next) {
     if (!notificationOption.isModified('vibrate')) {
         const array = notificationOption.vibrate.split(',');
         notificationOption.vibrate = array;
-        return next();
     }
+    next();
 });
 
 module.exports = mongoose.model('NotificationOption', NotificationOptionSchema, 'notificationOptions');
