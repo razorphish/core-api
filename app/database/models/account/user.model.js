@@ -44,47 +44,48 @@ const DeviceSchema = new Schema({
   serial: { type: String, required: false, trim: true }
 });
 
-const UserSchema = new Schema({
-  applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
-  firstName: { type: String, required: false, trim: true },
-  lastName: { type: String, required: false, trim: true },
-  email: { type: String, required: true, trim: true },
-  email_lower: { type: String, required: true, trim: true, lowercase: true },
-  homePhone: { type: String, required: false, trim: true },
-  username: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  username_lower: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true
-  },
-  avatar: { type: String, required: false, trim: true },
-  social: { type: Social.schema, required: false },
-  password: { type: String, required: false },
-  salt: { type: String, required: false },
-  refreshToken: { type: Token.schema, required: false },
-  dateCreated: { type: Date, required: true, default: Date.now },
-  dateModified: { type: Date, required: true, default: Date.now },
-  roles: { type: [Role.schema], required: false },
-  addresses: {
-    type: [AddressSchema],
-    required: false,
-    validate: userAddressValidator
-  },
-  loginAttempts: { type: Number, required: true, default: 0 },
-  lockUntil: { type: Number },
-  devices: { type: [DeviceSchema], required: false },
-  status: {
-    type: String,
-    enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'awaitingPassword'],
-    default: 'pending',
-    required: true
-  }
-}, {
+const UserSchema = new Schema(
+  {
+    applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
+    firstName: { type: String, required: false, trim: true },
+    lastName: { type: String, required: false, trim: true },
+    email: { type: String, required: true, trim: true },
+    email_lower: { type: String, required: true, trim: true, lowercase: true },
+    homePhone: { type: String, required: false, trim: true },
+    username: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    username_lower: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true
+    },
+    avatar: { type: String, required: false, trim: true },
+    social: { type: Social.schema, required: false },
+    password: { type: String, required: false },
+    salt: { type: String, required: false },
+    refreshToken: { type: Token.schema, required: false },
+    dateCreated: { type: Date, required: true, default: Date.now },
+    dateModified: { type: Date, required: true, default: Date.now },
+    roles: { type: [Role.schema], required: false },
+    addresses: {
+      type: [AddressSchema],
+      required: false,
+      validate: userAddressValidator
+    },
+    loginAttempts: { type: Number, required: true, default: 0 },
+    lockUntil: { type: Number },
+    devices: { type: [DeviceSchema], required: false },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'awaitingPassword'],
+      default: 'pending',
+      required: true
+    }
+  }, {
     toJSON: { virtuals: true }
   });
 
@@ -184,6 +185,17 @@ UserSchema.virtual('wishlists', {
 
 UserSchema.virtual('wishlistItemCategories', {
   ref: 'WishlistItemCategory', // The model to use
+  localField: '_id', // Find people where `localField`
+  foreignField: 'userId', // is equal to `foreignField`
+  // If `justOne` is true, 'members' will be a single doc as opposed to
+  // an array. `justOne` is false by default.
+  justOne: false,
+  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
+  //} // Query options, see http://bit.ly/mongoose-query-options
+});
+
+UserSchema.virtual('wishlistFollows', {
+  ref: 'WishlistFollow', // The model to use
   localField: '_id', // Find people where `localField`
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
@@ -294,18 +306,32 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
     .populate({
       path: 'wishlists',
       select: '_id name preferences statusId privacy items dateExpire items',
-      populate: [{
-        path: 'items',
-        match: { statusId: { $ne: 'deleted' } },
-        select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
-      }, {
-        path: 'follows',
-        select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion'
-      }]
+      populate: [
+        {
+          path: 'items',
+          match: { statusId: { $ne: 'deleted' } },
+          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+        },
+        {
+          path: 'follows',
+          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+          match: { statusId: { $ne: 'deleted' } }
+        }]
     })
     .populate({
       path: 'wishlistItemCategories',
       select: '_id name'
+    })
+    .populate({
+      path: 'wishlistFollows',
+      select: '_id',
+      match: { statusId: { $ne: 'deleted' } },
+      populate: [
+        {
+          path: 'wishlistId',
+          select: '_id name'
+        }
+      ]
     })
     .then(user => {
       if (!user) {
@@ -383,18 +409,32 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
     .populate({
       path: 'wishlists',
       select: '_id name preferences statusId privacy items dateExpire items',
-      populate: [{
-        path: 'items',
-        match: { statusId: { $ne: 'deleted' } },
-        select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
-      }, {
-        path: 'follows',
-        select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion'
-      }]
+      populate: [
+        {
+          path: 'items',
+          match: { statusId: { $ne: 'deleted' } },
+          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+        },
+        {
+          path: 'follows',
+          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+          match: { statusId: { $ne: 'deleted' } }
+        }]
     })
     .populate({
       path: 'wishlistItemCategories',
       select: '_id name'
+    })
+    .populate({
+      path: 'wishlistFollows',
+      select: '_id',
+      match: { statusId: { $ne: 'deleted' } },
+      populate: [
+        {
+          path: 'wishlistId',
+          select: '_id name'
+        }
+      ]
     })
     .then(user => {
       if (!user) {

@@ -106,7 +106,7 @@ server.exchange(
                     return done(err, false);
                 } else {
                     if(user) {
-                        logger.verbose('*** userRepo.authenticate [auth] user', user);
+                        //logger.verbose('*** userRepo.authenticate [auth] user', user);
                         logger.debug('*** userRepo.authenticate [auth] ok', reason);
 
                         // Everything validated, return the token
@@ -303,7 +303,8 @@ function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
             devices: user.devices || [],
             refreshToken: refreshToken,
             wishlists: user.wishlists,
-            wishlistItemCategories: user.wishlistItemCategories
+            wishlistItemCategories: user.wishlistItemCategories,
+            wishlistFollows: user.wishlistFollows
         }
     };
 

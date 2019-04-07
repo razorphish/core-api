@@ -3,8 +3,9 @@ const Schema = mongoose.Schema;
 
 const WishlistItemSchema = new Schema({
     wishlistId: { type: Schema.Types.ObjectId, required: true, ref: 'Wishlist' },
-    name: { type: String, required: true, trim: true },
     categoryId: { type: Schema.Types.ObjectId, required: false, trim: true, ref: 'WishlistItemCategory' },
+    purchasedBy: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
+    name: { type: String, required: true, trim: true },
     price: { type: Number, required: false },
     quantity: { type: Number, require: false },
     url: { type: String, required: false },
