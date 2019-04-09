@@ -324,7 +324,7 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
     })
     .populate({
       path: 'wishlistFollows',
-      select: '_id',
+      select: '_id dateCreated',
       match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
@@ -427,12 +427,12 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
     })
     .populate({
       path: 'wishlistFollows',
-      select: '_id',
+      select: '_id dateCreated',
       match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
           path: 'wishlistId',
-          select: '_id name'
+          select: '_id name dateCreated'
         }
       ]
     })
