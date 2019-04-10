@@ -7,8 +7,8 @@ const WishlistPreferenceSchema = new Schema({
     hideFromMe: { type: Boolean, required: true, default: true },
     currencyUnitSymbol: { type: String, required: true, default: '$' },
     notifyOnAddItem: { type: Boolean, required: true, default: true },
-    notifyOnRemoveItem: { type: Boolean, required: true, default: false },
-    notifyOnCompletion: { type: Boolean, required: true, default: false },
+    notifyOnRemoveItem: { type: Boolean, required: true, default: true },
+    notifyOnCompletion: { type: Boolean, required: true, default: true },
     notifyOnClose: { type: Boolean, required: true, default: false },
 });
 

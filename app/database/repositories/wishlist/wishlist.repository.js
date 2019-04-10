@@ -172,7 +172,8 @@ class WishlistRepository {
             })
             .populate({
                 path: 'follows',
-                select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion'
+                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+                match: { statusId: { $ne: 'deleted' } }
             })
             .then(data => {
                 callback(null, data);
@@ -202,8 +203,14 @@ class WishlistRepository {
                 select: '_id firstName lastName email username'
             })
             .populate({
-                path: 'notifications',
-                select: 'endpoint keys expirationTime'
+                path: 'items',
+                match: { statusId: { $ne: 'deleted' } },
+                select: '_id name categoryId price quantity url notes purchased purchasedBy image statusId sortOrder dateCreated'
+            })
+            .populate({
+                path: 'follows',
+                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+                match: { statusId: { $ne: 'deleted' } }
             })
             .then(data => {
                 callback(null, data);
@@ -211,8 +218,40 @@ class WishlistRepository {
             .catch(error => {
                 logger.error(`${this._classInfo}.getDetails(${id})`, error);
                 return callback(error);
+            });
+    }
+
+    /**
+    * Gets a single User details
+    * @param {string} id user id
+    * @param {requestCallback} callback Handles the response
+    * @example get('123456789', (error, data) => {})
+    */
+    getNotifications(id, callback) {
+        logger.debug(`${this._classInfo}.getNotifications(${id})`);
+
+        WishlistModel.findById(
+            id,
+            null,
+            {
+            })
+            .populate({
+                path: 'userId',
+                select: '_id firstName lastName email username'
+            })
+            .populate({
+                path: 'notifications',
+                select: 'endpoint keys expirationTime'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.getNotifications(${id})`, error);
+                return callback(error);
             })
     }
+
 
     /**
      * Inserts a Wishlist

@@ -6,8 +6,12 @@ const async = require('async');
 const passport = require('passport');
 
 const repo = require('../../../app/database/repositories/wishlist/wishlist-item.repository');
+const wishlistRepo = require('../../../app/database/repositories/wishlist/wishlist.repository');
+const wishlistAppRepo = require('../../../app/database/repositories/wishlist/wishlist-app-settings.repository');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
+const appConfig = require('../../../lib/config.loader').app;
+const webPush = require('web-push');
 
 /**
  * Wishlist Api Controller
@@ -223,6 +227,49 @@ class WishlistItemController {
             return done(null, result)
           }
         });
+      },
+      (newItem, done) => {
+        wishlistRepo.getDetails(wishlistId, (error, wishlist) => {
+          if (error) {
+            logger.error(`${this._classInfo}.insert()::Wishlist.get() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            done(null, wishlist, newItem);
+          }
+        });
+      },
+      (wishlist, newItem, done) => {
+        if (wishlist.preferences.notifyOnAddItem) {
+          //Get app settings
+          wishlistAppRepo.get(appConfig.wishlistPremiere, (error, data) => {
+            if (error) {
+              logger.error(`${this._classInfo}.insert()::Wishlist.get() [${this._routeName}]`, error);
+              response.status(500).send(error);
+            } else {
+              //wishlist-item-added
+              const payload = data.notifications.find((element) => {
+                return element.name === 'wishlist-item-added'
+              });
+
+              for (var i = 0, len = wishlist.follows.length; i < len; i++) {
+                if (wishlist.follows[i].notifiedOnAddItem) {
+                  webPush.sendNotification(wishlist.follows[i], JSON.stringify(payload))
+                    .then((result) => {
+                      logger.info(result);
+                    })
+                    .catch((error) => {
+                      logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+                      //response.status(500).json(error);
+                    });
+                }
+              }
+
+              done(null, newItem);
+            }
+          });
+        } else {
+          done(null, newItem);
+        }
       }
     ], (error, result) => {
       if (error) {

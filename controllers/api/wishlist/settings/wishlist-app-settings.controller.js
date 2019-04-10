@@ -3,7 +3,7 @@
  * Wishlist Application Settings Api
  */
 
-const repo = require('../../../../app/database/repositories/wishlist/wishlit-app-settings.repository');
+const repo = require('../../../../app/database/repositories/wishlist/wishlist-app-settings.repository');
 const passport = require('passport');
 const utils = require('../../../../lib/utils');
 const logger = require('../../../../lib/winston.logger');

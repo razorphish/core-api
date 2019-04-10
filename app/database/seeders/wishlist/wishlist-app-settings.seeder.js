@@ -80,6 +80,7 @@ class WishlistAppSettingsFeeder {
 
         for (i = 0; i < l; i++) {
             var wishlistAppSetting = new WishlistAppSettings({
+                _id: wishlistAppSettings[i]._id,
                 notifications: wishlistAppSettings[i].notifications
             });
 

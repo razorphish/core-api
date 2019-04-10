@@ -1,4 +1,7 @@
 {
+  "app": {
+    "wishlistPremiere": "5c62fe02fc13ae04c4000064"
+  },
   "databaseConfig": {
     "host": "127.0.0.1",
     "database": "marasco",

@@ -106,7 +106,8 @@ class WishlistAppSettingsRepository {
             null,
             {
                 select: {
-                    accountId: 1
+                    _id: 1,
+                    notifications: 1
                 }
             })
             .then(data => {
