@@ -253,7 +253,34 @@ class WishlistItemController {
 
               for (var i = 0, len = wishlist.follows.length; i < len; i++) {
                 if (wishlist.follows[i].notifiedOnAddItem) {
-                  webPush.sendNotification(wishlist.follows[i], JSON.stringify(payload))
+                  const pushSubscription = {
+                    endpoint: wishlist.follows[i].endpoint,
+                    keys: {
+                      p256dh: wishlist.follows[i].keys.p256dh,
+                      auth: wishlist.follows[i].keys.auth
+                    }
+                  };
+
+                  const pushPayload = {
+                    title: payload.title,
+                    dir: payload.dir,
+                    lang: payload.lang,
+                    body: payload.body,
+                    message: payload.message,
+                    url: payload.url,
+                    ttl: payload.ttl,
+                    icon: payload.icon,
+                    image: payload.image,
+                    badge: payload.badge,
+                    tag: payload.tag,
+                    vibrate: payload.vibrate,
+                    renotify: payload.renotify,
+                    silent: payload.silent,
+                    requireInteraction: payload.requireInteraction,
+                    actions: payload.actions
+                  };
+
+                  webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
                     .then((result) => {
                       logger.info(result);
                     })

@@ -208,6 +208,7 @@ class Server {
   }
 
   initWebPush() {
+    webPush.setGCMAPIKey(webPushConfig.gcmApiKey);
     webPush.setVapidDetails(
       `mailto:${webPushConfig.email}`,
       webPushConfig.publicKey,

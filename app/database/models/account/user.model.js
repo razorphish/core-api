@@ -33,15 +33,17 @@ const AddressSchema = new Schema({
 });
 
 const DeviceSchema = new Schema({
-  pushRegistrationId: { type: String, required: false, trim: true },
-  cordova: { type: String, required: false, trim: true },
+  uuid: { type: String, required: false, trim: true },
+  diskFree: { type: Number, required: false, trim: true },
+  osVersion: { type: String, required: false, trim: true },
+  memUsed: { type: Number, required: false},
+  batteryLevel: { type: Number, required: false},
   model: { type: String, required: false, trim: true },
   platform: { type: String, required: false, trim: true },
-  uuid: { type: String, required: false, trim: true },
-  version: { type: String, required: false, trim: true },
   manufacturer: { type: String, required: false, trim: true },
-  isVirtual: { type: String, required: false, trim: true },
-  serial: { type: String, required: false, trim: true }
+  isVirtual: { type: Boolean, required: false},
+  model: { type: String, required: false, trim: true },
+  appVersion: { type: String, required: false, trim: true },
 });
 
 const UserSchema = new Schema(

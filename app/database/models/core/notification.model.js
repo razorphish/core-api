@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const WishlistNotificationSchema = new Schema({
-    wishlistId: { type: Schema.Types.ObjectId, ref: 'Wishlist', required: true, trim: true },
+const NotificationSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, trim: true },
     uuid: { type: String, required: false, trim: true },
     endpoint: { type: String, required: true, trim: true },
@@ -19,11 +18,11 @@ const WishlistNotificationSchema = new Schema({
     dateModified: { type: Date, required: true, default: Date.now }
 });
 
-WishlistNotificationSchema.pre('save', function (next) {
+NotificationSchema.pre('save', function (next) {
     if (this.dateModified) {
         this.dateModified = new Date();
     }
     next();
 });
 
-module.exports = mongoose.model('WishlistNotification', WishlistNotificationSchema, 'wishlistNotifications');
+module.exports = mongoose.model('Notification', NotificationSchema, 'notifications');
