@@ -52,6 +52,34 @@ class UserRepository {
       });
   }
 
+    /**
+   * Adds a notification to User
+   * @param {string} userId Id of User
+   * @param {*} body Object containing notification information
+   * @param {requestCallback} callback Handles the response
+   * @example addNotification('123456789, {property:value}, (err, data) => {})
+   */
+  addNotification(userId, body, callback) {
+
+    logger.debug(`${this._classInfo}.addNotification(${userId})`, body);
+
+    UserModel.findByIdAndUpdate(
+      userId,
+      { notifications: body },
+      {
+        new: true,
+        runValidators: true
+      })
+      .then(data => {
+        //returns User data
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.addNotification(${userId})::findByIdAndUpdate`, error);
+        return callback(error);
+      });
+  }
+
   /**
    * Gets all Users
    * @param {requestCallback} callback Handles the response

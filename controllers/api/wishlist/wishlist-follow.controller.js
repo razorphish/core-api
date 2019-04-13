@@ -4,6 +4,7 @@
  */
 
 const repo = require('../../../app/database/repositories/wishlist/wishlist-follow.repository');
+const userRepo = require('../../../app/database/repositories/account/user.repository');
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
@@ -173,6 +174,14 @@ class WishlistFollowController {
     logger.info(`${this._classInfo}.insert() [${this._routeName}]`);
     const wishlistId = request.body.wishlistId;
     const userId = request.body.userId;
+    const inputDevice = request.body.device;
+    const inputNotification = {
+      userId: userId,
+      uuid: inputDevice.uuid,
+      endpoint: request.body.endpoint,
+      expirationTime: request.body.expirationTime,
+      keys: request.body.keys,
+    }
 
     //Let's make sure notification doesn't already exist
     async.waterfall([
@@ -204,6 +213,60 @@ class WishlistFollowController {
           });
         } else {
           return done(null, request.body)
+        }
+      },
+      (wishlistFollow, done) => {
+        userRepo.get(userId, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.insert()::Add Notification [${this._routeName}]`, error);
+            response.status(500).json(error);
+          } else {
+            logger.debug(`${this._classInfo}.insert()::Get User [${this._routeName}] OK`);
+            return done(null, wishlistFollow, result);
+          }
+        });
+      },
+      (wishlistFollow, user, done) => {
+
+        const device = user.devices.filter((result) => {
+          result.uuid === inputDevice.uuid;
+        })
+
+        if (!!device && device.length === 0) {
+          userRepo.addDevice(userId, inputDevice, (error, result) => {
+            if (error) {
+              logger.error(`${this._classInfo}.insert()::Add Device [${this._routeName}]`, error);
+              response.status(500).json(error);
+            } else {
+              logger.debug(`${this._classInfo}.insert()::Get User [${this._routeName}] OK`);
+              return done(null, wishlistFollow, user);
+            }
+          })
+        } else {
+          return done(null, wishlistFollow, user);
+        }
+      },
+      (wishlistFollow, user, done) => {
+        //Check for endpoint, If not available then no notification exists
+        if (!inputNotification.endpoint){
+          return done(null, wishlistFollow);
+        }
+        const notification = user.notifications.filter((notify) => {
+          notify.uuid === inputNotification.uuid;
+        });
+
+        if (!!notification && notification.length === 0) {
+          userRepo.addNotification(userId, inputNotification, (error, result) => {
+            if (error) {
+              logger.error(`${this._classInfo}.insert()::Add Notification [${this._routeName}]`, error);
+              response.status(500).json(error);
+            } else {
+              logger.debug(`${this._classInfo}.insert()::Get User [${this._routeName}] OK`);
+              return done(null, wishlistFollow);
+            }
+          })
+        } else {
+          return done(null, wishlistFollow);
         }
       }
     ], (error, result) => {

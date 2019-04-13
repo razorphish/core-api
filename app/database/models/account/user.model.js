@@ -7,6 +7,8 @@ const Schema = mongoose.Schema;
 const Role = require('../auth/role.model');
 const Token = require('../auth/token.model');
 const Social = require('../core/social.model');
+const Device = require('../core/device.model');
+const Notification = require('../core/notification.model');
 const logger = require('../../../../lib/winston.logger');
 
 const bcrypt = require('bcrypt');
@@ -30,20 +32,6 @@ const AddressSchema = new Schema({
   city: { type: String, /*required: true,*/ trim: true },
   state: { type: String /*required: true,*/ },
   zip: { type: String /*required: true,*/ }
-});
-
-const DeviceSchema = new Schema({
-  uuid: { type: String, required: false, trim: true },
-  diskFree: { type: Number, required: false, trim: true },
-  osVersion: { type: String, required: false, trim: true },
-  memUsed: { type: Number, required: false},
-  batteryLevel: { type: Number, required: false},
-  model: { type: String, required: false, trim: true },
-  platform: { type: String, required: false, trim: true },
-  manufacturer: { type: String, required: false, trim: true },
-  isVirtual: { type: Boolean, required: false},
-  model: { type: String, required: false, trim: true },
-  appVersion: { type: String, required: false, trim: true },
 });
 
 const UserSchema = new Schema(
@@ -80,7 +68,8 @@ const UserSchema = new Schema(
     },
     loginAttempts: { type: Number, required: true, default: 0 },
     lockUntil: { type: Number },
-    devices: { type: [DeviceSchema], required: false },
+    devices: { type: [Device.schema], required: false },
+    notifications: { type: [Notification.schema], required: false },
     status: {
       type: String,
       enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'awaitingPassword'],
