@@ -8,7 +8,6 @@ const tokenRepo = require('../../../app/database/repositories/auth/token.reposit
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
-//const UserModel = require('../../../app/database/models/account/user.model');
 
 /**
  * User Api Controller
@@ -71,14 +70,14 @@ class UserController {
     router.post(
       '/:id/devices',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('superadmin'),
+      //utils.isInRole('superadmin'),
       this.addDevice.bind(this)
     );
 
     router.post(
       '/:id/notifications',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole('superadmin'),
+      //utils.isInRole('superadmin'),
       this.addNotification.bind(this)
     );
 
@@ -138,7 +137,7 @@ class UserController {
     });
   }
 
-    /**
+  /**
    * Adds a notification to user
    * @param {Request} request - Request object
    * @param {Response} response - Response object
@@ -181,12 +180,12 @@ class UserController {
   }
 
   /**
- * Gets all users and details
- * @param {Request} [request] Request object
- * @param {Response} response Response
- * @example GET /api/user
- * @returns {pointer} res.json
- */
+   * Gets all users and details
+   * @param {Request} [request] Request object
+   * @param {Response} response Response
+   * @example GET /api/user
+   * @returns {pointer} res.json
+   */
   allDetails(request, response, next) {
     logger.info(`${this._classInfo}.allDetails() [${this._routeName}]`);
 
@@ -275,12 +274,12 @@ class UserController {
   }
 
   /**
- * Deletes a user's tokens
- * @param {Request} request Request object
- * @param {Response} response Response object
- * @example DELETE /api/user/:id/tokens
- * @returns {status: true|false} via res pointer
- */
+   * Deletes a user's tokens
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @example DELETE /api/user/:id/tokens
+   * @returns {status: true|false} via res pointer
+   */
   deleteTokens(request, response) {
     const id = request.params.id;
     logger.info(`${this._classInfo}.deleteTokens(${id}) [${this._routeName}]`);
@@ -295,12 +294,13 @@ class UserController {
       }
     });
   }
+
   /**
- * Gets a user by its id with Details
- * @param {Request} request Request object
- * @param {Response} response Response
- * @example GET /api/user/:id/tokens
- */
+   * Gets a user by its id with Details
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example GET /api/user/:id/tokens
+   */
   details(request, response) {
     const id = request.params.id;
     logger.info(`${this._classInfo}.details(${id}) [${this._routeName}]`);
