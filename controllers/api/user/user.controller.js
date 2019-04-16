@@ -75,6 +75,13 @@ class UserController {
       this.addDevice.bind(this)
     );
 
+    router.post(
+      '/:id/notifications',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('superadmin'),
+      this.addNotification.bind(this)
+    );
+
     router.get(
       '/:id/tokens',
       passport.authenticate('user-bearer', { session: false }),
@@ -126,6 +133,26 @@ class UserController {
         response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.addDevice() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+    /**
+   * Adds a notification to user
+   * @param {Request} request - Request object
+   * @param {Response} response - Response object
+   * @example POST /api/user/:id/notifications
+   */
+  addNotification(request, response) {
+    logger.info(`${this._classInfo}.addNotification() [${this._routeName}]`);
+
+    repo.addNotification(request.params.id, request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.addNotification() [${this._routeName}]`, error);
+        response.status(500).send(error);
+      } else {
+        logger.debug(`${this._classInfo}.addNotification() [${this._routeName}] OK`);
         response.json(result);
       }
     });
