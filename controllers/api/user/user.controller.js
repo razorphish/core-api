@@ -146,7 +146,7 @@ class UserController {
   addNotification(request, response) {
     logger.info(`${this._classInfo}.addNotification() [${this._routeName}]`);
 
-    repo.addNotification(request.params.id, request.body, (error, result) => {
+    repo.addNotification(request.params.userId, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.addNotification() [${this._routeName}]`, error);
         response.status(500).send(error);
