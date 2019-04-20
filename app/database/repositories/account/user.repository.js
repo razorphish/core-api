@@ -52,13 +52,13 @@ class UserRepository {
       });
   }
 
-    /**
-   * Adds a notification to User
-   * @param {string} userId Id of User
-   * @param {*} body Object containing notification information
-   * @param {requestCallback} callback Handles the response
-   * @example addNotification('123456789, {property:value}, (err, data) => {})
-   */
+  /**
+ * Adds a notification to User
+ * @param {string} userId Id of User
+ * @param {*} body Object containing notification information
+ * @param {requestCallback} callback Handles the response
+ * @example addNotification('123456789, {property:value}, (err, data) => {})
+ */
   addNotification(userId, body, callback) {
 
     logger.debug(`${this._classInfo}.addNotification(${userId})`, body);
@@ -451,8 +451,8 @@ class UserRepository {
     //Created
     //if no password present usually means user authenticated
     //via 3rd party (facebook)
-    if (!!body.colo && body.colo === 'mobile'){
-      body.status = 'pending'; 
+    if (!!body.colo && body.colo === 'mobile') {
+      body.status = 'pending';
     } else {
       body.status = !!body.password ? 'active' : 'awaitingPassword';
     }
@@ -602,6 +602,38 @@ class UserRepository {
       })
       .catch(error => {
         logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, error);
+        return callback(error);
+      });
+  }
+
+  /**
+ * Updates an User
+ * @param {string} id user id
+ * @param {object} body user data
+ * @param {requestCallback} callback Handles the response
+ * @example update('1234', {body:data}, (error, data) => {})
+ */
+  updateProfile(id, body, callback) {
+    logger.debug(`${this._classInfo}.updateProfile(${id})`);
+    var entity = {
+      firstName: body.firstName,
+      lastName: body.lastName
+    }
+
+    if (!!body.password){
+      entity.password = body.password
+    }
+
+    UserModel.findOneAndUpdate(
+      { _id: id },
+      entity,
+      { new: true })
+      .then(data => {
+        //returns User data
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.updateProfile(${id})::findOneAndUpdate`, error);
         return callback(error);
       });
   }

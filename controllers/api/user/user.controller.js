@@ -67,6 +67,13 @@ class UserController {
       this.update.bind(this)
     );
 
+    router.put(
+      '/:id/profile',
+      passport.authenticate('user-bearer', { session: false }),
+      //utils.isInRole('superadmin'),
+      this.updateProfile.bind(this)
+    );
+
     router.post(
       '/:id/devices',
       passport.authenticate('user-bearer', { session: false }),
@@ -394,6 +401,27 @@ class UserController {
         response.status(500).send(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+    /**
+   * Updates a user
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @example PUT /api/user/:id
+   */
+  updateProfile(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.updateProfile(${id}) [${this._routeName}]`);
+
+    repo.updateProfile(id, request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.updateProfile() [${this._routeName}]`, error, request.body);
+        response.status(500).send(error);
+      } else {
+        logger.debug(`${this._classInfo}.updateProfile() [${this._routeName}] OK`);
         response.json(result);
       }
     });
