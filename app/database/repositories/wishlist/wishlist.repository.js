@@ -292,6 +292,27 @@ class WishlistRepository {
     }
 
     /**
+     * Gets all Wishlists
+     * @param {requestCallback} callback Handles the response
+     * @example all((error, data) => {})
+     */
+    search(query, fieldSelect, callback) {
+        logger.debug(`${this._classInfo}.all()`);
+
+        WishlistModel.find(
+            query,
+            fieldSelect
+            )
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.all::find`, error);
+                callback(error);
+            });
+    }
+
+    /**
      * Updates an Wishlist
      * @param {string} id Wishlist id
      * @param {object} body Wishlist data

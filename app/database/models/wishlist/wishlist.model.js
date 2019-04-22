@@ -15,8 +15,8 @@ const WishlistSchema = new Schema({
     privacy: {
         type: String,
         required: true,
-        enum: ['Private', 'Public'],
-        default: 'Public'
+        enum: ['private', 'public'],
+        default: 'public'
     },
     //items: { type: [WishlistItem.schema], ref: 'WishlistItem' },
     dateExpire: { type: Date, required: false },

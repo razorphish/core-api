@@ -37,6 +37,13 @@ class WishlistController {
     );
 
     router.get(
+      '/search/:name',
+      passport.authenticate('user-bearer', { session: false }),
+      //utils.isInRole('admin'),
+      this.byName.bind(this)
+    );
+
+    router.get(
       '/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
@@ -137,6 +144,7 @@ class WishlistController {
       }
     });
   }
+
   /**
    * Gets all Wishlist paginated
    * @param {Request} request Request object {Default:10}
@@ -160,6 +168,41 @@ class WishlistController {
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
+   * @description Search wishlists by name only
+   * @author Antonio Marasco
+   * @date 2019-04-22
+   * @param {*} request
+   * @param {*} response
+   * @memberof WishlistController
+   */
+  byName(request, response) {
+
+    const name = request.params.name;
+    logger.info(`${this._classInfo}.byName(${name}) [${this._routeName}]`);
+
+    let query = {
+      name: { $regex: name, $options: 'i' },
+      statusId: { $eq: 'active' },
+      privacy: { $eq: 'public' }
+    }
+
+    let fieldSelect = {
+      name: 1,
+      _id: 1,
+    }
+
+    repo.search(query, fieldSelect, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.byName(${name}) [${this._routeName}]`, error);
+        response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.byName() [${this._routeName}] OK`);
         response.json(result);
       }
     });
