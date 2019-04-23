@@ -177,7 +177,7 @@ class WishlistFollowController {
     const inputDevice = request.body.device;
     const inputNotification = {
       userId: userId,
-      uuid: inputDevice.uuid,
+      //uuid: inputDevice.uuid,
       endpoint: request.body.endpoint,
       expirationTime: request.body.expirationTime,
       keys: request.body.keys,
@@ -227,6 +227,10 @@ class WishlistFollowController {
         });
       },
       (wishlistFollow, user, done) => {
+
+        if (!inputDevice){
+          return done(null, wishlistFollow, user);
+        }
 
         const device = user.devices.filter((result) => {
           result.uuid === inputDevice.uuid;
