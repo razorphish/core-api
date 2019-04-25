@@ -110,6 +110,8 @@ class ClientSeeder {
         isTrusted: true,
         applicationType: 'Native',
         allowedOrigins: [
+          'http://localhost',
+          'http://localhost:8080',
           'http://localhost:4203',
           'chrome-extension://aejoelaoggembcahagimdiliamlcdmfm',
           'file://',
