@@ -92,7 +92,11 @@ class AuthController {
             response.status(404).send({ error: { message: 'User does not exist' } });
           } else {
             let newToken = httpSign.token(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
-            newToken.origin = request.headers.origin;
+
+            //TODO: Fixed based on application
+            //newToken.origin = request.headers.origin;
+            newToken.origin = 'https://wishlist.maras.co'
+            //TODO
 
             tokenRepo.insert(newToken, (error, token) => {
               //return done(error, token, user);
