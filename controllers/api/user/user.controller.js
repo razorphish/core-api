@@ -8,6 +8,9 @@ const tokenRepo = require('../../../app/database/repositories/auth/token.reposit
 const passport = require('passport');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
+const async = require('async');
+const bcrypt = require('bcrypt');
+const SALT_WORK_FACTOR = 10;
 
 /**
  * User Api Controller
@@ -406,26 +409,61 @@ class UserController {
     });
   }
 
-    /**
-   * Updates a user
-   * @param {Request} request Request object
-   * @param {Response} response Response object
-   * @example PUT /api/user/:id
-   */
+  /**
+ * Updates a user
+ * @param {Request} request Request object
+ * @param {Response} response Response object
+ * @example PUT /api/user/:id
+ */
   updateProfile(request, response) {
     const id = request.params.id;
     logger.info(`${this._classInfo}.updateProfile(${id}) [${this._routeName}]`);
 
-    repo.updateProfile(id, request.body, (error, result) => {
-      if (error) {
-        logger.error(`${this._classInfo}.updateProfile() [${this._routeName}]`, error, request.body);
-        response.status(500).send(error);
-      } else {
-        logger.debug(`${this._classInfo}.updateProfile() [${this._routeName}] OK`);
-        response.json(result);
+    async.waterfall([
+      (done) => {
+        var entity = {
+          firstName: request.body.firstName,
+          lastName: request.body.lastName,
+          status: 'active'
+        }
+
+        if (!!request.body.password) {
+          entity.password = request.body.password
+          bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
+            logger.info(`${this._classInfo}.updateProfile(${id})::salt [${salt}]`)
+            entity.salt = salt;
+
+            bcrypt.hash(entity.password, salt, (err, hash) => {
+              logger.info(`${this._classInfo}.updateProfile(${id})::hash [${hash}]`)
+              entity.password = hash;
+              return done(null, entity);
+            });
+          });
+        } else {
+          done(null, entity);
+        }
+      },
+      (profile, done) => {
+        repo.updateProfile(id, profile, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.updateProfile() [${this._routeName}]`, error, request.body);
+            response.status(500).send(error);
+          } else {
+            logger.debug(`${this._classInfo}.updateProfile() [${this._routeName}] OK`);
+            return done(null, result);
+          }
+        });
       }
-    });
+    ], (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.updateProfile() [${this._routeName}]`, error);
+        return next(error)
+      }
+      logger.debug(`${this._classInfo}.updateProfile() [${this._routeName}] OK`);
+      response.json(result);
+    })
   }
+
 }
 
 module.exports = UserController;

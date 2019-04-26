@@ -615,19 +615,36 @@ class UserRepository {
  */
   updateProfile(id, body, callback) {
     logger.debug(`${this._classInfo}.updateProfile(${id})`);
-    var entity = {
-      firstName: body.firstName,
-      lastName: body.lastName
-    }
-
-    if (!!body.password){
-      entity.password = body.password
-    }
 
     UserModel.findOneAndUpdate(
       { _id: id },
-      entity,
-      { new: true })
+      body,
+      {
+        new: true,
+        select: {
+          addresses: 0,
+          devices: 0,
+          email: 0,
+          email_lower: 0,
+          notifications: 0,
+          roles: 0,
+          applicationId: 0,
+          password: 0,
+          status: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0,
+          isLocked: 0,
+          social: 0,
+          tokens: 0, 
+          wishlistFollows: 0,
+          wishlistItemCategories:0,
+          wishlists: 0,
+          dateCreated: 0,
+          dateModified: 0
+        }
+      })
       .then(data => {
         //returns User data
         callback(null, data);
