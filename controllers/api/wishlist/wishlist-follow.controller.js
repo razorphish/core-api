@@ -178,9 +178,9 @@ class WishlistFollowController {
     const inputNotification = {
       userId: userId,
       //uuid: inputDevice.uuid,
-      endpoint: request.body.endpoint,
-      expirationTime: request.body.expirationTime,
-      keys: request.body.keys,
+      endpoint: request.body.endpoint || '',
+      expirationTime: request.body.expirationTime || '',
+      keys: request.body.keys || '',
     }
 
     //Let's make sure notification doesn't already exist
@@ -228,10 +228,12 @@ class WishlistFollowController {
       },
       (wishlistFollow, user, done) => {
 
+        //Check if device was sent with call
         if (!inputDevice){
           return done(null, wishlistFollow, user);
         }
 
+        //Determine if device is already recorded
         const device = user.devices.filter((result) => {
           result.uuid === inputDevice.uuid;
         })
