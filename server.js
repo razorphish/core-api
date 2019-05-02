@@ -54,6 +54,7 @@ class Server {
     var whiteList = [
       'http://localhost',
       'http://localhost:8080',
+      'http://localhost:3333',
       'http://127.0.0.1:8080',
       'http://localhost:4200',
       'http://localhost:4201', //admin.maras.co

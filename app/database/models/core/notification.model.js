@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const NotificationSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, trim: true },
     uuid: { type: String, required: false, trim: true },
-    endpoint: { type: String, required: true, trim: true },
+    token: { type: String, required: false },
+    endpoint: { type: String, required: false, trim: true },
     expirationTime: { type: String, required: false },
     keys: {
         auth: {
@@ -14,6 +15,7 @@ const NotificationSchema = new Schema({
             type: String
         }
     },
+    schema: { type: string, enum: ['serviceWorker', 'capacitor', 'unknown'], default: 'unknown' },
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
 });

@@ -181,6 +181,8 @@ class WishlistFollowController {
       endpoint: request.body.endpoint || '',
       expirationTime: request.body.expirationTime || '',
       keys: request.body.keys || '',
+      schema: request.body.schema || 'unknown',
+      token: request.body.pushToken || ''
     }
 
     //Let's make sure notification doesn't already exist
