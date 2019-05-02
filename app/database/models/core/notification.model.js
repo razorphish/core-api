@@ -15,7 +15,7 @@ const NotificationSchema = new Schema({
             type: String
         }
     },
-    schema: { type: string, enum: ['serviceWorker', 'capacitor', 'unknown'], default: 'unknown' },
+    schemaType: { type: String, enum: ['serviceWorker', 'capacitor', 'unknown'], default: 'unknown' },
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
 });
