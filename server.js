@@ -52,7 +52,9 @@ class Server {
 
   initCors() {
     var whiteList = [
-      'http://localhost',
+      'http://localhost', //android
+      'capacitor://localhost', //ios
+      'http://localhost:3333', //npx cap serve [remove later]
       'http://localhost:8080',
       'http://localhost:3333',
       'http://127.0.0.1:8080',

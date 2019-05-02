@@ -115,7 +115,8 @@ class ClientSeeder {
           'http://localhost:4203',
           'chrome-extension://aejoelaoggembcahagimdiliamlcdmfm',
           'file://',
-          'https://wishlist.maras.co'
+          'https://wishlist.maras.co',
+          'capacitor://locahost'
         ],
         tokenLifeTime: 30,
         refreshTokenLifeTime: 259200,
