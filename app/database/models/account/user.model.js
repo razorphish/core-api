@@ -305,7 +305,7 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
         },
         {
           path: 'follows',
-          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
           match: { statusId: { $ne: 'deleted' } }
         }]
     })
@@ -408,7 +408,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
         },
         {
           path: 'follows',
-          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
           match: { statusId: { $ne: 'deleted' } }
         }]
     })

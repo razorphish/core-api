@@ -172,7 +172,7 @@ class WishlistRepository {
             })
             .populate({
                 path: 'follows',
-                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
                 match: { statusId: { $ne: 'deleted' } }
             })
             .then(data => {
@@ -209,7 +209,7 @@ class WishlistRepository {
             })
             .populate({
                 path: 'follows',
-                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifyOnCompletion',
+                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion statusId',
                 match: { statusId: { $ne: 'deleted' } }
             })
             .then(data => {

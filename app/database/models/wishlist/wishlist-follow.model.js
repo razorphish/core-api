@@ -7,7 +7,7 @@ const WishlistFollowSchema = new Schema(
         userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, trim: true },
         notifiedOnAddItem: { type: Boolean, required: true, default: true },
         notifiedOnRemoveItem: { type: Boolean, required: true, default: false },
-        notifyOnCompletion: { type: Boolean, required: true, default: false },
+        notifiedOnCompletion: { type: Boolean, required: true, default: false },
         statusId: { type: String, required: true, enum: ['active', 'deleted'], default: 'active' },
         dateCreated: { type: Date, required: true, default: Date.now },
         dateModified: { type: Date, required: true, default: Date.now }
