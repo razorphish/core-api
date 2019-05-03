@@ -107,7 +107,8 @@ class WishlistAppSettingsRepository {
             {
                 select: {
                     _id: 1,
-                    notifications: 1
+                    notifications: 1,
+                    emailNotifications: 1
                 }
             })
             .then(data => {
@@ -158,6 +159,38 @@ class WishlistAppSettingsRepository {
             })
             .catch(error => {
                 logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, error);
+                return callback(error);
+            });
+    }
+
+    /**
+    * Updates an email notification
+    * @param {string} id Wishlist id
+    * @param {string} emailNotificationId Email notification Id
+    * @param {object} body Wishlist data
+    * @param {requestCallback} callback Handles the response
+    * @example update('1234', {body:data}, (error, data) => {})
+    */
+    updateEmailNotification(id, emailNotificationId, body, callback) {
+        logger.debug(`${this._classInfo}.updateEmailNotification(${id},${emailNotificationId})`);
+
+        WishlistAppSettingsModel.findOneAndUpdate(
+            {
+                _id: id,
+                'emailNotifications._id': emailNotificationId,
+            },
+            {
+                $set: {
+                    'emailNotifications.$': body
+                }
+            },
+            { new: true })
+            .then(data => {
+                //returns Wishlist data
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.updateEmailNotification(${id},${emailNotificationId})::findOneAndUpdate`, error);
                 return callback(error);
             });
     }

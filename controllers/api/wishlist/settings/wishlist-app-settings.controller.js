@@ -63,11 +63,20 @@ class WishlistAppSettingsController {
             this.updateNotificationAction.bind(this)
         );
 
+        // Update Notification
         router.put(
             '/:id/notification/:notificationId',
             passport.authenticate('user-bearer', { session: false }),
             utils.isInRole(['admin', 'user']),
             this.updateNotification.bind(this)
+        );
+
+        //Update Email Notification
+        router.put(
+            '/:id/emailNotification/:emailNotificationId',
+            passport.authenticate('user-bearer', { session: false }),
+            utils.isInRole(['admin', 'user']),
+            this.updateEmailNotification.bind(this)
         );
 
         router.delete(
@@ -217,7 +226,30 @@ class WishlistAppSettingsController {
         });
     }
 
-        /**
+    /**
+    * Updates an email notification
+    * @param {Request} request Request object
+    * @param {Response} response Response object
+    * @example PUT /api/wishlist/settings/:id
+    */
+    updateEmailNotification(request, response) {
+        const id = request.params.id;
+        const emailNotificationId = request.params.emailNotificationId;
+
+        logger.info(`${this._classInfo}.updateEmailNotification(${id}) [${this._routeName}]`);
+
+        repo.updateEmailNotification(id, emailNotificationId, request.body, (error, result) => {
+            if (error) {
+                logger.error(`${this._classInfo}.updateEmailNotification() [${this._routeName}]`, error, request.body);
+                response.status(500).json(error);
+            } else {
+                logger.debug(`${this._classInfo}.updateEmailNotification() [${this._routeName}] OK`);
+                response.json(result);
+            }
+        });
+    }
+
+    /**
      * Updates a notification action
      * @param {Request} request Request object
      * @param {Response} response Response object
