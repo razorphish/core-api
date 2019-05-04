@@ -81,7 +81,16 @@ class AuthController {
     var mailchimp_async = false;
     async.waterfall([
       (done) => {
-        var query = !!request.body.email ? { email: request.body.email } : { username: request.body.username }
+        let applicationId = request.body.applicationId;
+        var query = !!request.body.email ?
+          {
+            email: request.body.email,
+            applicationId: applicationId
+          } :
+          {
+            username: request.body.username,
+            applicationId: applicationId
+          }
 
         userRepo.search(query, (error, user) => {
 
@@ -224,7 +233,7 @@ class AuthController {
           } else if (!result) {
             logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]::get() :: MISSING APPLICATION`);
             response.status(404).send({ error: { message: 'Application is missing or invalid' } });
-          }else {
+          } else {
             logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`);
             return done(null, result);
           }
@@ -251,52 +260,52 @@ class AuthController {
     })
   }
 
-    /**
-  * Registers a user with email and password
-  * @param {Request} request Request object
-  * @param {Response} response Response
-  * @example POST /api/auth/register-with-email-password'
-  */
- registerWithEmail(request, response) {
-  logger.info(`${this._classInfo}.registerWithEmail() [${this._routeName}]`);
+  /**
+* Registers a user with email and password
+* @param {Request} request Request object
+* @param {Response} response Response
+* @example POST /api/auth/register-with-email-password'
+*/
+  registerWithEmail(request, response) {
+    logger.info(`${this._classInfo}.registerWithEmail() [${this._routeName}]`);
 
-  async.waterfall([
-    (done) => {
-      applicationRepo.get(request.body.applicationId, (error, result) => {
-        if (error) {
-          logger.error(`${this._classInfo}.registerWithEmail() [${this._routeName}]`, error);
-          response.status(500).send(error);
-        } else if (!result) {
-          logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}]::get() :: MISSING APPLICATION`);
-          response.status(404).send({ error: { message: 'Application is missing or invalid' } });
-        }else {
-          logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}] OK`);
-          return done(null, result);
-        }
-      });
-    },
-    (application, done) => {
-      request.body.username = request.body.email;
+    async.waterfall([
+      (done) => {
+        applicationRepo.get(request.body.applicationId, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.registerWithEmail() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else if (!result) {
+            logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}]::get() :: MISSING APPLICATION`);
+            response.status(404).send({ error: { message: 'Application is missing or invalid' } });
+          } else {
+            logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}] OK`);
+            return done(null, result);
+          }
+        });
+      },
+      (application, done) => {
+        request.body.username = request.body.email;
 
-      userRepo.insert(request.body, (error, result) => {
-        if (error) {
-          logger.error(`${this._classInfo}.registerWithEmail() [${this._routeName}]`, error);
-          response.status(500).send(error);
-        } else {
-          logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}] OK`);
-          return done(null, result);
-        }
-      });
-    }
-  ], (error, result) => {
-    if (error) {
-      logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
-      return next(error);
-    }
-    logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}/register-with-email-password POST] OK`);
-    response.json(result);
-  })
-}
+        userRepo.insert(request.body, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.registerWithEmail() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}] OK`);
+            return done(null, result);
+          }
+        });
+      }
+    ], (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
+        return next(error);
+      }
+      logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}/register-with-email-password POST] OK`);
+      response.json(result);
+    })
+  }
 
   /**
  * Resets a password with a token
