@@ -82,7 +82,7 @@ function verifyClient(req, clientId, clientSecret, done) {
       client.origin = origin;
       return done(null, client);
     } else {
-      logger.debug('*** verify [Client] denied');
+      logger.debug(`*** verify [Client] denied ${reason}`);
       return done(null, false, reason);
     }
   });

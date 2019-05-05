@@ -299,10 +299,10 @@ class AuthController {
       }
     ], (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}]`, error);
+        logger.error(`${this._classInfo}.registerWithEmail() [${this._routeName}]`, error);
         return next(error);
       }
-      logger.debug(`${this._classInfo}.registerWithEmailPassword() [${this._routeName}/register-with-email-password POST] OK`);
+      logger.debug(`${this._classInfo}.registerWithEmail() [${this._routeName}/register-with-email POST] OK`);
       response.json(result);
     })
   }
