@@ -4,6 +4,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const httpSign = require('../../../security/signers/http-sign');
+const logger = require('../../../../lib/winston.logger');
 
 const ClientSchema = new Schema({
   applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
@@ -82,6 +83,7 @@ ClientSchema.statics.getVerified = function (
     var originDisabled = true;
 
     for (var i = 0; i < client.allowedOrigins.length; i++) {
+      logger.info('*** Client.SCHEMA.getVerified origin', client.allowedOrigins[i])
       if (client.allowedOrigins[i] === '*') {
         originDisabled = false;
       }
