@@ -12,6 +12,9 @@ const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 const appConfig = require('../../../lib/config.loader').app;
 const webPush = require('web-push');
+const WISHLIST_ITEM_ADDED = 'wishlist-item-added';
+const mandrill = require('../../../lib/mandrill.library').mandrill;
+const mandrillConfig = require('../../../lib/config.loader').mandrill;
 
 /**
  * Wishlist Api Controller
@@ -239,6 +242,7 @@ class WishlistItemController {
         });
       },
       (wishlist, newItem, done) => {
+        //Send email Notifications
         if (wishlist.preferences.notifyOnAddItem) {
           //Get app settings
           wishlistAppRepo.get(appConfig.wishlistPremiere, (error, data) => {
@@ -246,54 +250,110 @@ class WishlistItemController {
               logger.error(`${this._classInfo}.insert()::Wishlist.get() [${this._routeName}]`, error);
               response.status(500).send(error);
             } else {
+
               //wishlist-item-added
-              const payload = data.notifications.find((element) => {
-                return element.name === 'wishlist-item-added'
+              const payload = data.emailNotifications.find((element) => {
+                return element.name === WISHLIST_ITEM_ADDED
               });
 
               for (var i = 0, len = wishlist.follows.length; i < len; i++) {
                 if (wishlist.follows[i].notifiedOnAddItem) {
-                  const pushSubscription = {
-                    endpoint: wishlist.follows[i].endpoint,
-                    keys: {
-                      p256dh: wishlist.follows[i].keys.p256dh,
-                      auth: wishlist.follows[i].keys.auth
+                  var html_content = payload.html.replace(/##ITEMNAME##/g, newItem.name);
+                  var text_content = payload.text.replace(/##ITEMNAME##/g, newItem.name);
+
+                  var message = {
+                    to: [{
+                      email: wishlist.userId.email,
+                      name: `${wishlist.userId.firstName} ${wishlist.userId.lastName}`,
+                      type: 'to'
+                    }],
+                    important: false,
+                    // from_email: mandrillConfig.from_email,
+                    // from_name: mandrillConfig.from_name,
+                    from_email: payload.fromEmailAddress,
+                    from_name: payload.fromName,
+                    subject: payload.subject.replace(/##WISHLISTNAME##/g, wishlist.name),
+                    text: html_content,
+                    html: text_content
+                  };
+
+                  mandrill.messages.send({ message: message, async: false }, (data) => {
+                    logger.debug(`${this._classInfo}.insert()::WishlistItem [${this._routeName}] MESSAGE REQUESTED`, data);
+                    let emailResult = data[0];
+
+                    if (emailResult.status !== 'sent') {
+                      //response.status(500).send(new Error(email.reject_reason));
                     }
-                  };
 
-                  const pushPayload = {
-                    title: payload.title,
-                    dir: payload.dir,
-                    lang: payload.lang,
-                    body: payload.body,
-                    message: payload.message,
-                    url: payload.url,
-                    ttl: payload.ttl,
-                    icon: payload.icon,
-                    image: payload.image,
-                    badge: payload.badge,
-                    tag: payload.tag,
-                    vibrate: payload.vibrate,
-                    renotify: payload.renotify,
-                    silent: payload.silent,
-                    requireInteraction: payload.requireInteraction,
-                    actions: payload.actions
-                  };
+                    //return done(null, wishlist, newItem, data);
+                  }, (error) => {
+                    done(error)
+                  });
 
-                  webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
-                    .then((result) => {
-                      logger.info(result);
-                    })
-                    .catch((error) => {
-                      logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
-                      //response.status(500).json(error);
-                    });
                 }
               }
 
-              done(null, newItem);
+              done(null, wishlist, newItem, data);
             }
           });
+        } else {
+          done(null, wishlist, newItem, null);
+        }
+      },
+      (wishlist, newItem, wishlistApp, done) => {
+        //Send device Notifications
+        if (wishlist.preferences.notifyOnAddItem) {
+          //wishlist-item-added
+          const payload = wishlistApp.notifications.find((element) => {
+            return element.name === WISHLIST_ITEM_ADDED
+          });
+
+          for (var i = 0, len = wishlist.follows.length; i < len; i++) {
+            if (wishlist.follows[i].notifiedOnAddItem) {
+
+              for (var i = 0, len = wishlist.follows[i].userId.notifications.length; i < len; i++) {
+                const pushSubscription = {
+                  endpoint: wishlist.follows[i].userId.notifications.endpoint,
+                  keys: {
+                    p256dh: wishlist.follows[i].userId.notifications.keys.p256dh,
+                    auth: wishlist.follows[i].userId.notifications.keys.auth
+                  }
+                };
+
+                const pushPayload = {
+                  title: payload.title.replace(/##WISHLISTNAME##/g, wishlist.name),
+                  dir: payload.dir,
+                  lang: payload.lang,
+                  body: payload.body,
+                  message: payload.message,
+                  url: payload.url,
+                  ttl: payload.ttl,
+                  icon: payload.icon,
+                  image: payload.image,
+                  badge: payload.badge,
+                  tag: payload.tag,
+                  vibrate: payload.vibrate,
+                  renotify: payload.renotify,
+                  silent: payload.silent,
+                  requireInteraction: payload.requireInteraction,
+                  actions: payload.actions
+                };
+
+                webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
+                  .then((result) => {
+                    logger.info(result);
+                  })
+                  .catch((error) => {
+                    logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+                    // if it errors out carry on
+                    //response.status(500).json(error);
+                  });
+              }
+            }
+          }
+
+          done(null, newItem);
+
         } else {
           done(null, newItem);
         }
@@ -404,6 +464,52 @@ class WishlistItemController {
       response.json(result);
     })
 
+  }
+
+  sendEmailNotification(wishlistFollow, notificationEmailPayload) {
+    console.log(wishlistFollow);
+    console.log(notificationEmailPayload);
+  }
+
+  sendNotification(wishlistFollow, notificationsPayload) {
+
+    for (var i = 0, len = wishlistFollow.userId.notifications.length; i < len; i++) {
+      const pushSubscription = {
+        endpoint: wishlistFollow.userId.notifications.endpoint,
+        keys: {
+          p256dh: wishlistFollow.userId.notifications.keys.p256dh,
+          auth: wishlistFollow.userId.notifications.keys.auth
+        }
+      };
+
+      const pushPayload = {
+        title: notificationsPayload.title,
+        dir: notificationsPayload.dir,
+        lang: notificationsPayload.lang,
+        body: notificationsPayload.body,
+        message: notificationsPayload.message,
+        url: notificationsPayload.url,
+        ttl: notificationsPayload.ttl,
+        icon: notificationsPayload.icon,
+        image: notificationsPayload.image,
+        badge: notificationsPayload.badge,
+        tag: notificationsPayload.tag,
+        vibrate: notificationsPayload.vibrate,
+        renotify: notificationsPayload.renotify,
+        silent: notificationsPayload.silent,
+        requireInteraction: notificationsPayload.requireInteraction,
+        actions: notificationsPayload.actions
+      };
+
+      webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
+        .then((result) => {
+          logger.info(result);
+        })
+        .catch((error) => {
+          logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+          //response.status(500).json(error);
+        });
+    }
   }
 }
 

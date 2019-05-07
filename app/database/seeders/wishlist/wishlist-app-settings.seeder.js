@@ -17,33 +17,36 @@ class WishlistAppSettingsFeeder {
             emailNotifications: [
                 {
                     name: 'wishlist-item-purchased',
-                    subject: 'Item purchased on $$WISHLISTNAME$$',
-                    text: '$$ITEMNAME$$ was purchased by another user',
-                    html: '<b>$$ITEMNAME$$</b> was purchased by another user',
-                    fromEmailAddress: 'david@maras.co'
+                    subject: 'Item purchased on ##WISHLISTNAME## wishlist',
+                    text: '##ITEMNAME## was purchased by another user',
+                    html: '<b>##ITEMNAME##</b> was purchased by another user',
+                    fromEmailAddress: 'david@maras.co',
+                    fromName: 'Wishlist Premiere Support'
                 },
                 {
                     name: 'wishlist-item-added',
-                    subject: 'Item added to $$WISHLISTNAME$$',
-                    text: '$$ITEMNAME$$ was added',
-                    html: '<b>$$ITEMNAME$$</b> was added',
-                    fromEmailAddress: 'david@maras.co'
+                    subject: 'Item added to ##WISHLISTNAME## wishlist',
+                    text: '##ITEMNAME## was added to this wishlist',
+                    html: '<b>##ITEMNAME##</b> was added',
+                    fromEmailAddress: 'david@maras.co',
+                    fromName: 'Wishlist Premiere Support'
                 },
                 {
                     name: 'wishlist-item-removed',
-                    subject: 'Item removed from $$WISHLISTNAME$$',
-                    text: '$$ITEMNAME$$ was removed',
-                    html: '<b>$$ITEMNAME$$</b> was removed',
-                    fromEmailAddress: 'david@maras.co'
+                    subject: 'Item removed from ##WISHLISTNAME## wishlist',
+                    text: '##ITEMNAME## was removed',
+                    html: '<b>##ITEMNAME##</b> was removed',
+                    fromEmailAddress: 'david@maras.co',
+                    fromName: 'Wishlist Premiere Support'
                 }
             ],
             notifications: [
                 {
                     name: 'wishlist-item-purchased',
-                    title: 'Item purchased on $$WISHLISTNAME$$',
+                    title: 'Item purchased on ##WISHLISTNAME##',
                     dir: 'ltr',
                     lang: 'en-us',
-                    body: '$$ITEMNAME$$ was purchased by another user',
+                    body: '##ITEMNAME## was purchased by another user',
                     tag: 'wishlist',
                     image: '',
                     icon: '',
@@ -59,10 +62,10 @@ class WishlistAppSettingsFeeder {
                 },
                 {
                     name: 'wishlist-item-added',
-                    title: 'Item added to $$WISHLISTNAME$$',
+                    title: 'Item added to ##WISHLISTNAME##',
                     dir: 'ltr',
                     lang: 'en-us',
-                    body: '$$ITEMNAME$$ was added',
+                    body: '##ITEMNAME## was added',
                     tag: 'wishlist',
                     image: '',
                     icon: '',
@@ -78,10 +81,10 @@ class WishlistAppSettingsFeeder {
                 },
                 {
                     name: 'wishlist-item-removed',
-                    title: 'Item removed from $$WISHLISTNAME$$',
+                    title: 'Item removed from ##WISHLISTNAME##',
                     dir: 'ltr',
                     lang: 'en-us',
-                    body: '$$ITEMNAME$$ was removed',
+                    body: '##ITEMNAME## was removed',
                     tag: 'wishlist',
                     image: '',
                     icon: '',

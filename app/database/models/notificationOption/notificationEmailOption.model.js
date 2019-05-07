@@ -8,6 +8,7 @@ const NotificationEmailOptionSchema = new Schema({
     text: { type: String, required: false, trim: true },
     html: { type: String, required: false, trim: true },
     fromEmailAddress: { type: String, required: false, trim: true },
+    fromName: { type: String, required: false, trim: true },
     dateCreated: { type: Date, required: true, default: Date.now }
 });
 

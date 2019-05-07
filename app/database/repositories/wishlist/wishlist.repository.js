@@ -210,7 +210,13 @@ class WishlistRepository {
             .populate({
                 path: 'follows',
                 select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion statusId',
-                match: { statusId: { $ne: 'deleted' } }
+                match: { statusId: { $ne: 'deleted' } },
+                populate: [
+                    {
+                      path: 'userId',
+                      select: '_id notifications email'
+                    }
+                  ]
             })
             .then(data => {
                 callback(null, data);
