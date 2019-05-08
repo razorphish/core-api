@@ -51,6 +51,12 @@
       }
     }
   },
+  "apnPush": {
+    "key": "certificates/AuthKey_2342L564L3.p8",
+    "keyId": "2342L564L3'",
+    "teamId": "7TTA7J79SP",
+    "production": false
+  },
   "webPush": {
     "gcmApiKey": "AAAAxmZbeXU:APA91bHPurDbEnd8yfP5Unm_lBBL5mWqhIW73Owyl9j9XyU_hnLXvEmNklK13dSOzrBPdQvVm70tMUzPPqFW05pcSw51ex0pXDNfkZJqe2gAXWkv-_pLSSorSUrFyAEQ5_FbKuzn0Jmz",
     "publicKey": "BDCIWOBrQvMpw0lY7p87qO-HkSxGAunOAj9sInXZCJ42GRrj1nmd7zUyFdfaoOPolKJfvHIvzfyv0D25uWh0ydQ",
