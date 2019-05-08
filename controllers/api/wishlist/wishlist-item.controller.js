@@ -13,6 +13,7 @@ const logger = require('../../../lib/winston.logger');
 const appConfig = require('../../../lib/config.loader').app;
 const webPush = require('web-push');
 const WISHLIST_ITEM_ADDED = 'wishlist-item-added';
+const WISHLIST_ITEM_REMOVED = 'wishlist-item-removed';
 const mandrill = require('../../../lib/mandrill.library').mandrill;
 const mandrillConfig = require('../../../lib/config.loader').mandrill;
 
@@ -154,21 +155,166 @@ class WishlistItemController {
     //     response.json(result);
     //   }
     // });
-    const id = request.params.id; //wishlist id
-    const itemId = request.params.itemId; //wishlist item id
+    // const id = request.params.id; //wishlist id
+    // const itemId = request.params.itemId; //wishlist item id
 
     logger.info(`${this._classInfo}.delete(${id}, ${itemId}) [${this._routeName}]`);
     request.body.statusId = 'deleted';
+    const wishlistId = requiest.body.wishlistId;
 
-    repo.update(itemId, request.body, (error, result) => {
-      if (error) {
-        logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error, request.body);
-        response.status(500).send(error);
-      } else {
-        logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
-        response.json(result);
+    // repo.update(itemId, request.body, (error, result) => {
+    //   if (error) {
+    //     logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error, request.body);
+    //     response.status(500).send(error);
+    //   } else {
+    //     logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+    //     response.json(result);
+    //   }
+    // });
+
+    async.waterfall([
+      (done) => {
+        repo.update(itemId, request.body, (error, result) => {
+          if (error) {
+            logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error, request.body);
+            response.status(500).send(error);
+          } else {
+            logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+            done(null, result);
+          }
+        });
+      },
+      (itemDeleted, done) => {
+        wishlistRepo.getDetails(wishlistId, (error, wishlist) => {
+          if (error) {
+            logger.error(`${this._classInfo}.delete()::Wishlist.get() [${this._routeName}]`, error);
+            response.status(500).send(error);
+          } else {
+            done(null, wishlist, itemDeleted);
+          }
+        });
+      },
+      (wishlist, itemDeleted, done) => {
+        //Send email Notifications
+        if (wishlist.preferences.notifyOnRemoveItem) {
+          //Get app settings
+          wishlistAppRepo.get(appConfig.wishlistPremiere, (error, data) => {
+            if (error) {
+              logger.error(`${this._classInfo}.delete()::Wishlist.get() [${this._routeName}]`, error);
+              response.status(500).send(error);
+            } else {
+
+              //wishlist-item-removed
+              const payload = data.emailNotifications.find((element) => {
+                return element.name === WISHLIST_ITEM_REMOVED
+              });
+
+              for (var i = 0, len = wishlist.follows.length; i < len; i++) {
+                if (wishlist.follows[i].notifiedOnRemoveItem) {
+                  var html_content = payload.html.replace(/##ITEMNAME##/g, itemDeleted.name);
+                  var text_content = payload.text.replace(/##ITEMNAME##/g, itemDeleted.name);
+
+                  var message = {
+                    to: [{
+                      email: wishlist.userId.email,
+                      name: `${wishlist.userId.firstName} ${wishlist.userId.lastName}`,
+                      type: 'to'
+                    }],
+                    important: false,
+                    from_email: payload.fromEmailAddress,
+                    from_name: payload.fromName,
+                    subject: payload.subject.replace(/##WISHLISTNAME##/g, wishlist.name),
+                    text: html_content,
+                    html: text_content
+                  };
+
+                  mandrill.messages.send({ message: message, async: false }, (data) => {
+                    logger.debug(`${this._classInfo}.delete()::WishlistItem [${this._routeName}] MESSAGE REQUESTED`, data);
+                    let emailResult = data[0];
+
+                    if (emailResult.status !== 'sent') {
+
+                    };
+                  }, (error) => {
+                    done(error)
+                  });
+
+                }
+              }
+
+              done(null, wishlist, itemDeleted, data);
+            }
+          });
+        } else {
+          done(null, wishlist, itemDeleted, null);
+        }
+      },
+      (wishlist, itemDeleted, wishlistApp, done) => {
+        //Send device Notifications
+        if (wishlist.preferences.notifyOnRemoveItem) {
+          //wishlist-item-added
+          const payload = wishlistApp.notifications.find((element) => {
+            return element.name === WISHLIST_ITEM_REMOVED
+          });
+
+          for (var i = 0, len = wishlist.follows.length; i < len; i++) {
+            if (wishlist.follows[i].notifiedOnRemoveItem) {
+
+              for (var i = 0, len = wishlist.follows[i].userId.notifications.length; i < len; i++) {
+                const pushSubscription = {
+                  endpoint: wishlist.follows[i].userId.notifications.endpoint,
+                  keys: {
+                    p256dh: wishlist.follows[i].userId.notifications.keys.p256dh,
+                    auth: wishlist.follows[i].userId.notifications.keys.auth
+                  }
+                };
+
+                const pushPayload = {
+                  title: payload.title.replace(/##WISHLISTNAME##/g, wishlist.name),
+                  dir: payload.dir,
+                  lang: payload.lang,
+                  body: payload.body,
+                  message: payload.message,
+                  url: payload.url,
+                  ttl: payload.ttl,
+                  icon: payload.icon,
+                  image: payload.image,
+                  badge: payload.badge,
+                  tag: payload.tag,
+                  vibrate: payload.vibrate,
+                  renotify: payload.renotify,
+                  silent: payload.silent,
+                  requireInteraction: payload.requireInteraction,
+                  actions: payload.actions
+                };
+
+                webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
+                  .then((result) => {
+                    logger.info(result);
+                  })
+                  .catch((error) => {
+                    logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+                    // if it errors out carry on
+                    //response.status(500).json(error);
+                  });
+              }
+            }
+          }
+
+          done(null, itemDeleted);
+
+        } else {
+          done(null, itemDeleted);
+        }
       }
-    });
+    ], (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error);
+        return next(error)
+      }
+      logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`);
+      response.json(result);
+    })
   }
 
   /**
