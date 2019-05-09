@@ -540,11 +540,13 @@ class WishlistItemController {
   }
 
   /**
-  * Updates a wishlist
-  * @param {Request} request Request object
-  * @param {Response} response Response object
-  * @example PUT /api/wishlist/:id/item/:itemId
-  */
+   * @description Updates a wishlist
+   * @author Antonio Marasco
+   * @date 2019-05-09
+   * @param {*} request
+   * @param {*} response
+   * @memberof WishlistItemController
+   */
   update(request, response) {
     const id = request.params.id; //wishlist id
     const itemId = request.params.itemId; //wishlist item id
