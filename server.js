@@ -17,8 +17,6 @@ const express = require('express'),
   logger = require('./lib/winston.logger'),
   webPush = require('web-push');
   webPushConfig = require('./lib/config.loader').webPush;
-  apnPush = require('apn'); //https://github.com/node-apn/node-apn
-  apnPushConfig = require('./lib/config.loader').apnPush;
   authRoutes = require('./app/routes/oAuth2');
 //authRoutesJwt = require('./app/routes/JWT');
 //Antonio
@@ -30,6 +28,7 @@ const express = require('express'),
 (app = express()), (port = 3002);
 
 class Server {
+
   constructor() {
     this.initViewEngine();
     this.initCors();
@@ -39,7 +38,6 @@ class Server {
     this.initDbSeeder();
     this.initSecureRoutes();
     this.initWebPush();
-    this.initAPNPush();
     this.start();
   }
 
@@ -51,19 +49,6 @@ class Server {
         port
       );
     });
-  }
-
-  initAPNPush() {
-    var options = {
-      token: {
-        key: apnPushConfig.key,
-        keyId: apnPushConfig.keyId,
-        teamId: apnPushConfig.teamId
-      },
-      production: apnPushConfig.production
-    };
-    
-    var apnProvider = new apnPush.Provider(options);
   }
 
   initCors() {

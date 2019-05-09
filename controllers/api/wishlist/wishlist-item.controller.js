@@ -12,10 +12,11 @@ const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
 const appConfig = require('../../../lib/config.loader').app;
 const webPush = require('web-push');
+const apnPush = require('apn');
+const apnProvider = require('../../../lib/apnLibrary').apnProvider;
 const WISHLIST_ITEM_ADDED = 'wishlist-item-added';
 const WISHLIST_ITEM_REMOVED = 'wishlist-item-removed';
 const mandrill = require('../../../lib/mandrill.library').mandrill;
-const mandrillConfig = require('../../../lib/config.loader').mandrill;
 
 /**
  * Wishlist Api Controller
@@ -143,7 +144,8 @@ class WishlistItemController {
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
-    // const id = request.params.id;
+    const id = request.params.id;
+    const itemId = request.params.itemId;
     // logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
     // repo.delete(id, (error, result) => {
@@ -160,7 +162,7 @@ class WishlistItemController {
 
     logger.info(`${this._classInfo}.delete(${id}, ${itemId}) [${this._routeName}]`);
     request.body.statusId = 'deleted';
-    const wishlistId = requiest.body.wishlistId;
+    const wishlistId = request.body.wishlistId;
 
     // repo.update(itemId, request.body, (error, result) => {
     //   if (error) {
@@ -185,12 +187,16 @@ class WishlistItemController {
         });
       },
       (itemDeleted, done) => {
-        wishlistRepo.getDetails(wishlistId, (error, wishlist) => {
+        wishlistRepo.getDetails(itemDeleted.wishlistId._id, (error, wishlist) => {
           if (error) {
             logger.error(`${this._classInfo}.delete()::Wishlist.get() [${this._routeName}]`, error);
             response.status(500).send(error);
           } else {
-            done(null, wishlist, itemDeleted);
+            if (wishlist) {
+              done(null, wishlist, itemDeleted);
+            } else {
+              response.status(500).send('Invalid wishlist Id');
+            }
           }
         });
       },
@@ -458,42 +464,61 @@ class WishlistItemController {
             if (wishlist.follows[i].notifiedOnAddItem) {
 
               for (var i = 0, len = wishlist.follows[i].userId.notifications.length; i < len; i++) {
-                const pushSubscription = {
-                  endpoint: wishlist.follows[i].userId.notifications.endpoint,
-                  keys: {
-                    p256dh: wishlist.follows[i].userId.notifications.keys.p256dh,
-                    auth: wishlist.follows[i].userId.notifications.keys.auth
-                  }
-                };
 
-                const pushPayload = {
-                  title: payload.title.replace(/##WISHLISTNAME##/g, wishlist.name),
-                  dir: payload.dir,
-                  lang: payload.lang,
-                  body: payload.body,
-                  message: payload.message,
-                  url: payload.url,
-                  ttl: payload.ttl,
-                  icon: payload.icon,
-                  image: payload.image,
-                  badge: payload.badge,
-                  tag: payload.tag,
-                  vibrate: payload.vibrate,
-                  renotify: payload.renotify,
-                  silent: payload.silent,
-                  requireInteraction: payload.requireInteraction,
-                  actions: payload.actions
-                };
+                //Android/Web 
+                if (!!wishlist.follows[i].userId.notifications.endpoint) {
+                  const pushSubscription = {
+                    endpoint: wishlist.follows[i].userId.notifications.endpoint,
+                    keys: {
+                      p256dh: wishlist.follows[i].userId.notifications.keys.p256dh,
+                      auth: wishlist.follows[i].userId.notifications.keys.auth
+                    }
+                  };
 
-                webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
-                  .then((result) => {
-                    logger.info(result);
-                  })
-                  .catch((error) => {
-                    logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
-                    // if it errors out carry on
-                    //response.status(500).json(error);
+                  const pushPayload = {
+                    title: payload.title.replace(/##WISHLISTNAME##/g, wishlist.name),
+                    dir: payload.dir,
+                    lang: payload.lang,
+                    body: payload.body,
+                    message: payload.message,
+                    url: payload.url,
+                    ttl: payload.ttl,
+                    icon: payload.icon,
+                    image: payload.image,
+                    badge: payload.badge,
+                    tag: payload.tag,
+                    vibrate: payload.vibrate,
+                    renotify: payload.renotify,
+                    silent: payload.silent,
+                    requireInteraction: payload.requireInteraction,
+                    actions: payload.actions
+                  };
+
+                  webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
+                    .then((result) => {
+                      logger.info(result);
+                    })
+                    .catch((error) => {
+                      logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+                      // if it errors out carry on
+                      //response.status(500).json(error);
+                    });
+                } else {
+                  let deviceToken = wishlist.follows[i].userId.notifications.token;
+
+                  var note = new apnPush.Notification();
+
+                  note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
+                  note.badge = 3;
+                  note.sound = "ping.aiff";
+                  note.alert = `\uD83D\uDCE7 \u2709 Item added to ${wishlist.name}`;
+                  note.payload = { 'messageFrom': 'Wishlist Premiere' };
+                  note.topic = "<your-app-bundle-id>";
+
+                  apnProvider.send(note, deviceToken).then((result) => {
+                    // see documentation for an explanation of result
                   });
+                }
               }
             }
           }
@@ -515,11 +540,11 @@ class WishlistItemController {
   }
 
   /**
- * Updates a wishlist
- * @param {Request} request Request object
- * @param {Response} response Response object
- * @example PUT /api/wishlist/:id/item/:itemId
- */
+  * Updates a wishlist
+  * @param {Request} request Request object
+  * @param {Response} response Response object
+  * @example PUT /api/wishlist/:id/item/:itemId
+  */
   update(request, response) {
     const id = request.params.id; //wishlist id
     const itemId = request.params.itemId; //wishlist item id
