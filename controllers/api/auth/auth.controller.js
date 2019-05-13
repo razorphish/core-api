@@ -41,6 +41,12 @@ class AuthController {
       this.logout.bind(this)
     );
 
+    // logout all devices
+    router.post(
+      '/logout-all',
+      this.logoutAllDevices.bind(this)
+    );
+
     // register-with-email-password
     router.post(
       '/register-with-email-password',
@@ -195,15 +201,19 @@ class AuthController {
   }
 
   /**
-   * Logs user out
+   * Logs user out of a single device [current]
    * @param {Request} request Request object
    * @param {Response} response Response
    * @example POST /api/auth/logout
    */
   logout(request, response) {
     logger.info(`${this._classInfo}.logout() [${this._routeName}]`);
+    const token_ = request.params.token;
+    const token = httpSign.decode(token_);
 
-    tokenRepo.deleteByUserId(request.body.user._id, (error, result) => {
+    var tokenHash = httpSign.decode(token);
+
+    tokenRepo.deleteByTokenHash(tokenHash, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
         response.status(500).send(error);
@@ -216,24 +226,21 @@ class AuthController {
   }
 
   /**
-   * Logs user out
+   * Logs user out of all devices from which they are attached
    * @param {Request} request Request object
    * @param {Response} response Response
-   * @example POST /api/auth/logout
+   * @example POST /api/auth/logout-all
    */
-  logoutAll(request, response) {
-    logger.info(`${this._classInfo}.logout() [${this._routeName}]`);
-    const token = request.header('access_token');
+  logoutAllDevices(request, response) {
+    logger.info(`${this._classInfo}.logoutAll() [${this._routeName}]`);
 
-    var tokenHash = httpSign.decode(token);
-
-    tokenRepo.deleteByTokenHash(tokenHash, (error, result) => {
+    tokenRepo.deleteByUserId(request.body.user._id, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
+        logger.error(`${this._classInfo}.logoutAll() [${this._routeName}]`, error);
         response.status(500).send(error);
       } else {
         request.logout();
-        logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
+        logger.debug(`${this._classInfo}.logoutAll() [${this._routeName}] OK`);
         response.json(result);
       }
     });

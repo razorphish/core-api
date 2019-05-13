@@ -105,7 +105,7 @@ class TokenRepository {
   }
 
   /**
-   * Delete all tokens by it's value (hash)
+   * Delete a tokens by it's hash value
    * @param {string} tokenHash Hash of item to delete
    * @param {function} callback function on success/fail
    */
