@@ -216,6 +216,30 @@ class AuthController {
   }
 
   /**
+   * Logs user out
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example POST /api/auth/logout
+   */
+  logoutAll(request, response) {
+    logger.info(`${this._classInfo}.logout() [${this._routeName}]`);
+    const token = request.header('access_token');
+
+    var tokenHash = httpSign.decode(token);
+
+    tokenRepo.deleteByTokenHash(tokenHash, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
+        response.status(500).send(error);
+      } else {
+        request.logout();
+        logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
   * Registers a user with email and password
   * @param {Request} request Request object
   * @param {Response} response Response
