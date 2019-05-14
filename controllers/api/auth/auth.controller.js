@@ -209,9 +209,8 @@ class AuthController {
   logout(request, response) {
     logger.info(`${this._classInfo}.logout() [${this._routeName}]`);
     const token_ = request.headers.authorization;
-    const token = httpSign.decode(token_);
 
-    var tokenHash = httpSign.decode(token);
+    var tokenHash = httpSign.decode(token_);
 
     tokenRepo.deleteByTokenHash(tokenHash, (error, result) => {
       if (error) {

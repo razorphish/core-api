@@ -58,6 +58,24 @@ class TokenRepository {
       });
   }
 
+  byTokenWithUser(accessToken, callback) {
+    logger.debug(`${this._classInfo}.byTokenWithUser(${accessToken})`);
+
+    TokenModel
+      .findOne({ value: accessToken })
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email homePhone avatar'
+      })
+      .then((docs) => {
+        callback(null, docs);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byTokenWithUser(${accessToken})::findOne`, error);
+        return callback(error);
+      });
+  }
+
   /**
    * Gets token(s) by user id
    * @param {object} id Id of entity

@@ -125,11 +125,15 @@ server.exchange(
 
                             //AM BUG
                             //Save client refresh token
-                            userRepo.updateToken(user.id, refreshToken, (err, resp) => {
+                            //userRepo.updateToken(user.id, refreshToken, (err, resp) => {
                                 //Let's do nothing as user will just NOT
                                 //have a refresh token for the time being
+                            //});
+                            tokenRepo.insert(refreshToken, (error, result) => {
+
                             });
-                            user.refreshToken = refreshToken.value_;
+
+                            //user.refreshToken = refreshToken.value_;
 
                             return done(
                                 null,
@@ -224,7 +228,7 @@ server.exchange(
         var refreshTokenHash = httpSign.decode(refreshToken);
 
         // Client Validated, now lets check User
-        userRepo.byRefreshToken(refreshTokenHash, (err, user) => {
+        tokenRepo.byTokenWithUser(refreshTokenHash, (err, refreshTokenResult) => {
             if (err) {
                 return done(err);
             }
@@ -232,20 +236,20 @@ server.exchange(
             //Make sure user was returned, if not refresh token invalid
             //or has been revoked.  Either way, access will be denied
             //user will be forced to login again
-            if (!user) {
+            if (!refreshTokenResult) {
                 logger.debug('*** token [Exchange:Refresh Token] REVOKED');
                 return done(null, false);
             }
 
             //Check for refresh token expiration
-            if (new Date() > user.refreshToken.dateExpire) {
+            if (new Date() > refreshTokenResult.dateExpire) {
                 logger.debug('*** token [Exchange:Refresh Token] NOT EXPIRED');
                 //Force user to login
                 return done(null, false);
             }
 
             //User has implied that they have opted out of refreshtoken (Stay signed in)
-            if (!user.refreshToken.forceRefresh) {
+            if (!refreshTokenResult.forceRefresh) {
                 logger.debug('*** token [Exchange:Refresh Token] USER DOES NOT REQUIRE REFRESH');
                 //Force user to login
                 return done(null, false);
@@ -259,8 +263,8 @@ server.exchange(
             //const newAccessToken = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
 
             const newAccessToken = httpSign.token(
-                user.id, 'access_token', client.tokenLifeTime, scope, null, null, null,
-                true, user.refreshToken.origin);
+                refreshTokenResult.userId, 'access_token', client.tokenLifeTime, scope, null, null, null,
+                true, refreshTokenResult.origin);
 
             tokenRepo.insert(newAccessToken, (error) => {
                 if (error) {
@@ -271,7 +275,7 @@ server.exchange(
                     null,
                     newAccessToken.value_,
                     refreshToken,
-                    mergeParam(user, refreshToken, newAccessToken.dateExpire, newAccessToken.expiresIn, oAuthProvider)
+                    mergeParam(refreshTokenResult.userId, refreshToken, newAccessToken.dateExpire, newAccessToken.expiresIn, oAuthProvider)
                 );
             });
         });
