@@ -16,8 +16,8 @@ const express = require('express'),
   passport = require('passport'),
   logger = require('./lib/winston.logger'),
   webPush = require('web-push');
-  webPushConfig = require('./lib/config.loader').webPush;
-  authRoutes = require('./app/routes/oAuth2');
+webPushConfig = require('./lib/config.loader').webPush;
+authRoutes = require('./app/routes/oAuth2');
 //authRoutesJwt = require('./app/routes/JWT');
 //Antonio
 //Instantiate libraries
@@ -50,7 +50,13 @@ class Server {
       );
     });
   }
-
+  
+  /**
+   * @description Initialize Cors Engine
+   * @author Antonio Marasco
+   * @date 2019-05-14
+   * @memberof Server
+   */
   initCors() {
     var whiteList = [
       'http://localhost', //android
@@ -202,6 +208,12 @@ class Server {
     });
   }
 
+  /**
+   * @description Inits View Engine of Node
+   * @author Antonio Marasco
+   * @date 2019-05-14
+   * @memberof Server
+   */
   initViewEngine() {
     const hbs = exphbs.create({
       extname: '.hbs',
@@ -212,6 +224,12 @@ class Server {
     hbsLayouts.register(hbs.handlebars, {});
   }
 
+  /**
+   * @description Initializes Web Push Notifications service
+   * @author Antonio Marasco
+   * @date 2019-05-14
+   * @memberof Server
+   */
   initWebPush() {
     webPush.setGCMAPIKey(webPushConfig.gcmApiKey);
     webPush.setVapidDetails(
