@@ -54,7 +54,7 @@ class WishlistFollowController {
     router.put(
       '/:id/follow/:followId',
       passport.authenticate('user-bearer', { session: false }),
-      utils.isInRole(['admin', 'user']),
+      //utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
@@ -294,10 +294,12 @@ class WishlistFollowController {
    * @example PUT /api/wishlist/follow/:id
    */
   update(request, response) {
-    const id = request.params.id;
-    logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
+    const wishlistId = request.params.id;
+    const followId = request.params.followId;
 
-    repo.update(id, request.body, (error, result) => {
+    logger.info(`${this._classInfo}.update(${wishlistId}) [${this._routeName}]`);
+
+    repo.update(followId, request.body, (error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
         response.status(500).json(error);

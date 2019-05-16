@@ -315,7 +315,7 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
     })
     .populate({
       path: 'wishlistFollows',
-      select: '_id dateCreated',
+      select: '_id dateCreated notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
       match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
