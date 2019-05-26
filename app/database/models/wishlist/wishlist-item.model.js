@@ -5,6 +5,7 @@ const WishlistItemSchema = new Schema({
     wishlistId: { type: Schema.Types.ObjectId, required: true, ref: 'Wishlist' },
     categoryId: { type: Schema.Types.ObjectId, required: false, trim: true, ref: 'WishlistItemCategory' },
     purchasedBy: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
+    userId: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
     name: { type: String, required: true, trim: true },
     price: { type: Number, required: false },
     quantity: { type: Number, require: false },

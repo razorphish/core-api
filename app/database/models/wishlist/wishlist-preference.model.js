@@ -10,7 +10,17 @@ const WishlistPreferenceSchema = new Schema({
     notifyOnRemoveItem: { type: Boolean, required: true, default: true },
     notifyOnCompletion: { type: Boolean, required: true, default: true },
     notifyOnClose: { type: Boolean, required: true, default: false },
+    collaborative: { type: Boolean, required: true, default: false }
 });
+
+WishlistPreferenceSchema.pre('save', function (next) {
+    if (!this.collaborative) {
+        this.collaborative = false;
+    }
+
+    next();
+});
+
 
 module.exports = mongoose.model('WishlistPreference', WishlistPreferenceSchema, 'wishlistPreferences');
 

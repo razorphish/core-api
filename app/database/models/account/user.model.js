@@ -301,7 +301,7 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
         {
           path: 'items',
           match: { statusId: { $ne: 'deleted' } },
-          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder userId dateCreated'
         },
         {
           path: 'follows',
@@ -404,7 +404,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
         {
           path: 'items',
           match: { statusId: { $ne: 'deleted' } },
-          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder dateCreated'
+          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder userId dateCreated'
         },
         {
           path: 'follows',
