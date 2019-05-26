@@ -162,7 +162,8 @@ class WishlistRepository {
                     name: 1,
                     preferences: 1,
                     items: 1,
-                    dateExpire: 1
+                    dateExpire: 1,
+                    userId: 1
                 }
             })
             .populate({
