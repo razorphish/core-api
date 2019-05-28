@@ -206,7 +206,13 @@ class WishlistRepository {
             .populate({
                 path: 'items',
                 match: { statusId: { $ne: 'deleted' } },
-                select: '_id name categoryId price quantity url notes purchased purchasedBy image statusId sortOrder dateCreated'
+                select: '_id userId name categoryId price quantity url notes purchased purchasedBy image statusId sortOrder dateCreated',
+                populate: [
+                    {
+                      path: 'userId',
+                      select: '_id email firstName lastName'
+                    }
+                  ]
             })
             .populate({
                 path: 'follows',
@@ -215,7 +221,7 @@ class WishlistRepository {
                 populate: [
                     {
                       path: 'userId',
-                      select: '_id notifications email'
+                      select: '_id email firstName lastName'
                     }
                   ]
             })
