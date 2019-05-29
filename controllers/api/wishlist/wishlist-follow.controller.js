@@ -65,6 +65,12 @@ class WishlistFollowController {
       this.delete.bind(this)
     );
 
+    router.delete(
+      '/:id/follow/:followId/unfollow',
+      passport.authenticate('user-bearer', { session: false }),
+      this.unfollow.bind(this)
+    );
+
     //Logging Info
     this._classInfo = '*** [wishlist-follow].controller';
     this._routeName = '/api/wishlist/follow';
@@ -231,7 +237,7 @@ class WishlistFollowController {
       (wishlistFollow, user, done) => {
 
         //Check if device was sent with call
-        if (!inputDevice){
+        if (!inputDevice) {
           return done(null, wishlistFollow, user);
         }
 
@@ -256,7 +262,7 @@ class WishlistFollowController {
       },
       (wishlistFollow, user, done) => {
         //Check for endpoint, If not available then no notification exists
-        if (!inputNotification.endpoint){
+        if (!inputNotification.endpoint) {
           return done(null, wishlistFollow);
         }
         const notification = user.notifications.filter((notify) => {
@@ -285,6 +291,32 @@ class WishlistFollowController {
       logger.debug(`${this._classInfo}.insert() [${this._routeName}] OK`);
       response.json(result);
     })
+  }
+
+  /**
+   * Unfollows a wishlist
+   * @param {Request} request Request object
+   * @param {Response} response Response object
+   * @example DELETE /api/wishlist/follow/:id/unfollow
+   * @returns {status: true|false} via res pointer
+   */
+  unfollow(request, response) {
+
+    request.body.statusId = 'deleted';
+    const id = request.params.id;
+    const followId = request.params.followId;
+
+    logger.info(`${this._classInfo}.unfollow(${id}) [${this._routeName}]`);
+
+    repo.unfollow(followId, request.body, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.unfollow() [${this._routeName}]`, error);
+        response.json(result);
+      } else {
+        logger.debug(`${this._classInfo}.unfollow() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
   }
 
   /**

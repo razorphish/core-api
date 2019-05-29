@@ -165,6 +165,30 @@ class WishlistFollowRepository {
     }
 
     /**
+     * Unfollows a Wishlist
+     * @param {string} wishlistFollowId WishlistFollow id
+     * @param {object} body WishlistFollow data
+     * @param {requestCallback} callback Handles the response
+     * @example update('1234', {body:data}, (error, data) => {})
+     */
+    unfollow(wishlistFollowId, body, callback) {
+        logger.debug(`${this._classInfo}.unfollow(${wishlistFollowId})`);
+
+        WishlistFollowModel.findOneAndUpdate(
+            { _id: wishlistFollowId },
+            body,
+            { new: true })
+            .then(data => {
+                //returns WishlistFollow data
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.unfollow(${wishlistFollowId})::findOneAndUpdate`, error);
+                return callback(error);
+            });
+    }
+
+    /**
      * Updates an WishlistFollow
      * @param {string} id WishlistFollow id
      * @param {object} body WishlistFollow data
