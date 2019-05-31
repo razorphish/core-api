@@ -103,22 +103,45 @@ class WishlistRepository {
     }
 
     /**
-     * Gets a user by a role
+     * Gets a user by a user Id
      * @param {string} userId UserId to get user by
      * @param {requestCallback} callback Handles the response
      * @example byRole('User', (error, data) => {})
      */
-    byUser(userId, callback) {
-        logger.debug(`${this._classInfo}.byUser(${JSON.stringify(role)})`);
+    byUserId(userId, callback) {
+        logger.debug(`${this._classInfo}.byUserId(${userId})`);
 
         WishlistModel.find(
-            { userId: userId }
-        )
+            {
+                userId: userId
+            })
+            .populate({
+                path: 'items',
+                match: { statusId: { $ne: 'deleted' } },
+                select: '_id userId name categoryId price quantity url notes purchased purchasedBy image statusId sortOrder dateCreated',
+                populate: [
+                    {
+                        path: 'userId',
+                        select: '_id email firstName lastName'
+                    }
+                ]
+            })
+            .populate({
+                path: 'follows',
+                select: '_id userId endpoint expirationTime keys notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion statusId',
+                match: { statusId: { $ne: 'deleted' } },
+                populate: [
+                    {
+                        path: 'userId',
+                        select: '_id email firstName lastName'
+                    }
+                ]
+            })
             .then((data) => {
                 callback(null, data);
             })
             .catch(error => {
-                logger.error(`${this._classInfo}.byUser::find`, error);
+                logger.error(`${this._classInfo}.byUserId::find`, error);
                 callback(error);
             });
     }
@@ -186,16 +209,16 @@ class WishlistRepository {
     }
 
     /**
-    * Gets a single User details
-    * @param {string} id user id
+    * Gets a single wishlist details
+    * @param {string} wishlistId wishlist id
     * @param {requestCallback} callback Handles the response
     * @example get('123456789', (error, data) => {})
     */
-    getDetails(id, callback) {
-        logger.debug(`${this._classInfo}.getDetails(${id})`);
+    getDetails(wishlistId, callback) {
+        logger.debug(`${this._classInfo}.getDetails(${wishlistId})`);
 
         WishlistModel.findById(
-            id,
+            wishlistId,
             null,
             {
             })
@@ -209,10 +232,10 @@ class WishlistRepository {
                 select: '_id userId name categoryId price quantity url notes purchased purchasedBy image statusId sortOrder dateCreated',
                 populate: [
                     {
-                      path: 'userId',
-                      select: '_id email firstName lastName'
+                        path: 'userId',
+                        select: '_id email firstName lastName'
                     }
-                  ]
+                ]
             })
             .populate({
                 path: 'follows',
@@ -220,16 +243,16 @@ class WishlistRepository {
                 match: { statusId: { $ne: 'deleted' } },
                 populate: [
                     {
-                      path: 'userId',
-                      select: '_id email firstName lastName'
+                        path: 'userId',
+                        select: '_id email firstName lastName'
                     }
-                  ]
+                ]
             })
             .then(data => {
                 callback(null, data);
             })
             .catch(error => {
-                logger.error(`${this._classInfo}.getDetails(${id})`, error);
+                logger.error(`${this._classInfo}.getDetails(${wishlistId})`, error);
                 return callback(error);
             });
     }
@@ -315,7 +338,7 @@ class WishlistRepository {
         WishlistModel.find(
             query,
             fieldSelect
-            )
+        )
             .then(data => {
                 callback(null, data);
             })

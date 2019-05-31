@@ -44,6 +44,13 @@ class WishlistController {
     );
 
     router.get(
+      '/sync/:userId',
+      passport.authenticate('user-bearer', { session: false }),
+      //utils.isInRole('admin'),
+      this.byUserId.bind(this)
+    );
+
+    router.get(
       '/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
@@ -203,6 +210,36 @@ class WishlistController {
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.byName() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
+   * @description Search wishlists by userId
+   * @author Antonio Marasco
+   * @date 2019-05-30
+   * @param {*} request
+   * @param {*} response
+   * @memberof WishlistController
+   */
+  byUserId(request, response) {
+
+    const userId = request.params.userId;
+    logger.info(`${this._classInfo}.byUserId(${userId}) [${this._routeName}]`);
+
+    let query = {
+      userId: { $regex: userId, $options: 'i' },
+      statusId: { $eq: 'active' },
+      privacy: { $eq: 'public' }
+    }
+
+    repo.byUserId(query, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.byUserId(${userId}) [${this._routeName}]`, error);
+        response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.byUserId() [${this._routeName}] OK`);
         response.json(result);
       }
     });
