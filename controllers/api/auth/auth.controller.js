@@ -210,18 +210,31 @@ class AuthController {
     logger.info(`${this._classInfo}.logout() [${this._routeName}]`);
     const token_ = request.headers.authorization;
 
-    var tokenHash = httpSign.decode(token_);
+    if (!!token_) {
+      var tokenHash = httpSign.decode(token_);
 
-    tokenRepo.deleteByTokenHash(tokenHash, (error, result) => {
-      if (error) {
-        logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
-        response.status(500).send(error);
-      } else {
-        request.logout();
-        logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
-        response.json(result);
-      }
-    });
+      tokenRepo.deleteByTokenHash(tokenHash, (error, result) => {
+        if (error) {
+          logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
+          response.status(500).send(error);
+        } else {
+          request.logout();
+          logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
+          response.json(result);
+        }
+      });
+    } else {
+      tokenRepo.deleteByUserId(request.body.user._id, (error, result) => {
+        if (error) {
+          logger.error(`${this._classInfo}.logout() [${this._routeName}]`, error);
+          response.status(500).send(error);
+        } else {
+          request.logout();
+          logger.debug(`${this._classInfo}.logout() [${this._routeName}] OK`);
+          response.json(result);
+        }
+      });
+    }
   }
 
   /**

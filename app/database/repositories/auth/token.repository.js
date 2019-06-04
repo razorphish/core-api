@@ -133,7 +133,7 @@ class TokenRepository {
     TokenModel
       .deleteOne(
         {
-          value: tokenHash
+          value: { $in : tokenHash }
         }
       )
       .then((data) => {
