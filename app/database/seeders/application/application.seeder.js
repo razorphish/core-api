@@ -33,7 +33,7 @@ class ApplicationFeeder {
             },
             {
                 _id: '5c4b1303fc13ae60b4000002',
-                name: 'Wish List Premiere',
+                name: 'Wishlist Premiere',
                 statusId: 'active',
                 url: 'https://wishlist.maras.co'
             },
