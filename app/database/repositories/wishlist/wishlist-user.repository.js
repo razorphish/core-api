@@ -134,11 +134,11 @@ class WishlistUserRepository {
             })
             .populate({
                 path: 'wishlistItemCategories',
-                select: '_id name'
+                select: '_id name dateCreated'
             })
             .populate({
                 path: 'wishlistFollows',
-                select: '_id dateCreated notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
+                select: '_id dateCreated notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion statusId',
                 match: { statusId: { $ne: 'deleted' } },
                 populate: [
                     {
