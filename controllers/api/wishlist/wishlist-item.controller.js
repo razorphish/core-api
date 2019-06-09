@@ -460,64 +460,68 @@ class WishlistItemController {
             return element.name === WISHLIST_ITEM_ADDED
           });
 
-          for (var i = 0, len = wishlist.follows.length; i < len; i++) {
-            if (wishlist.follows[i].notifiedOnAddItem) {
+          if (!!wishlist.follows) {
+            for (var i = 0, len = wishlist.follows.length; i < len; i++) {
+              if (wishlist.follows[i].notifiedOnAddItem) {
 
-              for (var i = 0, len = wishlist.follows[i].userId.notifications.length; i < len; i++) {
+                if (!!wishlist.follows[i].userId.notifications) {
+                  for (var i = 0, len = wishlist.follows[i].userId.notifications.length; i < len; i++) {
 
-                //Android/Web 
-                if (!!wishlist.follows[i].userId.notifications.endpoint) {
-                  const pushSubscription = {
-                    endpoint: wishlist.follows[i].userId.notifications.endpoint,
-                    keys: {
-                      p256dh: wishlist.follows[i].userId.notifications.keys.p256dh,
-                      auth: wishlist.follows[i].userId.notifications.keys.auth
+                    //Android/Web 
+                    if (!!wishlist.follows[i].userId.notifications.endpoint) {
+                      const pushSubscription = {
+                        endpoint: wishlist.follows[i].userId.notifications.endpoint,
+                        keys: {
+                          p256dh: wishlist.follows[i].userId.notifications.keys.p256dh,
+                          auth: wishlist.follows[i].userId.notifications.keys.auth
+                        }
+                      };
+
+                      const pushPayload = {
+                        title: payload.title.replace(/##WISHLISTNAME##/g, wishlist.name),
+                        dir: payload.dir,
+                        lang: payload.lang,
+                        body: payload.body,
+                        message: payload.message,
+                        url: payload.url,
+                        ttl: payload.ttl,
+                        icon: payload.icon,
+                        image: payload.image,
+                        badge: payload.badge,
+                        tag: payload.tag,
+                        vibrate: payload.vibrate,
+                        renotify: payload.renotify,
+                        silent: payload.silent,
+                        requireInteraction: payload.requireInteraction,
+                        actions: payload.actions
+                      };
+
+                      webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
+                        .then((result) => {
+                          logger.info(result);
+                        })
+                        .catch((error) => {
+                          logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+                          // if it errors out carry on
+                          //response.status(500).json(error);
+                        });
+                    } else {
+                      let deviceToken = wishlist.follows[i].userId.notifications.token;
+
+                      var note = new apnPush.Notification();
+
+                      note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
+                      note.badge = 3;
+                      note.sound = "ping.aiff";
+                      note.alert = `\uD83D\uDCE7 \u2709 Item added to ${wishlist.name}`;
+                      note.payload = { 'messageFrom': 'Wishlist Premiere' };
+                      note.topic = "<your-app-bundle-id>";
+
+                      apnProvider.send(note, deviceToken).then((result) => {
+                        // see documentation for an explanation of result
+                      });
                     }
-                  };
-
-                  const pushPayload = {
-                    title: payload.title.replace(/##WISHLISTNAME##/g, wishlist.name),
-                    dir: payload.dir,
-                    lang: payload.lang,
-                    body: payload.body,
-                    message: payload.message,
-                    url: payload.url,
-                    ttl: payload.ttl,
-                    icon: payload.icon,
-                    image: payload.image,
-                    badge: payload.badge,
-                    tag: payload.tag,
-                    vibrate: payload.vibrate,
-                    renotify: payload.renotify,
-                    silent: payload.silent,
-                    requireInteraction: payload.requireInteraction,
-                    actions: payload.actions
-                  };
-
-                  webPush.sendNotification(pushSubscription, JSON.stringify(pushPayload))
-                    .then((result) => {
-                      logger.info(result);
-                    })
-                    .catch((error) => {
-                      logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
-                      // if it errors out carry on
-                      //response.status(500).json(error);
-                    });
-                } else {
-                  let deviceToken = wishlist.follows[i].userId.notifications.token;
-
-                  var note = new apnPush.Notification();
-
-                  note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-                  note.badge = 3;
-                  note.sound = "ping.aiff";
-                  note.alert = `\uD83D\uDCE7 \u2709 Item added to ${wishlist.name}`;
-                  note.payload = { 'messageFrom': 'Wishlist Premiere' };
-                  note.topic = "<your-app-bundle-id>";
-
-                  apnProvider.send(note, deviceToken).then((result) => {
-                    // see documentation for an explanation of result
-                  });
+                  }
                 }
               }
             }
