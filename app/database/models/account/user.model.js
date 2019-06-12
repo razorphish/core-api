@@ -297,6 +297,7 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
     .populate({
       path: 'wishlists',
       select: '_id name preferences statusId privacy items dateExpire dateCreated items',
+      match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
           path: 'items',
@@ -400,6 +401,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
     .populate({
       path: 'wishlists',
       select: '_id name preferences statusId privacy items dateExpire dateCreated items',
+      match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
           path: 'items',
