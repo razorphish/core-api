@@ -27,17 +27,17 @@ class UserRepository {
   /**
    * Adds a device to User
    * @param {string} userId Id of User
-   * @param {*} body Object containing User information
+   * @param {*} device Object containing Device information
    * @param {requestCallback} callback Handles the response
    * @example addDevice('123456789, {property:value}, (err, data) => {})
    */
-  addDevice(userId, body, callback) {
+  addDevice(userId, device, callback) {
 
-    logger.debug(`${this._classInfo}.addDevice(${userId})`, body);
+    logger.debug(`${this._classInfo}.addDevice(${userId})`, device);
 
     UserModel.findByIdAndUpdate(
       userId,
-      { devices: body },
+      { $push: { devices: device } },
       {
         new: true,
         runValidators: true
@@ -637,9 +637,9 @@ class UserRepository {
           lockUntil: 0,
           isLocked: 0,
           social: 0,
-          tokens: 0, 
+          tokens: 0,
           wishlistFollows: 0,
-          wishlistItemCategories:0,
+          wishlistItemCategories: 0,
           wishlists: 0,
           dateCreated: 0,
           dateModified: 0

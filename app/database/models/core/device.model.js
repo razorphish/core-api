@@ -11,7 +11,6 @@ const DeviceSchema = new Schema({
     platform: { type: String, required: false, trim: true },
     manufacturer: { type: String, required: false, trim: true },
     isVirtual: { type: Boolean, required: false},
-    model: { type: String, required: false, trim: true },
     appVersion: { type: String, required: false, trim: true },
   });
 

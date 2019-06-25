@@ -206,6 +206,11 @@ https://jwt.io
 }
 ```
 
+### Google Api Credentials commands
+```
+keytool -exportcert -keystore path-to-debug-or-production-keystore -list -v
+```
+
 ### JWT Token Object
 **iss**: (issuer) claim identifies the principal that issued the JWT (String/URI value:Case-sensitive:Optional)  
 
