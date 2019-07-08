@@ -108,7 +108,7 @@ $
 $ /*Set environment variable*/
 $ sudo echo export NODE_ENV=production >> ~/.bash_profile
 $ source ~/.bash_profile
-$
+$ vastool user checkaccess amarasco
 ```
 
 
