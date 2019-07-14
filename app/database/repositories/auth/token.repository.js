@@ -133,7 +133,7 @@ class TokenRepository {
     TokenModel
       .deleteOne(
         {
-          value: { $in : tokenHash }
+          value: { $in: tokenHash }
         }
       )
       .then((data) => {
@@ -271,7 +271,7 @@ class TokenRepository {
   }
 
   /**
-   * Gets a single User
+   * Gets a single token
    * @param {object} id Id of entity
    * @param {function} callback Callback function for success/fail
    */
@@ -292,14 +292,14 @@ class TokenRepository {
   }
 
   /**
-   * Inserts a User into db
-   * @param {object} body Object that contain Users info
+   * Inserts a token into db
+   * @param {object} token Object that contain Users info
    * @param {function} callback Callback function success/fail
    */
-  insert(body, callback) {
-    logger.debug(`${this._classInfo}.insert()`, body);
+  insert(token, callback) {
+    logger.debug(`${this._classInfo}.insert()`, token);
 
-    var model = new TokenModel(body);
+    var model = new TokenModel(token);
 
     model.save((err, data) => {
       if (err) {
@@ -331,6 +331,29 @@ class TokenRepository {
       })
       .catch(error => {
         logger.error(`${this._classInfo}.search(${query})::findOne`, error);
+        return callback(error);
+      });
+  }
+
+  /**
+   * Updates a token
+   * @param {string} id token id
+   * @param {object} token Wishlist data
+   * @param {requestCallback} callback Handles the response
+   * @example update('1234', {body:data}, (error, data) => {})
+   */
+  update(id, token, callback) {
+    logger.debug(`${this._classInfo}.update(${id})`);
+
+    TokenModel.findOneAndUpdate(
+      { _id: id },
+      token,
+      { new: true })
+      .then(data => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, error);
         return callback(error);
       });
   }

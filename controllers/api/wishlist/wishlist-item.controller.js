@@ -181,7 +181,7 @@ class WishlistItemController {
             logger.error(`${this._classInfo}.delete() [${this._routeName}]`, error, request.body);
             response.status(500).send(error);
           } else {
-            logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`, result);
+            logger.debug(`${this._classInfo}.delete() [${this._routeName}] OK`);
             done(null, result);
           }
         });

@@ -20,6 +20,16 @@
     "from_name": "Maras.co Support",
     "reply_to": "david@maras.co"
   },
+  "twitter": {
+    "consumerKey": "Z0kN4Al34y7t8wBXeDoDcneUm",
+    "consumerSecret": "b6YvlHEqjC0sN1w9QoX7zTsIQuKMJlaoeOfJdV5ArpOgRDK7yw",
+    "accessToken": "927238410078584832-foGSx89OqlSDJTt7dsGKSGQye5NBR79",
+    "accessTokenSecret": "gChdLLUOkyNLxckdxQkMKqle0j1MMc9fsA21vTyp4PAW9",
+    "callBackUrl": "https://api.maras.co/api/twitter/callBack",
+    "provider": "twitter",
+    "tokenRequestName": "request_token",
+    "tokenAccessName": "access_token"
+  },
   "winstonConfig": {
     "file": {
       "level": "error",
