@@ -9,18 +9,33 @@ const ExecutionSchema = new Schema({
 
 const JobSchema = new Schema(
   {
+    //Foreign keys -> reference id
+    parentJobId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Job',
+      required: false
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+
+    //Properties
+    activityStatusId: {
+      type: String,
+      required: true,
+      enum: ['ready', 'running', 'paused', 'fail', 'terminated', 'executed', 'restarted', 'completed'],
+      default: 'active',
+    },
+    execution: { type: ExecutionSchema },
+    meta: { type: Schema.Types.Mixed, required: false },
     name: { type: String, required: true, trim: true },
     normalizedName: {
       type: String,
       required: true,
       trim: true,
       uppercase: true,
-    },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      trim: true,
     },
     statusId: {
       type: String,
@@ -36,14 +51,8 @@ const JobSchema = new Schema(
       ],
       default: 'active',
     },
-    activityStatusId: {
-      type: String,
-      required: true,
-      enum: ['ready', 'running', 'paused', 'stopped', 'restarted', 'completed'],
-      default: 'active',
-    },
-    meta: { type: Schema.Types.Mixed, required: false },
-    execution: { type: ExecutionSchema },
+
+    // Dates
     dateModified: { type: Date, required: true, default: Date.now },
     dateCreated: { type: Date, required: true, default: Date.now },
   },
@@ -54,7 +63,7 @@ const JobSchema = new Schema(
   }
 );
 
-JobSchema.pre('save', function(next) {
+JobSchema.pre('save', function (next) {
   if (this.dateModified) {
     this.dateModified = new Date();
   }

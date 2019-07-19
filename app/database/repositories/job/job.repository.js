@@ -1,6 +1,8 @@
 // [Job] Repository
 const model = require('../../models/job/job.model');
 const logger = require('../../../../lib/winston.logger');
+const utils = require('../../../../lib/utils');
+const moment = require('moment');
 
 /**
  * This callback type is called `requestCallback` a
@@ -102,6 +104,78 @@ class JobRepository {
       .catch((error) => {
         logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, error);
         return callback(error, null);
+      });
+  }
+
+  /**
+   * Gets a {job} by name
+   * @param {string} name Name to get {job} by
+   * @param {Object} query query parameters for additional filtering
+   * @param {requestCallback} callback Handles the response
+   * @example byApplicationId('application_id', (error, data) => {})
+   */
+  byName(name, query, callback) {
+    logger.debug(`${this._classInfo}.byName(${name})`);
+
+    if (utils.isFunction(query)) {
+      callback = query;
+      query = {};
+    }
+
+    let kickoff = moment.utc();
+
+    let conditions = Object.assign({
+      name: name,
+      activityStatusId: 'ready',
+      status: 'active',
+      'execution.kickoff': { $gte: kickoff }
+    }, query || {});
+
+    model.find(
+      conditions
+    )
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byName::find`, error);
+        callback(error);
+      });
+  }
+
+  /**
+ * Gets a {job} by name
+ * @param {string} name Name to get {job} by
+ * @param {Object} query query parameters for additional filtering
+ * @param {requestCallback} callback Handles the response
+ * @example byApplicationId('application_id', (error, data) => {})
+ */
+  byUserId(name, query, callback) {
+    logger.debug(`${this._classInfo}.byName(${name})`);
+
+    if (utils.isFunction(query)) {
+      callback = query;
+      query = {};
+    }
+
+    let kickoff = moment.utc();
+
+    let conditions = Object.assign({
+      name: name,
+      activityStatusId: 'ready',
+      status: 'active',
+      'execution.kickoff': { $gte: kickoff }
+    }, query || {});
+
+    model.find(
+      conditions
+    )
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch(error => {
+        logger.error(`${this._classInfo}.byName::find`, error);
+        callback(error);
       });
   }
 
