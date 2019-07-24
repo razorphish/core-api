@@ -25,7 +25,7 @@ const JobSchema = new Schema(
     activityStatusId: {
       type: String,
       required: true,
-      enum: ['ready', 'running', 'paused', 'fail', 'terminated', 'executed', 'restarted', 'completed'],
+      enum: ['ready', 'processing', 'paused', 'fail', 'terminated', 'executed', 'restarted', 'completed'],
       default: 'active',
     },
     execution: { type: ExecutionSchema },
@@ -54,7 +54,7 @@ const JobSchema = new Schema(
 
     // Dates
     dateModified: { type: Date, required: true, default: Date.now },
-    dateCreated: { type: Date, required: true, default: Date.now },
+    dateCreated: { type: Date, required: true, default: Date.now }
   },
   {
     toJSON: {
