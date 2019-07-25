@@ -3,7 +3,7 @@ const tokenRepo = require('../../../app/database/repositories/auth/token.reposit
 const twitterUserRepo = require('../../../app/database/repositories/account/twitter-user.repository');
 const passport = require('passport');
 const logger = require('../../../lib/winston.logger');
-const twitter = require('../../../lib/twitterLibrary').twitter;
+const twitterLibrary = require('../../../lib/twitterLibrary').twitter;
 const config = require('../../../lib/config.loader').twitter;
 const async = require('async');
 const signer = require('../../../app/security/signers/http-sign');
@@ -20,7 +20,7 @@ class TwitterController {
     constructor(router) {
         router.post(
             '/request_token',
-            passport.authenticate('user-bearer', { session: false }),
+            //passport.authenticate('user-bearer', { session: false }),
             //utils.isInRole('admin'),
             this.requestToken.bind(this)
         );
@@ -54,15 +54,6 @@ class TwitterController {
     accessToken(request, response, next) {
         logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
-        // repo.all((error, result) => {
-        //     if (error) {
-        //         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
-        //         response.status(500).send(error);
-        //     } else {
-        //         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
-        //         response.json(result);
-        //     }
-        // });
         var twitter = new Twitter(config);
         twitter.getOAuthAccessToken((data) => {
             console.log(data);
@@ -147,7 +138,7 @@ class TwitterController {
                     oauth_verifier: requestToken.verifier
                 }
 
-                twitter.getOAuthAccessToken(__requestToken, (accessToken) => {
+                twitterLibrary.getOAuthAccessToken(__requestToken, (accessToken) => {
                     if (!accessToken) {
                         logger.error(`${this._classInfo}.callBack():3:getOAuthAccessToken [${this._routeName}]`, error);
                         response.status(500).send(error);
@@ -194,7 +185,7 @@ class TwitterController {
                     include_email: false
                 }
 
-                twitter.verifyCredentials(
+                twitterLibrary.verifyCredentials(
                     params,
                     (error, response, body) => {
                         logger.error(`${this._classInfo}.callBack():3:verifyCredentials [${this._routeName}]`, error);
@@ -272,10 +263,10 @@ class TwitterController {
         async.waterfall([
             //1. Get a request token from twitter
             (done) => {
-                twitter.getOAuthRequestToken((twitterRequestToken) => {
+                twitterLibrary.getOAuthRequestToken((twitterRequestToken) => {
                     if (!twitterRequestToken) {
-                        logger.error(`${this._classInfo}.request_token():1:getOAuthRequestToken [${this._routeName}]`, error);
-                        response.status(500).send("Could not fulfill this request.");
+                        logger.error(`${this._classInfo}.request_token():1:getOAuthRequestToken [${this._routeName}]`);
+                        response.status(500).send({message: 'Could not fulfill this request.'});
                     } else {
                         logger.debug(`${this._classInfo}.request_token():1:getOAuthRequestToken [${this._routeName}] OK`);
                         return done(null, twitterRequestToken);
