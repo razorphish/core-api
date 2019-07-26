@@ -11,6 +11,13 @@ const signer = require('../../../app/security/signers/http-sign');
 /**
  * Twitter Api Controller
  * http://.../api/twitter
+ * @example To Test twitter authentication follow steps
+ * @step1 Login
+ * @step2 Get accessToken and make call to twitter->request_token api
+ * @step3 Go to table tokens and grab requestToken.value from database
+ * @step4 Open up browswer and past value to this url https://api.twitter.com/oauth/authorize?oauth_token={access_token}
+ * @step5 Twitter attempts redirect but just copy oauth_token={value}&oauth_verifier={value} params
+ * @step6 Consume 'callback' call
  */
 class TwitterController {
     /**
@@ -105,7 +112,7 @@ class TwitterController {
                             logger.debug(`${this._classInfo}.callBack():1:byToken [${this._routeName}] OK`);
                             return done(null, __oauth_token)
                         } else {
-                            logger.error(`${this._classInfo}.callBack():1:byToken [${this._routeName}]`, error);
+                            logger.error(`${this._classInfo}.callBack():1:byToken [${this._routeName}]`);
                             response.status(404).send('Request Token Not Found');
                         }
 
@@ -122,9 +129,10 @@ class TwitterController {
                     } else {
                         if (result) {
                             logger.debug(`${this._classInfo}.callBack():2:update [${this._routeName}] OK`);
-                            return done(null, { status: 'OK', code: 200 });
+                            //return done(null, { status: 'OK', code: 200 });
+                            return done(null, result)
                         } else {
-                            logger.error(`${this._classInfo}.callBack():2:update [${this._routeName}]`, error);
+                            logger.error(`${this._classInfo}.callBack():2:update [${this._routeName}]`);
                             response.status(404).send('Request Token Not Updated');
                         }
                     }
@@ -133,27 +141,30 @@ class TwitterController {
             //3. Get an access token from request token at Twitter
             (requestToken, done) => {
                 let __requestToken = {
-                    oauth_consumer_key: config.consumerKey,
-                    oauth_token: requestToken.value,
-                    oauth_verifier: requestToken.verifier
+                    consumer_key: config.consumerKey,
+                    token: requestToken.value,
+                    verifier: requestToken.verifier,
+                    token_secret: requestToken.valueSecret
                 }
 
                 twitterLibrary.getOAuthAccessToken(__requestToken, (accessToken) => {
                     if (!accessToken) {
-                        logger.error(`${this._classInfo}.callBack():3:getOAuthAccessToken [${this._routeName}]`, error);
-                        response.status(500).send(error);
+                        logger.error(`${this._classInfo}.callBack():3:getOAuthAccessToken [${this._routeName}]`);
+                        response.status(500).send({message: 'Unable to get oAuthAccesstoken'});
                     } else {
                         logger.debug(`${this._classInfo}.callBack():3:getOAuthAccessToken [${this._routeName}] OK`);
+                        __requestToken.userId = requestToken.userId;
+                        __requestToken.loginProvider = requestToken.loginProvider;
                         return done(null, __requestToken, accessToken);
                     }
                 })
             },
             //4. Insert accessToken into db
             (requestToken, accessToken, done) => {
-                accessToken.loginProvider = requestToken.provider;
+                accessToken.loginProvider = requestToken.loginProvider;
                 accessToken.userId = requestToken.userId;
-                accessToken.value = accessToken.oauth_token;
-                accessToken.valueSecret = accessToken.oauth_token_secret;
+                accessToken.value = accessToken.access_token;
+                accessToken.valueSecret = accessToken.access_token_secret;
                 accessToken.name = config.tokenAccessName;
                 accessToken.type = "bearer";
                 accessToken.scope = "*";
@@ -167,10 +178,9 @@ class TwitterController {
                     } else {
                         if (result) {
                             logger.debug(`${this._classInfo}.request_token():4:insert [${this._routeName}] OK`);
-                            //Do not return token
-                            return done(null, accessToken)
+                            return done(null, result)
                         } else {
-                            logger.error(`${this._classInfo}.request_token():4:insert [${this._routeName}]`, error);
+                            logger.error(`${this._classInfo}.request_token():4:insert [${this._routeName}]`);
                             response.status(500).send('Access Token Not Created');
                         }
 
@@ -205,15 +215,17 @@ class TwitterController {
             //6. Save credentials to db and complete tasks
             (accessToken, userCredentials, done) => {
 
+                let credentials = JSON.parse(userCredentials);
+
                 let twitterUser = {
                     userId: accessToken.userId,
-                    twitterId: userCredentials.id,
+                    twitterId: credentials.id,
                     tokenId: accessToken._id,
-                    name: userCredentials.name,
-                    screenName: userCredentials.screen_name,
-                    location: userCredentials.location,
-                    description: userCredentials.description,
-                    url: userCredentials.url,
+                    name: credentials.name,
+                    screenName: credentials.screen_name,
+                    location: credentials.location,
+                    description: credentials.description,
+                    url: credentials.url,
                     payload: JSON.stringify(userCredentials)
                 }
 
@@ -226,7 +238,7 @@ class TwitterController {
                             logger.debug(`${this._classInfo}.request_token():4:insertTwitterUser [${this._routeName}] OK`);
                             //Do not return token or twitter user objects
                             return done(null, {
-                                status: 'OK', code: 200, confirmed: requestToken.confirmed
+                                status: 'OK', code: 200
                             });
                         } else {
                             logger.error(`${this._classInfo}.request_token():4:insertTwitterUser [${this._routeName}]`, error);
@@ -261,7 +273,7 @@ class TwitterController {
         logger.info(`${this._classInfo}.request_token() [${this._routeName}]`);
 
         async.waterfall([
-            //1. Get a request token from twitter
+            //1 (of 3). Get a request token from twitter
             (done) => {
                 twitterLibrary.getOAuthRequestToken((twitterRequestToken) => {
                     if (!twitterRequestToken) {
@@ -273,7 +285,7 @@ class TwitterController {
                     }
                 })
             },
-            //2. Find auth token of user in database to get userId
+            //2 (of 3). Find auth token of user in database to get userId
             (twitterRequestToken, done) => {
                 let accessToken = signer.decode(request.headers.authorization.substring("bearer ".length).trim());
 
@@ -293,7 +305,7 @@ class TwitterController {
                     }
                 })
             },
-            //3.  Insert twitter request token into db
+            //3 (of 3).  Insert twitter request token into db
             (accessToken, twitterRequestToken, done) => {
                 var requestToken = {
                     name: config.tokenRequestName,
@@ -318,7 +330,7 @@ class TwitterController {
                             //Do not return token
                             return done(null, { status: 'OK', code: 200, confirmed: requestToken.confirmed })
                         } else {
-                            logger.error(`${this._classInfo}.request_token()::insert [${this._routeName}]`, error);
+                            logger.error(`${this._classInfo}.request_token()::insert [${this._routeName}]`);
                             response.status(500).send('Request Token Not Created');
                         }
 
@@ -330,6 +342,9 @@ class TwitterController {
                 logger.error(`${this._classInfo}.request_token() [${this._routeName}]`, error);
                 return next(error)
             }
+            //For Debugging go to next step
+            //https://api.twitter.com/oauth/authorize?oauth_token=DhewNgAAAAAA_MiyAAABbC8gc2I
+            //Use newly created oauth token from step 2 above
             logger.debug(`${this._classInfo}.request_token() [${this._routeName}] OK`);
             response.json(result);
         })
