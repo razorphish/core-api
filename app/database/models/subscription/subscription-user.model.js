@@ -5,8 +5,7 @@ const SubscriptionItem = require('./subscription-item.model');
 const SubscriptionUserSchema = new Schema(
     {
         userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, trim: true },
-        planId: { type: Schema.Types.ObjectId, ref: 'SubscriptionPlan', required: true, trim: true },
-        items: { type: [SubscriptionItem.schema] },
+        subscriptionPlanId: { type: Schema.Types.ObjectId, ref: 'SubscriptionPlan', required: true, trim: true },
         frequencyId: {
             type: String,
             required: true,
