@@ -24,14 +24,41 @@ class SubscriptionPlanRepository {
     all(callback) {
         logger.debug(`${this._classInfo}.all()`);
 
-        model.find({}, {
-            accountId: 0
-        })
+        model.find({},
+            {
+                accountId: 0
+            })
+            .populate({
+                path: 'applicationId',
+                select: '_id name'
+            })
             .then(data => {
                 callback(null, data);
             })
             .catch(error => {
                 logger.error(`${this._classInfo}.all::find`, error);
+                callback(error);
+            });
+    }
+
+    /**
+     * Gets all {subscriptionPlan}s with details
+     * @param {requestCallback} callback Handles the response
+     * @example all((error, data) => {})
+     */
+    allDetails(callback) {
+        logger.debug(`${this._classInfo}.allDetails()`);
+
+        WishlistModel.find({})
+            .populate({
+                path: 'applicationId',
+                select: '_id name'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.allDetails::find`, error);
                 callback(error);
             });
     }
@@ -103,6 +130,10 @@ class SubscriptionPlanRepository {
                     accountId: 1
                 }
             })
+            .populate({
+                path: 'items',
+                select: '_id amount amount name saleAmount typeId limit dateCreated'
+            })
             .then(data => {
                 callback(null, data);
             })
@@ -110,6 +141,37 @@ class SubscriptionPlanRepository {
                 logger.error(`${this._classInfo}.get(${id})`, error);
                 return callback(error);
             })
+    }
+
+    /**
+    * Gets a single {subscriptionPlan} details
+    * @param {string} id Entity id
+    * @param {requestCallback} callback Handles the response
+    * @example get('123456789', (error, data) => {})
+    */
+    getDetails(id, callback) {
+        logger.debug(`${this._classInfo}.getDetails(${id})`);
+
+        model.findById(
+            id,
+            null,
+            {
+            })
+            .populate({
+                path: 'applicationId',
+                select: '_id name'
+            })
+            .populate({
+                path: 'items',
+                select: '_id amount amount name saleAmount typeId limit dateCreated'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.getDetails(${id})`, error);
+                return callback(error);
+            });
     }
 
     /**

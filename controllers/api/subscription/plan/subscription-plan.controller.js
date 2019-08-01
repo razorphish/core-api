@@ -29,6 +29,13 @@ class SubscriptionPlanController {
     );
 
     router.get(
+      '/details',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole('admin'),
+      this.allDetails.bind(this)
+    );
+
+    router.get(
       '/page/:skip/:top',
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole('admin'),
@@ -40,6 +47,13 @@ class SubscriptionPlanController {
       passport.authenticate('user-bearer', { session: false }),
       utils.isInRole(['admin', 'user']),
       this.get.bind(this)
+    );
+
+    router.get(
+      '/:id/details',
+      passport.authenticate('user-bearer', { session: false }),
+      utils.isInRole(['admin', 'user']),
+      this.getDetails.bind(this)
     );
 
     router.post(
@@ -83,6 +97,28 @@ class SubscriptionPlanController {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
         response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
+ * Gets all {subscriptionPlan}s
+ * @param {Request} [request] Request object
+ * @param {Response} response Response
+ * @example GET /api/subscription/plan/:id/details
+ * @returns {pointer} res.json
+ */
+  allDetails(request, response, next) {
+    logger.info(`${this._classInfo}.all() [${this._routeName}]`);
+
+    repo.allDetails((error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
+        response.status(500).json(error);
+        //next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
         response.json(result);
@@ -156,6 +192,27 @@ class SubscriptionPlanController {
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`);
+        response.json(result);
+      }
+    });
+  }
+
+  /**
+ * Gets a single {subscriptionPlan} details
+ * @param {string} id Entity id
+ * @param {requestCallback} callback Handles the response
+ * @example getDetails('123456789', (error, data) => {})
+ */
+  getDetails(request, response) {
+    const id = request.params.id;
+    logger.info(`${this._classInfo}.getDetails(${id}) [${this._routeName}]`);
+
+    repo.getDetails(id, (error, result) => {
+      if (error) {
+        logger.error(`${this._classInfo}.getDetails() [${this._routeName}]`, error);
+        response.status(500).json(error);
+      } else {
+        logger.debug(`${this._classInfo}.getDetails() [${this._routeName}] OK`);
         response.json(result);
       }
     });
