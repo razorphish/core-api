@@ -109,6 +109,8 @@ $ /*Set environment variable*/
 $ sudo echo export NODE_ENV=production >> ~/.bash_profile
 $ source ~/.bash_profile
 $ vastool user checkaccess amarasco
+#Following command gets rid of _ds_store files on macs
+$ find . -name '.DS_Store' -type f -delete
 ```
 
 

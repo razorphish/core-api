@@ -4,9 +4,9 @@
  */
 const passport = require('passport');
 
-const repo = require('../../../../../app/database/repositories/subscription/subscription-item.repository');
-const utils = require('../../../../../lib/utils');
-const logger = require('../../../../../lib/winston.logger');
+const repo = require('../../../../app/database/repositories/subscription/subscription-item.repository');
+const utils = require('../../../../lib/utils');
+const logger = require('../../../../lib/winston.logger');
 
 /**
  * [SubscriptionItem] Controller
@@ -206,8 +206,6 @@ class SubscriptionItemController {
             }
         });
     }
-
-
 }
 
 module.exports = SubscriptionItemController;

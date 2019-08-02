@@ -163,7 +163,7 @@ class SubscriptionPlanRepository {
             })
             .populate({
                 path: 'items',
-                select: '_id amount amount name saleAmount typeId limit dateCreated'
+                select: '_id amount amount name description saleAmount typeId limit dateCreated'
             })
             .then(data => {
                 callback(null, data);
