@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const SubscriptionItem = require('./subscription-item.model');
 
 const SubscriptionUserSchema = new Schema(
     {

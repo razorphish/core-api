@@ -163,7 +163,17 @@ class SubscriptionPlanRepository {
             })
             .populate({
                 path: 'items',
-                select: '_id amount amount name description saleAmount typeId limit dateCreated'
+                select: '_id amount amount name description saleAmount typeId limit dateCreated dateModified'
+            })
+            .populate({
+                path: 'users',
+                select: '_id frequencyId statusId dateStart dateEnd dateCreated dateModified',
+                populate: [
+                    {
+                      path: 'userId',
+                      select: '_id firstName lastName email username'
+                    }
+                ]
             })
             .then(data => {
                 callback(null, data);

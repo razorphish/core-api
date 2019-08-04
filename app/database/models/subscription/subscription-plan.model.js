@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const SubscriptionUser = require('./subscription-user.model')
+
 
 const SubscriptionPlanSchema = new Schema(
     {
@@ -41,7 +43,21 @@ SubscriptionPlanSchema.virtual('items', {
     justOne: false,
     options: {
         sort: {
-            sortOrder: 1
+            sortOrder: 1 //Ascending
+        }
+    } // Query options, see http://bit.ly/mongoose-query-options
+});
+
+SubscriptionPlanSchema.virtual('users', {
+    ref: 'SubscriptionUser', // The model to use
+    localField: '_id', // Find people where `localField`
+    foreignField: 'subscriptionPlanId', // is equal to `foreignField`
+    // If `justOne` is true, 'members' will be a single doc as opposed to
+    // an array. `justOne` is false by default.
+    justOne: false,
+    options: {
+        sort: {
+            dateCreated: -1 //Descending
         }
     } // Query options, see http://bit.ly/mongoose-query-options
 });
