@@ -1,5 +1,5 @@
 // [SubscriptionUser] Repository
-const model = require('../../models/subscription/subscription-plan.model');
+const model = require('../../models/subscription/subscription-user.model');
 const logger = require('../../../../lib/winston.logger');
 
 /**
@@ -7,7 +7,7 @@ const logger = require('../../../../lib/winston.logger');
  * @author Antonio Marasco
  * @class [SubscriptionUser] Repository
  */
-class SubscriptionPlanRepository {
+class SubscriptionUserRepository {
     /**
      * Constructor for {subscriptionUser}
      */
@@ -24,9 +24,18 @@ class SubscriptionPlanRepository {
     all(callback) {
         logger.debug(`${this._classInfo}.all()`);
 
-        model.find({}, {
-            accountId: 0
-        })
+        model.find({},
+            {
+                accountId: 0
+            })
+            .populate({
+                path: 'subscriptionPlanId',
+                select: '_id name'
+            })
+            .populate({
+                path: 'userId',
+                select: '_id username firstName lastName'
+            })
             .then(data => {
                 callback(null, data);
             })
@@ -156,4 +165,4 @@ class SubscriptionPlanRepository {
     }
 }
 
-module.exports = new SubscriptionPlanRepository();
+module.exports = new SubscriptionUserRepository();
