@@ -80,6 +80,7 @@
     "serve-favicon": "^2.5.0",
     "twitter-node-client": "github:razorphish/TwitterJSClient",
     "web-push": "^3.3.3",
+    "wepay": "0.0.9",
     "winston": "^2.4.2"
   }
 }

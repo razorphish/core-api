@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 const SubscriptionJobSchema = new Schema(
     {
-        jobId: { type: Schema.Types.ObjectId, ref: 'Job', required: true, trim: true },
-        subscriptionPlanId: { type: Schema.Types.ObjectId, ref: 'SubscriptionPlan', required: false },
+        jobId: { type: Schema.Types.ObjectId, ref: 'Job', required: true },
+        subscriptionItemId: { type: Schema.Types.ObjectId, ref: 'SubscriptionItem', required: true },
         startJobTimeId: {
             type: String,
             required: true,

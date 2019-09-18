@@ -30,6 +30,12 @@
     "tokenRequestName": "request_token",
     "tokenAccessName": "access_token"
   },
+  "wepay": {
+    "client_id": "",
+    "client_secret": "",
+    "access_token": "",
+    "use_staging": false
+  },
   "winstonConfig": {
     "file": {
       "level": "error",
