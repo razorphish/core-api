@@ -38,7 +38,7 @@ $ git config core.sharedRepository
 $ sudo git config core.sharedRepository group
 $ sudo chgrp -R groupname .
 $ sudo chmod -R g+rwX .
-$ find . -type d -exec chmod g+s '{}' +
+$ sudo find . -type d -exec chmod g+s '{}' +
 ```
 
 ### After repository is set up go to project location
