@@ -39,7 +39,16 @@ class ApplicationFeeder {
                 name: 'Wishlist Premiere',
                 shortName: 'wishlist',
                 statusId: 'active',
-                url: 'https://wishlist.maras.co'
+                url: 'https://wishlist.maras.co',
+                settings: {
+                    forgotPasswordEmail : {
+                        subject: 'Forgot Password Reset',
+                        bodyHtml: 'david@maras.co',
+                        bodyText: '',
+                        fromName: 'Twittles Support',
+                        fromEmail: 'david@maras.co'
+                    }
+                }
             },
             {
                 _id: '5c4b13dbfc13ae60b4000006',

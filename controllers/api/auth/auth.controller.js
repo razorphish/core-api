@@ -102,9 +102,9 @@ class AuthController {
 
           if (error) {
             logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
-            response.status(500).send(error);
+            response.status(500).send({ error: error, message: 'Unknown error occurred' });
           } else if (!user) {
-            response.status(404).send({ error: { message: 'User does not exist' } });
+            response.status(404).send({ message: 'User does not exist' });
           } else {
             let newToken = httpSign.token(user._id, 'forgot_password_token', '30', '*', 'forgot_password', 'marasco')
 

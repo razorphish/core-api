@@ -456,8 +456,15 @@ class UserRepository {
     } else {
       body.status = !!body.password ? 'active' : 'awaitingPassword';
     }
+    
     body.email_lower = body.email.toLowerCase();
-    body.username_lower = body.username.toLowerCase();
+
+    if (!!body.username){
+      body.username_lower = body.username.toLowerCase();
+    } else {
+      body.username = body.email.toLowerCase()
+      body.username_lower = body.email_lower;
+    }
 
     UserModel.create(body)
       .then(data => {
@@ -553,25 +560,35 @@ class UserRepository {
   /**
  * Search user by search query
  * @param {any} query Query containting fields to obtain
+ * @param {any} select Determines which fields to return.  Auths will be overwritten
  * @param {Function} callback(err: Error, document)
  *  Called after find
  *  err {Error}: the output of the computation
  *  data {any}: whether a change has occurred
  */
-  search(query, callback) {
+  search(query, select, callback) {
     logger.debug(`${this._classInfo}.search(${JSON.stringify(query)})`);
+    let selected;
+    let selectDefault = {
+      password: 0,
+      salt: 0,
+      refreshToken: 0,
+      loginAttempts: 0,
+      lockUntil: 0
+    };
+
+    if (typeof select === 'function'){
+      callback = select;
+      selected = selectDefault;
+    } else {
+      selected = Object.assign(select, selectDefault)
+    }
 
     UserModel.findOne(
       query,
       null,
       {
-        select: {
-          password: 0,
-          salt: 0,
-          refreshToken: 0,
-          loginAttempts: 0,
-          lockUntil: 0
-        }
+        select: selected
       })
       .then((data) => {
         callback(null, data);

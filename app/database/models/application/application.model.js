@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Social = require('./social.model');
 const Firebase = require('./firebase.model');
+const ApplicationSetting = require('../application/application-setting.model');
 
 ///////////////////////// Parent Schema
 const ApplicationSchema = new Schema({
@@ -14,6 +15,7 @@ const ApplicationSchema = new Schema({
     statusId: { type: String, enum: ['active', 'inactive', 'disabled', 'pending', 'archived'], required: true, trim: true },
     social: { type: Social.schema, required: false},
     firebase: { type: Firebase.schema, required: false},
+    settings: { type: ApplicationSetting.schema, required: false},
     dateCreated: { type: Date, required: true, default: Date.now },
     dateModified: { type: Date, required: true, default: Date.now }
 });
