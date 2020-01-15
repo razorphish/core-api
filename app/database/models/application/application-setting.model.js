@@ -1,12 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const ApplicationSettingForgotPasswordEmail = require('./application-setting-forgot-password-email.model');
+
+const NotificationOption = require('../notificationOption/notificationOption.model')
+const NotificationEmailOption = require('../notificationOption/notificationEmailOption.model')
 
 const ApplicationSettingSchema = new Schema(
     {
-        forgotPasswordEmail: { type: ApplicationSettingForgotPasswordEmail.schema, required: true },
+        applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
+        notifications: { type: [NotificationOption.schema], required: false },
+        emailNotifications: { type: [NotificationEmailOption.schema], required: false }
     }, {
-    _id: false,
     toJSON: { virtuals: true }
 });
 

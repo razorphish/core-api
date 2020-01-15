@@ -9,12 +9,11 @@ const NotificationEmailOptionSchema = new Schema({
     html: { type: String, required: false, trim: true },
     fromEmailAddress: { type: String, required: false, trim: true },
     fromName: { type: String, required: false, trim: true },
+    replyTo: { type: String, required: false, trim: true },
     dateCreated: { type: Date, required: true, default: Date.now }
 });
 
 NotificationEmailOptionSchema.pre('save', function (next) {
-    //const notificationOption = this;
-
     next();
 });
 

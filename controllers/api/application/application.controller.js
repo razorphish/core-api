@@ -21,6 +21,14 @@ class AccountController {
             utils.isInRole('superadmin'),
             this.all.bind(this)
         );
+
+        router.get(
+            '/details',
+            passport.authenticate('user-bearer', { session: false }),
+            utils.isInRole('admin'),
+            this.allDetails.bind(this)
+        );
+
         router.get(
             '/page/:skip/:top',
             passport.authenticate('user-bearer', { session: false }),
@@ -33,6 +41,14 @@ class AccountController {
             utils.isInRole('superadmin'),
             this.get.bind(this)
         );
+
+        router.get(
+            '/:id/details',
+            passport.authenticate('user-bearer', { session: false }),
+            utils.isInRole(['admin', 'user']),
+            this.getDetails.bind(this)
+        );
+
         router.post(
             '/',
             passport.authenticate('user-bearer', { session: false }),
@@ -73,6 +89,27 @@ class AccountController {
                 logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
                 response.status(500).send(error);
                 //next(error);
+            } else {
+                logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
+                response.json(result);
+            }
+        });
+    }
+
+    /**
+     * Gets all Applications
+     * @param {Request} [request] Request object
+     * @param {Response} response Response
+     * @example GET /api/application
+     * @returns {pointer} res.json
+     */
+    allDetails(request, response, next) {
+        logger.info(`${this._classInfo}.all() [${this._routeName}]`);
+
+        repo.allDetails((error, result) => {
+            if (error) {
+                logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
+                response.status(500).json(error);
             } else {
                 logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
                 response.json(result);
@@ -146,6 +183,27 @@ class AccountController {
                 response.status(500).send(error);
             } else {
                 logger.debug(`${this._classInfo}.get() [${this._routeName}] OK`);
+                response.json(result);
+            }
+        });
+    }
+
+    /**
+     * Gets a single application details
+     * @param {string} id application id
+     * @param {requestCallback} callback Handles the response
+     * @example getDetails('123456789', (error, data) => {})
+     */
+    getDetails(request, response) {
+        const id = request.params.id;
+        logger.info(`${this._classInfo}.getDetails(${id}) [${this._routeName}]`);
+
+        repo.getDetails(id, (error, result) => {
+            if (error) {
+                logger.error(`${this._classInfo}.getDetails() [${this._routeName}]`, error);
+                response.status(500).json(error);
+            } else {
+                logger.debug(`${this._classInfo}.getDetails() [${this._routeName}] OK`);
                 response.json(result);
             }
         });

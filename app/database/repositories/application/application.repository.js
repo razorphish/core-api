@@ -43,6 +43,28 @@ class ApplicationRepository {
     }
 
     /**
+     * Gets all applications with details
+     * @param {requestCallback} callback Handles the response
+     * @example all((error, data) => {})
+     */
+    allDetails(callback) {
+        logger.debug(`${this._classInfo}.allDetails()`);
+
+        model.find({})
+            .populate({
+                path: 'settings',
+                select: 'notifications emailNotifications'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.allDetails::find`, error);
+                callback(error);
+            });
+    }
+
+    /**
      * Gets all Applications paginated
      * @param {number} [skip=10] Page number
      * @param {number} [top=10] Per Page
@@ -68,6 +90,10 @@ class ApplicationRepository {
                     sort: { lastName: 1 }
                 }
             )
+            .populate({
+                path: 'settings',
+                select: 'notifications emailNotifications'
+            })
             .then((data) => {
                 callback(null, data);
             })
@@ -116,6 +142,33 @@ class ApplicationRepository {
     }
 
     /**
+    * Gets a single application details
+    * @param {string} id application id
+    * @param {requestCallback} callback Handles the response
+    * @example get('123456789', (error, data) => {})
+    */
+    getDetails(id, callback) {
+        logger.debug(`${this._classInfo}.getDetails(${id})`);
+
+        model.findById(
+            id,
+            null,
+            {
+            })
+            .populate({
+                path: 'settings',
+                select: 'applicationId notifications emailNotifications'
+            })
+            .then(data => {
+                callback(null, data);
+            })
+            .catch(error => {
+                logger.error(`${this._classInfo}.getDetails(${id})`, error);
+                return callback(error);
+            });
+    }
+
+    /**
      * Inserts Application
      * @param {object} body Application data
      * @param {requestCallback} callback Handles the response
@@ -143,7 +196,7 @@ class ApplicationRepository {
      */
     update(id, body, callback) {
         logger.debug(`${this._classInfo}.update(${id})`);
-
+        body.dateModified = Date.now();
         model.findOneAndUpdate(
             { _id: id },
             body,
