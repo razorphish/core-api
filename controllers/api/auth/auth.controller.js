@@ -98,7 +98,7 @@ class AuthController {
             applicationId: applicationId
           }
 
-        userRepo.search(query, (error, user) => {
+        userRepo.searchDetails(query, (error, user) => {
 
           if (error) {
             logger.error(`${this._classInfo}.forgotPassword() [${this._routeName}]`, error);
@@ -125,57 +125,7 @@ class AuthController {
       },
       (token, user, done) => {
 
-        var html_content = 'Hello ' + user.firstName + ',<br/>' +
-          'You are receiving this because you (or someone else) have requested the reset of the password for your account.<br/><br/>' +
-          'Please click on the following link, or paste this into your browser to complete the process:<br/><br/>' +
-          token.origin + '/auth/reset-password/' + token.value_ + '<br/><br/>' +
-          'If you did not request a password reset, please ignore this email or reply to us to let us know.  ' +
-          'This password reset is only valid for the next 30 minutes<br/><br/>' +
-          'Thanks,<br/>' +
-          'Maras.co Support<br/><br/>' +
-          '<b>P.S.</b> WE also love hearing from you and helping you with any issues ' +
-          'you have.  Please reply to this email if you want to ask a question or just say hi.<br/><br/>';
-
-        var message = {
-          to: [{
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-            type: 'to'
-          }],
-          //headers: { "Reply-To": mandrillConfig.reply_to },
-          important: false,
-          // merge: true,
-          // merge_language: "mailchimp",
-          // merge_vars: [{
-          //   rcpt: user.email,
-          //   vars: [{
-          //     name: "merge2",
-          //     content: "merge2 content"
-          //   }]
-          // }],
-          // tags: [
-          //   "password-resets"
-          // ],
-          from_email: mandrillConfig.from_email,
-          //from: mandrillConfig.from_email,
-          from_name: mandrillConfig.from_name,
-          subject: 'Forgot Password Reset',
-          text: html_content,
-          html: html_content
-          // , google_analytics_domains: [
-          //   'maras.co'
-          // ],
-          // google_analytics_campaign: "message.from_email@example.com",
-          // metadata: {
-          //   "website": "www.example.com"
-          // },
-          // recipient_metadata: [{
-          //   rcpt: "recipient.email@example.com",
-          //   values: {
-          //     user_id: user.id
-          //   }
-          // }],
-        };
+        const message = this.__createForgotPasswordEmail(user, token);
 
         mandrill.messages.send({ message: message, async: mailchimp_async }, (data) => {
           logger.debug(`${this._classInfo}.forgotPassword() [${this._routeName}] MESSAGE REQUESTED`, data);
@@ -387,7 +337,7 @@ class AuthController {
           });
       },
       (token, done) => {
-        userRepo.get(token.userId, (error, user) => {
+        userRepo.details(token.userId, (error, user) => {
 
           if (error) {
             logger.error(
@@ -411,29 +361,7 @@ class AuthController {
         })
       },
       (user, done) => {
-        var html_content = 'Hello ' + user.firstName + ',<br/>' +
-          'This is a confirmation that the password for your account ' +
-          user.username +
-          ' has just been changed.<br/><br/>' +
-          'Thanks,<br/>' +
-          'Maras.co Support<br/><br/>' +
-          '<b>P.S.</b> WE also love hearing from you and helping you with any issues ' +
-          'you have.  Please reply to this email if you want to ask a question or just say hi.<br/><br/>';
-
-        var message = {
-          to: [{
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-            type: 'to'
-          }],
-          headers: { "Reply-To": mandrillConfig.reply_to },
-          important: false,
-          from_email: mandrillConfig.from_email,
-          from_name: mandrillConfig.from_name,
-          subject: 'Your password has been changed',
-          text: html_content,
-          html: html_content
-        };
+        let message = this.__createResetEmail(user);
 
         mandrill.messages.send({ message: message, async: mailchimp_async }, (data) => {
           logger.debug(`${this._classInfo}.resetPassword() [${this._routeName}] MESSAGE REQUESTED`, data);
@@ -511,6 +439,73 @@ class AuthController {
     });
   }
 
+  __createResetEmail(user) {
+
+    const emailParams = user.applicationId.settings.emailNotifications
+      .filter((value) => {
+        return value.name === 'RESET_PASSWORD';
+      });
+
+    const html_content = emailParams[0].html
+      .replace('$$FIRST_NAME$$', user.firstName)
+      .replace('$$USERNAME$$', user.username);
+
+    const txt_content = emailParams[0].text
+      .replace('$$FIRST_NAME$$', user.firstName)
+      .replace('$$USERNAME$$', user.username);
+
+    let message = {
+      to: [{
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        type: 'to'
+      }],
+      headers: { 'Reply-To': emailParams[0].replyTo },
+      important: false,
+      from_email: emailParams[0].fromEmailAddress,
+      from_name: emailParams[0].fromName,
+      subject: emailParams[0].subject,
+      text: txt_content,
+      html: html_content
+    };
+
+    return message;
+  }
+
+  __createForgotPasswordEmail(user, token) {
+
+    const emailParams = user.applicationId.settings.emailNotifications
+      .filter((value) => {
+        return value.name === 'FORGOT_PASSWORD';
+      });
+
+    const html_content = emailParams[0].html
+      .replace('$$FIRST_NAME$$', user.firstName)
+      .replace('$$URL$$', token.origin)
+      .replace('$$TOKEN_VALUE$$', token.value_);
+
+    const txt_content = emailParams[0].text
+      .replace('$$FIRST_NAME$$', user.firstName)
+      .replace('$$URL$$', token.origin)
+      .replace('$$TOKEN_VALUE$$', token.value_);
+
+    let message = {
+      to: [{
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        type: 'to'
+      }],
+      headers: { 'Reply-To': emailParams[0].replyTo },
+      important: false,
+      from_email: emailParams[0].fromEmailAddress,
+      from_name: emailParams[0].fromName,
+      subject: emailParams[0].subject,
+      text: txt_content,
+      html: html_content
+    };
+
+    return message;
+  }
   //End Class
 }
 

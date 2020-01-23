@@ -394,7 +394,13 @@ class UserRepository {
       })
       .populate({
         path: 'applicationId',
-        select: '_id name'
+        select: '_id name settings',
+        populate: [
+          {
+              path: 'settings',
+              select: '_id notifications emailNotifications'
+          }
+      ]   
       })
       .populate({
         path: 'tokens',
@@ -598,6 +604,58 @@ class UserRepository {
         return callback(error);
       });
   }
+
+/**
+ * Search user by search query
+ * @param {any} query Query containting fields to obtain
+ * @param {any} select Determines which fields to return.  Auths will be overwritten
+ * @param {Function} callback(err: Error, document)
+ *  Called after find
+ *  err {Error}: the output of the computation
+ *  data {any}: whether a change has occurred
+ */
+searchDetails(query, select, callback) {
+  logger.debug(`${this._classInfo}.search(${JSON.stringify(query)})`);
+  let selected;
+  let selectDefault = {
+    password: 0,
+    salt: 0,
+    refreshToken: 0,
+    loginAttempts: 0,
+    lockUntil: 0
+  };
+
+  if (typeof select === 'function'){
+    callback = select;
+    selected = selectDefault;
+  } else {
+    selected = Object.assign(select, selectDefault)
+  }
+
+  UserModel.findOne(
+    query,
+    null,
+    {
+      select: selected
+    })
+    .populate({
+      path: 'applicationId',
+      select: '_id name settings',
+      populate: [
+        {
+            path: 'settings',
+            select: '_id notifications emailNotifications'
+        }
+    ]   
+    })
+    .then((data) => {
+      callback(null, data);
+    })
+    .catch(error => {
+      logger.error(`${this._classInfo}.search::findOne`, error);
+      return callback(error);
+    });
+}
 
   /**
    * Updates an User
