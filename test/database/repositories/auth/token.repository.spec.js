@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable consistent-return */
+/* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
 
+const fs = require('fs');
+const { expect } = require('chai');
 const Token = require('../../../../app/database/repositories/auth/token.repository');
 const DB = require('../../../../app/database/connection');
-const fs = require('fs');
-const expect = require('chai').expect;
 
 const readJson = (path, done) => {
   fs.readFile(require.resolve(path), (err, data) => {
@@ -25,8 +28,8 @@ describe('Token Repository Tests', () => {
       if (err) {
         return done(err);
       }
-      var fixtures;
-      readJson('../../../fixtures/token.model.fixture.json', (err, data) => {
+      let fixtures;
+      readJson('../../../fixtures/token.model.fixture.json', (_, data) => {
         fixtures = data;
         DB.fixtures(fixtures, done);
       });
@@ -42,7 +45,7 @@ describe('Token Repository Tests', () => {
 
   it('byToken: valid', (done) => {
     Token.byToken('df87095132d000193ae7f2d34fe9196b30de83bc', (err, data) => {
-      let userId = data.userId.toString();
+      const userId = data.userId.toString();
       data.loginProvider.should.eql('oAuth2');
       userId.should.eql('59b0767a8207af454caa2560');
       done();
@@ -72,8 +75,8 @@ describe('Token Repository Tests', () => {
 
   it('delete', (done) => {
     Token.all((err, users) => {
-      Token.delete(users.data[0]._id, (err) => {
-        Token.all((err, result) => {
+      Token.delete(users.data[0]._id, () => {
+        Token.all((_, result) => {
           result.count.should.eql(2);
           result.data[0]._id.should.not.eql(users.data[0]._id);
           done();
@@ -84,8 +87,8 @@ describe('Token Repository Tests', () => {
 
   it('deleteByTokenHash', (done) => {
     Token.all((err, tokens) => {
-      Token.deleteByTokenHash(tokens.data[0].value, (err) => {
-        Token.all((err, result) => {
+      Token.deleteByTokenHash(tokens.data[0].value, () => {
+        Token.all((error, result) => {
           result.count.should.eql(2);
           result.data[0]._id.should.not.eql(tokens.data[0]._id);
           done();
@@ -108,7 +111,7 @@ describe('Token Repository Tests', () => {
 
   it('get', (done) => {
     Token.all((err, result) => {
-      Token.get(result.data[0]._id, (err, data) => {
+      Token.get(result.data[0]._id, (_, data) => {
         data.loginProvider.should.eql('oAuth2');
         data.value.should.eql('df87095132d000193ae7f2d34fe9196b30de83bc');
         done();
@@ -130,7 +133,7 @@ describe('Token Repository Tests', () => {
         protocol: 'http'
       },
       (err, token) => {
-        Token.all((err, items) => {
+        Token.all((_, items) => {
           items.count.should.eql(4);
           items.data[3]._id.should.eql(token._id);
           items.data[3].name.should.eql('access_token');

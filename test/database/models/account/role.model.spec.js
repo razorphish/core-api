@@ -1,14 +1,16 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
 
+const { expect } = require('chai');
 const RoleModel = require('../../../../app/database/models/auth/role.model');
-const expect = require('chai').expect;
 
 describe('Role Model Tests', () => {
   /**
    * Validations
    */
   it('should be invalid if name is missing', (done) => {
-    var model = new RoleModel();
+    const model = new RoleModel();
 
     model.validate((err) => {
       expect(err.errors.name).to.exist;
@@ -17,7 +19,7 @@ describe('Role Model Tests', () => {
   });
 
   it('should be invalid if normalizedName is missing', (done) => {
-    var model = new RoleModel();
+    const model = new RoleModel();
 
     model.validate((err) => {
       expect(err.errors.normalizedName).to.exist;

@@ -1,16 +1,10 @@
-//During the test the env variable is set to test
+// During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-//Require the dev-dependencies
-let chai = require('chai');
-let expect = require('chai').expect;
-let http = require('http');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
+// Require the dev-dependencies
 
-//**OTHER LIBRARIES */
-//let assert = require('assert');
+//* *OTHER LIBRARIES */
+// let assert = require('assert');
 
 // describe('**NODEJS SERVER**', function () {
 

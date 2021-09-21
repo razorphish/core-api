@@ -1,30 +1,32 @@
 #!/usr/bin/env nodejs
-const express = require('express'),
-  exphbs = require('express-handlebars'),
-  hbsHelpers = require('handlebars-helpers'),
-  hbsLayouts = require('handlebars-layouts'),
-  bodyParser = require('body-parser'),
-  cookieParser = require('cookie-parser'),
-  errorhandler = require('errorhandler'),
-  csrf = require('csurf'),
-  morgan = require('morgan'),
-  favicon = require('serve-favicon'),
-  router = require('./lib/router'),
-  database = require('./app/database/connection'),
-  seeder = require('./app/database/seeder'),
-  cors = require('cors'),
-  passport = require('passport'),
-  logger = require('./lib/winston.logger'),
-  webPush = require('web-push');
-webPushConfig = require('./lib/config.loader').webPush;
-authRoutes = require('./app/routes/oAuth2');
-//authRoutesJwt = require('./app/routes/JWT');
-//Antonio
-//Instantiate libraries
+const express = require('express');
+const exphbs = require('express-handlebars');
+// const hbsHelpers = require('handlebars-helpers');
+const hbsLayouts = require('handlebars-layouts');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const errorhandler = require('errorhandler');
+// const csrf = require('csurf');
+const morgan = require('morgan');
+const favicon = require('serve-favicon');
+const cors = require('cors');
+const passport = require('passport');
+const webPush = require('web-push');
+const router = require('./lib/router');
+const database = require('./app/database/connection');
+const seeder = require('./app/database/seeder');
+const logger = require('./lib/winston.logger');
+const webPushConfig = require('./lib/config.loader').webPush;
+const authRoutes = require('./app/routes/oAuth2');
+// authRoutesJwt = require('./app/routes/JWT');
+// Antonio
+// Instantiate libraries
 
-//====================================
+//= ===================================
 
-(app = express()), (port = 3002);
+// eslint-disable-next-line no-unused-expressions
+const app = express();
+const port = 3002;
 
 class Server {
   constructor() {
@@ -40,7 +42,7 @@ class Server {
   }
 
   start() {
-    module.exports = app.listen(port, (err) => {
+    module.exports = app.listen(port, () => {
       logger.debug(
         '[%s] Listening on http://localhost:%d',
         process.env.NODE_ENV,
@@ -56,16 +58,16 @@ class Server {
    * @memberof Server
    */
   initCors() {
-    var whiteList = [
-      'http://localhost', //android
-      'capacitor://localhost', //ios
-      'http://localhost:3333', //npx cap serve [remove later]
+    const whiteList = [
+      'http://localhost', // android
+      'capacitor://localhost', // ios
+      'http://localhost:3333', // npx cap serve [remove later]
       'http://localhost:8080',
       'http://localhost:3333',
       'http://127.0.0.1:8080',
       'http://localhost:4200',
-      'http://localhost:4201', //admin.maras.co
-      'http://localhost:4203', //wishlist.maras.co
+      'http://localhost:4201', // admin.maras.co
+      'http://localhost:4203', // wishlist.maras.co
       'http://localhost:60000',
       'http://localhost:60001',
       'http://admin.biddler.com',
@@ -80,26 +82,25 @@ class Server {
       'https://twittles.maras.co',
       'file://'
     ];
-    var corsOptions = {
+    const corsOptions = {
       origin: (origin, callback) => {
         if (whiteList.indexOf(origin) !== -1) {
           logger.debug(`Cors enabled: ${origin}`);
           callback(null, true);
+        } else if (origin) {
+          logger.error(`origin not allowed: ${origin}`, origin);
+          callback(new Error('Not allowed by CORS'));
         } else {
-          if (origin) {
-            logger.error(`origin not allowed: ${origin}`, origin);
-            callback(new Error('Not allowed by CORS'));
-          } else {
-            callback(null, true);
-          }
+          callback(null, true);
         }
       },
-      //methods: 'GET,HEAD,OPTIONS',
+      // methods: 'GET,HEAD,OPTIONS',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-      //allowedHeaders:['authorization','content-type','X-XSRF-TOKEN','XSRF-TOKEN','SET-COOKIE','COOKIE'],
+      // allowedHeaders:['authorization','content-type',
+      // 'X-XSRF-TOKEN','XSRF-TOKEN','SET-COOKIE','COOKIE'],
       optionsSuccessStatus: 200,
       credentials: true
-      //preflightContinue: true
+      // preflightContinue: true
     };
 
     app.use(cors(corsOptions));
@@ -108,6 +109,7 @@ class Server {
 
   initCustomMiddleware() {
     if (process.platform === 'win32') {
+      // eslint-disable-next-line global-require
       require('readline')
         .createInterface({
           input: process.stdin,
@@ -127,18 +129,18 @@ class Server {
 
   initDbSeeder() {
     database.open(() => {
-      //Set NODE_ENV to 'development' and uncomment the following if to only run
-      //the seeder when in dev mode
-      //if (process.env.NODE_ENV === 'development') {
+      // Set NODE_ENV to 'development' and uncomment the following if to only run
+      // the seeder when in dev mode
+      // if (process.env.NODE_ENV === 'development') {
       //  seeder.init();
-      //}
+      // }
       seeder.init();
     });
   }
 
   initExpressMiddleWare() {
-    app.use(favicon(__dirname + '/public/images/favicon.ico'));
-    app.use(express.static(__dirname + '/public'));
+    app.use(favicon(`${__dirname}/public/images/favicon.ico`));
+    app.use(express.static(`${__dirname}/public`));
     app.use(morgan('dev'));
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
@@ -155,11 +157,11 @@ class Server {
     // Replace line below with:
     // app.use(csrf({ cookie: false }));
 
-    //Declare public routes BEFORE XSRF so they
-    //do not need the xsrf cookie
+    // Declare public routes BEFORE XSRF so they
+    // do not need the xsrf cookie
     this.initPublicRoutes();
 
-    //app.use(csrf({ cookie: true }));
+    // app.use(csrf({ cookie: true }));
 
     // // UnCOMMENT WHEN SOLUTION FOUND FOR CSRF
     // app.use((req, res, next) => {
@@ -172,7 +174,7 @@ class Server {
     //   // console.log('csrf-token: ' + csrfToken);
     //   next();
     // });
-    //process.setMaxListeners(0);
+    // process.setMaxListeners(0);
 
     process.on('uncaughtException', (err) => {
       if (err) {
@@ -188,15 +190,16 @@ class Server {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    //Start Local Provider
+    // Start Local Provider
+    // eslint-disable-next-line global-require
     require('./app/security/strategies/local');
   }
 
   initPublicRoutes() {
-    //AM TODO
-    //router.load(app, './publiccontrollers');
+    // AM TODO
+    // router.load(app, './publiccontrollers');
     app.post('/oauth/token', authRoutes.token);
-    //app.post('/oauth/jwt-token', authRoutesJwt.token);
+    // app.post('/oauth/jwt-token', authRoutesJwt.token);
   }
 
   initSecureRoutes() {
@@ -205,7 +208,7 @@ class Server {
 
     // redirect all others to the index (HTML5 history)
     app.all('/*', (req, res) => {
-      res.sendFile(__dirname + '/public/index.html');
+      res.sendFile(`${__dirname}/public/index.html`);
     });
   }
 
@@ -241,4 +244,5 @@ class Server {
   }
 }
 
-var server = new Server();
+// eslint-disable-next-line no-unused-vars
+const server = new Server();

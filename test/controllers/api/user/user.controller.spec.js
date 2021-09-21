@@ -1,20 +1,24 @@
-//During the test the env variable is set to test
+/* eslint-disable consistent-return */
+/* eslint-disable no-undef */
+// During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
+
+const fs = require('fs');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const spies = require('chai-spies');
+// Require the dev-dependencies
+const mongoose = require('mongoose');
 
 const User = require('../../../../app/database/repositories/account/user.repository');
 const UserModel = require('../../../../app/database/models/account/user.model');
 const DB = require('../../../../app/database/connection');
-const fs = require('fs');
 
-//Require the dev-dependencies
-const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const spies = require('chai-spies');
 
 const server = require('../../../../server');
-const should = chai.should();
+
+// const should = chai.should();
 
 let liveUser = {};
 const origin = 'http://localhost:4200';
@@ -31,10 +35,10 @@ const readJson = (path, done) => {
 
 chai.use(chaiHttp);
 chai.use(spies);
-//Our parent block
+// Our parent block
 describe('Users', () => {
   before((done) => {
-    //Before each test we empty the database
+    // Before each test we empty the database
     DB.open(done);
   });
 
@@ -43,10 +47,10 @@ describe('Users', () => {
       if (err) {
         return done(err);
       }
-      var fixtures;
+      let fixtures;
       readJson(
         '../../../fixtures/client-user.model.fixture.json',
-        (err, data) => {
+        (_, data) => {
           fixtures = data;
           DB.fixtures(fixtures, done);
         }
@@ -55,16 +59,16 @@ describe('Users', () => {
   });
 
   beforeEach((done) => {
-    let clientId = 'core-web-ui';
-    let clientSecret =
+    const clientId = 'core-web-ui';
+    const clientSecret =
       'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
       'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
       'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
       'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
-    let username = 'david@maras.co';
+    const username = 'david@maras.co';
     const password = 'Letme1n!';
 
-    //this.timeout(15000);
+    // this.timeout(15000);
     chai
       .request(server)
       .post('/oauth/token')
@@ -72,8 +76,8 @@ describe('Users', () => {
       .set('origin', origin)
       .send({
         _method: 'post',
-        username: username,
-        password: password,
+        username,
+        password,
         client_id: clientId,
         client_secret: clientSecret,
         grant_type: 'password'
@@ -87,19 +91,19 @@ describe('Users', () => {
   /*
     `    * Test the /GET route
      */
-  describe('Endpoints', function () {
+  describe('Endpoints', () => {
     it('should GET all the Users', (done) => {
       chai
         .request(server)
         .get('/api/user')
         .set({
-          origin: origin,
+          origin,
           'Content-Type': 'application/json',
           Authorization: `bearer ${liveUser.access_token}`
         })
         .end((err, response) => {
           response.should.have.status(200);
-          response.should.be.json;
+          response.should.be.json();
           response.body.should.be.a('array');
           response.body.length.should.be.eql(2);
           done();
@@ -111,13 +115,13 @@ describe('Users', () => {
         .request(server)
         .get('/api/user/page/0/2')
         .set({
-          origin: origin,
+          origin,
           'Content-Type': 'application/json',
           Authorization: `bearer ${liveUser.access_token}`
         })
         .end((err, response) => {
           response.should.have.status(200);
-          response.should.be.json;
+          response.should.be.json();
           response.body.should.be.a('array');
           response.body.should.have.length(2);
           done();
@@ -130,13 +134,13 @@ describe('Users', () => {
           .request(server)
           .get(`/api/user/${result[0]._id}`)
           .set({
-            origin: origin,
+            origin,
             'Content-Type': 'application/json',
             Authorization: `bearer ${liveUser.access_token}`
           })
-          .end((err, response) => {
+          .end((_, response) => {
             response.should.have.status(200);
-            response.should.be.json;
+            response.should.be.json();
             response.body.should.be.a('object');
             response.body._id.should.equal(result[0]._id.toString());
             done();
@@ -147,9 +151,9 @@ describe('Users', () => {
     it('should ADD a User', (done) => {
       chai
         .request(server)
-        .post(`/api/user`)
+        .post('/api/user')
         .set({
-          origin: origin,
+          origin,
           'Content-Type': 'application/json',
           Authorization: `bearer ${liveUser.access_token}`
         })
@@ -165,9 +169,9 @@ describe('Users', () => {
         })
         .end((err, response) => {
           response.should.have.status(200);
-          response.should.be.json;
+          response.should.be.json();
 
-          User.all((err, result) => {
+          User.all((_, result) => {
             result.length.should.eql(3);
             done();
           });
@@ -177,15 +181,15 @@ describe('Users', () => {
     it('should GET a User by roles', (done) => {
       chai
         .request(server)
-        .get(`/api/user/roles/Admin`)
+        .get('/api/user/roles/Admin')
         .set({
-          origin: origin,
+          origin,
           'Content-Type': 'application/json',
           Authorization: `bearer ${liveUser.access_token}`
         })
         .end((err, response) => {
           response.should.have.status(200);
-          response.should.be.json;
+          response.should.be.json();
           response.body.should.be.a('array');
           response.body.length.should.equal(1);
           done();
@@ -198,14 +202,14 @@ describe('Users', () => {
           .request(server)
           .del(`/api/user/${result[0]._id}`)
           .set({
-            origin: origin,
+            origin,
             'Content-Type': 'application/json',
             Authorization: `bearer ${liveUser.access_token}`
           })
-          .end((err, response) => {
+          .end((_, response) => {
             response.should.have.status(200);
-            response.should.be.json;
-            User.all((err, resp) => {
+            response.should.be.json();
+            User.all((error1, resp) => {
               resp.length.should.eql(1);
               done();
             });
@@ -219,7 +223,7 @@ describe('Users', () => {
           .request(server)
           .post(`/api/user/${result[0]._id}/devices`)
           .set({
-            origin: origin,
+            origin,
             'Content-Type': 'application/json',
             Authorization: `bearer ${liveUser.access_token}`
           })
@@ -234,9 +238,9 @@ describe('Users', () => {
             isVirtual: 'false',
             serial: '12341234134'
           })
-          .end((err, res) => {
+          .end((error, res) => {
             res.should.have.status(200);
-            res.should.be.json;
+            res.should.be.json();
             res.body.data.should.be.a('object');
             res.body.data._id.should.equal(result[0]._id.toString());
             res.body.data.should.have.property('devices');
@@ -256,7 +260,7 @@ describe('Users', () => {
           .request(server)
           .put(`/api/user/${result[0]._id}`)
           .set({
-            origin: origin,
+            origin,
             'Content-Type': 'application/json',
             Authorization: `bearer ${liveUser.access_token}`
           })
@@ -264,9 +268,9 @@ describe('Users', () => {
             firstName: 'Tommy',
             lastName: 'John'
           })
-          .end((err, response) => {
+          .end((error, response) => {
             response.should.have.status(200);
-            response.should.be.json;
+            response.should.be.json();
             response.body.should.be.a('object');
             response.body._id.should.equal(result[0]._id.toString());
             response.body.should.have.property('firstName').eql('Tommy');
@@ -281,22 +285,21 @@ describe('Users', () => {
         const _find = UserModel.find;
 
         beforeEach(() => {
-          UserModel.find = () => {
-            return Promise.reject('forced error');
-          };
+          // eslint-disable-next-line prefer-promise-reject-errors
+          UserModel.find = () => Promise.reject('forced error');
         });
 
         afterEach(() => {
           UserModel.find = _find;
         });
 
-        it('should respond with a server error', function () {
+        it('should respond with a server error', () => {
           const spy = chai.spy();
           return chai
             .request(server)
             .get('/api/user')
             .set({
-              origin: origin,
+              origin,
               'Content-Type': 'application/json',
               Authorization: `bearer ${liveUser.access_token}`
             })

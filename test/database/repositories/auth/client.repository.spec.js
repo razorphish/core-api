@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable consistent-return */
+/* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
 
+const fs = require('fs');
+const { expect } = require('chai');
 const ClientRepository = require('../../../../app/database/repositories/auth/client.repository');
 const DB = require('../../../../app/database/connection');
-const fs = require('fs');
-const expect = require('chai').expect;
 
 const readJson = (path, done) => {
   fs.readFile(require.resolve(path), (err, data) => {
@@ -25,8 +28,8 @@ describe('Client Repository Tests', () => {
       if (err) {
         return done(err);
       }
-      var fixtures;
-      readJson('../../../fixtures/client.model.fixture.json', (err, data) => {
+      let fixtures;
+      readJson('../../../fixtures/client.model.fixture.json', (_, data) => {
         fixtures = data;
         DB.fixtures(fixtures, done);
       });
@@ -63,8 +66,8 @@ describe('Client Repository Tests', () => {
 
   it('delete', (done) => {
     ClientRepository.all((err, data) => {
-      ClientRepository.delete(data[0]._id, (err) => {
-        ClientRepository.all((err, clients) => {
+      ClientRepository.delete(data[0]._id, () => {
+        ClientRepository.all((_, clients) => {
           clients.should.have.length(1);
           clients[0].name.should.not.eql(data[0].name);
           done();
@@ -75,7 +78,7 @@ describe('Client Repository Tests', () => {
 
   it('get', (done) => {
     ClientRepository.all((err, clients) => {
-      ClientRepository.get(clients[0]._id, (err, client) => {
+      ClientRepository.get(clients[0]._id, (_, client) => {
         client.name.should.eql('@marasco/core-web-ui');
         client.clientId.should.eql('core-web-ui');
         done();
@@ -98,7 +101,7 @@ describe('Client Repository Tests', () => {
         daysToLock: 3
       },
       (err, client) => {
-        ClientRepository.all((err, clients) => {
+        ClientRepository.all((_, clients) => {
           clients.should.have.length(3);
           clients[2]._id.should.eql(client._id);
           clients[2].name.should.eql('App.UI');
@@ -113,7 +116,7 @@ describe('Client Repository Tests', () => {
 
   it('refreshToken', (done) => {
     ClientRepository.all((err, clients) => {
-      ClientRepository.refreshToken(clients[0]._id, (err, token) => {
+      ClientRepository.refreshToken(clients[0]._id, (error, token) => {
         expect(token.takenHash).should.exist;
         expect(token.clientSecret).should.exist;
         done();
@@ -123,11 +126,11 @@ describe('Client Repository Tests', () => {
 
   it('update', (done) => {
     ClientRepository.all((err, clients) => {
-      let body = {
+      const body = {
         clientId: 'maraso-web-ui'
       };
-      ClientRepository.update(clients[0]._id, body, (err, client) => {
-        ClientRepository.get(client._id, (err, data) => {
+      ClientRepository.update(clients[0]._id, body, (_, client) => {
+        ClientRepository.get(client._id, (error, data) => {
           data.clientId.should.eql('maraso-web-ui');
           done();
         });
@@ -136,19 +139,19 @@ describe('Client Repository Tests', () => {
   });
 
   it('verify : valid credentials', (done) => {
-    let clientId = 'core-web-ui';
-    let clientSecret =
+    const clientId = 'core-web-ui';
+    const clientSecret =
       'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
       'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
       'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
       'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
-    let origin = 'http://localhost:4200';
+    const origin = 'http://localhost:4200';
 
     ClientRepository.verify(
       clientId,
       clientSecret,
       origin,
-      (err, client, reason) => {
+      (err, client) => {
         client.name.should.eq('@marasco/core-web-ui');
         done();
       }
@@ -156,16 +159,16 @@ describe('Client Repository Tests', () => {
   });
 
   it('verify : invalid credentials::Secret incorrect', (done) => {
-    let clientId = 'core-web-ui';
-    let clientSecret = '123456789';
-    let origin = 'http://localhost:4200';
+    const clientId = 'core-web-ui';
+    const clientSecret = '123456789';
+    const origin = 'http://localhost:4200';
 
     ClientRepository.verify(
       clientId,
       clientSecret,
       origin,
       (err, client, reason) => {
-        //Secret incorrect
+        // Secret incorrect
         reason.should.eq(1);
         done();
       }
@@ -173,16 +176,16 @@ describe('Client Repository Tests', () => {
   });
 
   it('verify : invalid credentials::NOT FOUND', (done) => {
-    let clientId = 'web-ui-luke-skyywalker';
-    let clientSecret = '123456789';
-    let origin = 'http://localhost:4200';
+    const clientId = 'web-ui-luke-skyywalker';
+    const clientSecret = '123456789';
+    const origin = 'http://localhost:4200';
 
     ClientRepository.verify(
       clientId,
       clientSecret,
       origin,
       (err, client, reason) => {
-        //Not Found
+        // Not Found
         reason.should.eq(0);
         done();
       }
@@ -190,20 +193,20 @@ describe('Client Repository Tests', () => {
   });
 
   it('verify : invalid credentials::NOT TRUSTED', (done) => {
-    let clientId = 'core-web-mobile';
-    let clientSecret =
+    const clientId = 'core-web-mobile';
+    const clientSecret =
       'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
       'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
       'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
       'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
-    let origin = 'http://localhost:8100';
+    const origin = 'http://localhost:8100';
 
     ClientRepository.verify(
       clientId,
       clientSecret,
       origin,
       (err, data, reason) => {
-        //Not Found
+        // Not Found
         reason.should.eq(3);
         done();
       }
@@ -211,13 +214,13 @@ describe('Client Repository Tests', () => {
   });
 
   it('verify : invalid credentials::ORIGIN DISABLED', (done) => {
-    let clientId = 'core-web-ui';
-    let clientSecret =
+    const clientId = 'core-web-ui';
+    const clientSecret =
       'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
       'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
       'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
       'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
-    let origin = 'https://api.maras.co';
+    const origin = 'https://api.maras.co';
 
     ClientRepository.verify(
       clientId,

@@ -1,10 +1,14 @@
+/* eslint-disable prefer-promise-reject-errors */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable consistent-return */
+/* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
 
+const fs = require('fs');
+const { expect } = require('chai');
 const User = require('../../../../app/database/repositories/account/user.repository');
 const UserModel = require('../../../../app/database/models/account/user.model');
 const DB = require('../../../../app/database/connection');
-const fs = require('fs');
-const expect = require('chai').expect;
 
 const readJson = (path, done) => {
   fs.readFile(require.resolve(path), (err, data) => {
@@ -26,8 +30,8 @@ describe('User Repository Tests', () => {
       if (err) {
         return done(err);
       }
-      var fixtures;
-      readJson('../../../fixtures/user.model.fixture.json', (err, data) => {
+      let fixtures;
+      readJson('../../../fixtures/user.model.fixture.json', (_, data) => {
         fixtures = data;
         DB.fixtures(fixtures, done);
       });
@@ -36,7 +40,7 @@ describe('User Repository Tests', () => {
 
   it('addDevice', (done) => {
     User.all((err, users) => {
-      let body = {
+      const body = {
         pushRegistrationId: 'Registrion Id',
         cordova: 'body.cordova',
         model: 'body.model',
@@ -48,8 +52,8 @@ describe('User Repository Tests', () => {
         serial: 'body.serial'
       };
 
-      User.addDevice(users[0]._id, body, (err, data) => {
-        User.all((err, result) => {
+      User.addDevice(users[0]._id, body, () => {
+        User.all((_, result) => {
           expect(result[0].devices).to.exist;
           done();
         });
@@ -81,7 +85,7 @@ describe('User Repository Tests', () => {
       'david@maras.co',
       'Letme1n!',
       null,
-      (err, data, reason) => {
+      () => {
         done();
       }
     );
@@ -136,8 +140,8 @@ describe('User Repository Tests', () => {
 
   it('delete', (done) => {
     User.all((err, users) => {
-      User.delete(users[0]._id, (err) => {
-        User.all((err, result) => {
+      User.delete(users[0]._id, () => {
+        User.all((_, result) => {
           result.length.should.eql(1);
           result[0]._id.should.not.eql(users[0]._id);
           done();
@@ -148,7 +152,7 @@ describe('User Repository Tests', () => {
 
   it('get', (done) => {
     User.all((err, result) => {
-      User.get(result[0]._id, (err, data) => {
+      User.get(result[0]._id, (_, data) => {
         data.firstName.should.eql('Antonio');
         data.lastName.should.eql('Marasco');
         done();
@@ -187,7 +191,7 @@ describe('User Repository Tests', () => {
         }
       },
       (err, user) => {
-        User.all((err, users) => {
+        User.all((_, users) => {
           users.length.should.eql(3);
           users[2]._id.should.eql(user._id);
           users[2].firstName.should.eql('Erica');
@@ -231,7 +235,7 @@ describe('User Repository Tests', () => {
         }
       },
       (err, user) => {
-        User.all((err, users) => {
+        User.all((_, users) => {
           users.length.should.eql(3);
           users[2]._id.should.eql(user._id);
           users[2].firstName.should.eql('Erica');
@@ -281,12 +285,12 @@ describe('User Repository Tests', () => {
   });
 
   it('update', (done) => {
-    User.all((err, users) => {
-      let body = {
+    User.all((_, users) => {
+      const body = {
         firstName: 'Paco'
       };
-      User.update(users[0]._id, body, (err, user) => {
-        User.get(user._id, (err, data) => {
+      User.update(users[0]._id, body, (error1, user) => {
+        User.get(user._id, (error2, data) => {
           data.firstName.should.eql('Paco');
           done();
         });
@@ -296,7 +300,7 @@ describe('User Repository Tests', () => {
 
   it('updateToken', (done) => {
     User.all((err, result) => {
-      let token = {
+      const token = {
         userId: '59e8e689ea1ea07ca6e6ef96',
         loginProvider: 'oAuth2',
         name: 'refresh_token',
@@ -307,7 +311,7 @@ describe('User Repository Tests', () => {
         protocol: 'http'
       };
 
-      User.updateToken(result[0]._id, token, (err, user) => {
+      User.updateToken(result[0]._id, token, (_, user) => {
         user.refreshToken.value.should.eql('123456789abcdefghi');
         done();
       });
@@ -324,29 +328,17 @@ describe('User Repository Tests', () => {
       const _getAuthenticated = UserModel.getAuthenticated;
 
       beforeEach(() => {
-        UserModel.find = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.find = () => Promise.reject('forced error');
 
-        UserModel.findById = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.findById = () => Promise.reject('forced error');
 
-        UserModel.findOne = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.findOne = () => Promise.reject('forced error');
 
-        UserModel.findByIdAndUpdate = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.findByIdAndUpdate = () => Promise.reject('forced error');
 
-        UserModel.findOneAndUpdate = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.findOneAndUpdate = () => Promise.reject('forced error');
 
-        UserModel.getAuthenticated = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.getAuthenticated = () => Promise.reject('forced error');
       });
 
       afterEach(() => {
@@ -358,60 +350,60 @@ describe('User Repository Tests', () => {
         UserModel.getAuthenticated = _getAuthenticated;
       });
 
-      it('all should respond with *** [User].repository.all::find forced error', function (done) {
-        User.all((error, result) => {
+      it('all should respond with *** [User].repository.all::find forced error', (done) => {
+        User.all((error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('allPaged should respond with *** [User].repository.allPaged(0, 2) forced error', function (done) {
-        User.allPaged(0, 2, (error, result) => {
+      it('allPaged should respond with *** [User].repository.allPaged(0, 2) forced error', (done) => {
+        User.allPaged(0, 2, (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('byRefreshToken should respond with *** [User].repository.byRefreshToken::findOne forced error', function (done) {
+      it('byRefreshToken should respond with *** [User].repository.byRefreshToken::findOne forced error', (done) => {
         User.byRefreshToken(
           '77dd93db3f1455022d0a6f701c9bbd00e8b678f3',
-          (error, result) => {
+          (error) => {
             expect(error).to.exist;
             done();
           }
         );
       });
 
-      it('byRole should respond with *** [User].repository.byRole::find forced error', function (done) {
-        User.byRole('Guest', (error, result) => {
+      it('byRole should respond with *** [User].repository.byRole::find forced error', (done) => {
+        User.byRole('Guest', (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('byUsername should respond with *** [User].repository.byUsername::find forced error', function (done) {
-        User.byUsername('david@maras.co', (error, result) => {
+      it('byUsername should respond with *** [User].repository.byUsername::find forced error', (done) => {
+        User.byUsername('david@maras.co', (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('summary should respond with *** [User].repository.summary(0, 2) forced error', function (done) {
-        User.summary(0, 2, (error, result) => {
+      it('summary should respond with *** [User].repository.summary(0, 2) forced error', (done) => {
+        User.summary(0, 2, (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('passwordMatch should respond with *** [User].repository.passwordMatch::findOne forced error', function (done) {
-        User.passwordMatch('david@maras.co', 'password', (error, result) => {
+      it('passwordMatch should respond with *** [User].repository.passwordMatch::findOne forced error', (done) => {
+        User.passwordMatch('david@maras.co', 'password', (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('addDevice should respond with *** [User].repository.passwordMatch::findOne forced error', function (done) {
-        let body = {
+      it('addDevice should respond with *** [User].repository.passwordMatch::findOne forced error', (done) => {
+        const body = {
           pushRegistrationId: 'Registrion Id',
           cordova: 'body.cordova',
           model: 'body.model',
@@ -423,28 +415,28 @@ describe('User Repository Tests', () => {
           serial: 'body.serial'
         };
 
-        User.addDevice('123456789123', body, (error, result) => {
+        User.addDevice('123456789123', body, (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('update should respond with *** [User].repository.update(123456789123)::findById forced error', function (done) {
-        User.update('123456789123', {}, (error, result) => {
+      it('update should respond with *** [User].repository.update(123456789123)::findById forced error', (done) => {
+        User.update('123456789123', {}, (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('updateToken should respond with *** [User].repository.update(123456789123)::findById forced error', function (done) {
-        User.updateToken('123456789123', 'asdfghjkl', (error, result) => {
+      it('updateToken should respond with *** [User].repository.update(123456789123)::findById forced error', (done) => {
+        User.updateToken('123456789123', 'asdfghjkl', (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('get should respond with *** [User].repository.get(123456789123) forced error', function (done) {
-        User.get('123456789123', (error, result) => {
+      it('get should respond with *** [User].repository.get(123456789123) forced error', (done) => {
+        User.get('123456789123', (error) => {
           expect(error).to.exist;
           done();
         });
@@ -458,13 +450,9 @@ describe('User Repository Tests', () => {
       const _insert = UserModel.create;
 
       beforeEach(() => {
-        UserModel.deleteOne = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.deleteOne = () => Promise.reject('forced error');
 
-        UserModel.create = () => {
-          return Promise.reject('forced error');
-        };
+        UserModel.create = () => Promise.reject('forced error');
       });
 
       afterEach(() => {
@@ -472,14 +460,14 @@ describe('User Repository Tests', () => {
         UserModel.save = _insert;
       });
 
-      it('delete should respond with *** [User].repository.delete(1234)::remove forced error', function (done) {
-        User.delete('1234', (error, result) => {
+      it('delete should respond with *** [User].repository.delete(1234)::remove forced error', (done) => {
+        User.delete('1234', (error) => {
           expect(error).to.exist;
           done();
         });
       });
 
-      it('insert should respond with *** [User].repository.insert()::save forced error', function (done) {
+      it('insert should respond with *** [User].repository.insert()::save forced error', (done) => {
         const body = {
           firstName: 'Erica',
           lastName: 'Marasco',
@@ -509,7 +497,7 @@ describe('User Repository Tests', () => {
           }
         };
 
-        User.insert(body, (error, result) => {
+        User.insert(body, (error) => {
           expect(error).to.exist;
           done();
         });
