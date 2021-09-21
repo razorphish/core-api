@@ -1,10 +1,9 @@
-'use strict';
 /**
  * [SubscriptionUser] Api
  */
 
-const repo = require('../../../../app/database/repositories/subscription/subscription-user.repository');
 const passport = require('passport');
+const repo = require('../../../../app/database/repositories/subscription/subscription-user.repository');
 const utils = require('../../../../lib/utils');
 const logger = require('../../../../lib/winston.logger');
 
@@ -14,7 +13,6 @@ const logger = require('../../../../lib/winston.logger');
  * @author Antonio Marasco
  */
 class SubscriptionUserController {
-
   /**
    * Constructor for [SubscriptionUser] Category
    * @param {router} router Node router framework
@@ -63,10 +61,9 @@ class SubscriptionUserController {
       this.delete.bind(this)
     );
 
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [SubscriptionUser].controller';
     this._routeName = '/api/subscription/user';
-
   }
 
   /**
@@ -76,7 +73,7 @@ class SubscriptionUserController {
    * @example GET /api/subscription/user
    * @returns {pointer} res.json
    */
-  all(request, response, next) {
+  all(request, response) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
     repo.all((error, result) => {
@@ -101,15 +98,18 @@ class SubscriptionUserController {
   allPaged(request, response) {
     logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
 
-    const topVal = request.params.top,
-      skipVal = request.params.skip,
-      top = isNaN(topVal) ? 10 : +topVal,
-      skip = isNaN(skipVal) ? 0 : +skipVal;
+    const topVal = request.params.top;
+    const skipVal = request.params.skip;
+    const top = Number.isNan(topVal) ? 10 : +topVal;
+    const skip = Number.isNan(skipVal) ? 0 : +skipVal;
 
     repo.allPaged(skip, top, (error, result) => {
-      //response.setHeader('X-InlineCount', result.count);
+      // response.setHeader('X-InlineCount', result.count);
       if (error) {
-        logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.allPaged() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
@@ -126,7 +126,7 @@ class SubscriptionUserController {
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
     repo.delete(id, (error, result) => {
@@ -147,7 +147,7 @@ class SubscriptionUserController {
    * @example GET /api/subscription/user/:id
    */
   get(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
 
     repo.get(id, (error, result) => {
@@ -188,12 +188,16 @@ class SubscriptionUserController {
    * @example PUT /api/subscription/user/:id
    */
   update(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
 
     repo.update(id, request.body, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
+        logger.error(
+          `${this._classInfo}.update() [${this._routeName}]`,
+          error,
+          request.body
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);

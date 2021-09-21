@@ -1,9 +1,11 @@
 /**
- * 
+ *
  */
 
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+
+const { Schema } = mongoose;
+const bcrypt = require('bcrypt');
 const Role = require('../auth/role.model');
 const Token = require('../auth/token.model');
 const Social = require('../core/social.model');
@@ -11,36 +13,42 @@ const Device = require('../core/device.model');
 const Notification = require('../core/notification.model');
 const logger = require('../../../../lib/winston.logger');
 
-const bcrypt = require('bcrypt');
-const SALT_WORK_FACTOR = 10,
-  // these values can be whatever you want - we're defaulting to a
-  // max of 5 attempts, resulting in a 2 hour lock
-  MAX_LOGIN_ATTEMPTS = 5,
-  LOCK_TIME = 2 * 60 * 60 * 1000;
+const SALT_WORK_FACTOR = 10;
 
-//////////////////////// Validators ///////////////////////////
+// these values can be whatever you want - we're defaulting to a
+// max of 5 attempts, resulting in a 2 hour lock
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_TIME = 2 * 60 * 60 * 1000;
+
+// ////////////////////// Validators ///////////////////////////
 /**
  * User address validator
  */
-var userAddressValidator = [
+const userAddressValidator = [
   { validator: upperBound, msg: '{PATH} exceeds limit of 2' }
 ];
 
-///////////////////////// Sub Schemas
+// /////////////////////// Sub Schemas
 const AddressSchema = new Schema({
-  address: { type: String, /*required: true,*/ trim: true },
-  city: { type: String, /*required: true,*/ trim: true },
-  state: { type: String /*required: true,*/ },
-  zip: { type: String /*required: true,*/ }
+  address: { type: String, /* required: true, */ trim: true },
+  city: { type: String, /* required: true, */ trim: true },
+  state: { type: String /* required: true, */ },
+  zip: { type: String /* required: true, */ }
 });
 
 const UserSchema = new Schema(
   {
-    applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
+    applicationId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'Application'
+    },
     firstName: { type: String, required: false, trim: true },
     lastName: { type: String, required: false, trim: true },
     email: { type: String, required: true, trim: true },
-    email_lower: { type: String, required: true, trim: true, lowercase: true },
+    email_lower: {
+      type: String, required: true, trim: true, lowercase: true
+    },
     homePhone: { type: String, required: false, trim: true },
     username: {
       type: String,
@@ -72,37 +80,46 @@ const UserSchema = new Schema(
     notifications: { type: [Notification.schema], required: false },
     status: {
       type: String,
-      enum: ['active', 'inactive', 'disabled', 'pending', 'archived', 'suspended', 'awaitingPassword'],
+      enum: [
+        'active',
+        'inactive',
+        'disabled',
+        'pending',
+        'archived',
+        'suspended',
+        'awaitingPassword'
+      ],
       default: 'pending',
       required: true
     }
-  }, {
+  },
+  {
     toJSON: { virtuals: true }
-  });
+  }
+);
 
-//Composite Key
-UserSchema.index({ applicationId: 1, username: 1 }, { unique: true })
+// Composite Key
+UserSchema.index({ applicationId: 1, username: 1 }, { unique: true });
 
 /**
  * Validates that array has no more than 2 elements
- * 
+ *
  * @param {any[]} val - Array to check
  * @returns {boolean} - True if array has 2 or less elements, otherwise false
  */
 function upperBound(val) {
   if (val) {
     return val.length <= 2;
-  } else {
-    //ignore null as this is
-    //not job of this validator
-    return true;
   }
+  // ignore null as this is
+  // not job of this validator
+  return true;
 }
 
 function traverseUser(user) {
   user.social = {};
 
-  const user_ = Object.assign({}, user);
+  const user_ = { ...user };
 
   switch (user.provider) {
     case 'FACEBOOK':
@@ -151,16 +168,16 @@ UserSchema.virtual('isLocked').get(function () {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
-//Add User Virtual Reference Objects
+// Add User Virtual Reference Objects
 UserSchema.virtual('tokens', {
   ref: 'Token', // The model to use
   localField: '_id', // Find people where `localField`
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
   // an array. `justOne` is false by default.
-  justOne: false,
-  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
-  //} // Query options, see http://bit.ly/mongoose-query-options
+  justOne: false
+  // options: { sort: { 'dateExpire': -1 }//, limit: 5
+  // } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 UserSchema.virtual('wishlists', {
@@ -169,9 +186,9 @@ UserSchema.virtual('wishlists', {
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
   // an array. `justOne` is false by default.
-  justOne: false,
-  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
-  //} // Query options, see http://bit.ly/mongoose-query-options
+  justOne: false
+  // options: { sort: { 'dateExpire': -1 }//, limit: 5
+  // } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 UserSchema.virtual('wishlistItemCategories', {
@@ -180,9 +197,9 @@ UserSchema.virtual('wishlistItemCategories', {
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
   // an array. `justOne` is false by default.
-  justOne: false,
-  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
-  //} // Query options, see http://bit.ly/mongoose-query-options
+  justOne: false
+  // options: { sort: { 'dateExpire': -1 }//, limit: 5
+  // } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 UserSchema.virtual('wishlistFollows', {
@@ -191,9 +208,9 @@ UserSchema.virtual('wishlistFollows', {
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
   // an array. `justOne` is false by default.
-  justOne: false,
-  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
-  //} // Query options, see http://bit.ly/mongoose-query-options
+  justOne: false
+  // options: { sort: { 'dateExpire': -1 }//, limit: 5
+  // } // Query options, see http://bit.ly/mongoose-query-options
 });
 
 UserSchema.virtual('twitter', {
@@ -202,12 +219,12 @@ UserSchema.virtual('twitter', {
   foreignField: 'userId', // is equal to `foreignField`
   // If `justOne` is true, 'members' will be a single doc as opposed to
   // an array. `justOne` is false by default.
-  justOne: true,
-  //options: { sort: { 'dateExpire': -1 }//, limit: 5 
-  //} // Query options, see http://bit.ly/mongoose-query-options
+  justOne: true
+  // options: { sort: { 'dateExpire': -1 }//, limit: 5
+  // } // Query options, see http://bit.ly/mongoose-query-options
 });
 
-//PRE-SAVE
+// PRE-SAVE
 UserSchema.pre('save', function (next) {
   const user = this;
   const now = new Date();
@@ -224,11 +241,11 @@ UserSchema.pre('save', function (next) {
   }
 
   bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
-    logger.info('*** User.SCHEMA.save : got Salt?', salt)
+    logger.info('*** User.SCHEMA.save : got Salt?', salt);
     user.salt = salt;
 
     bcrypt.hash(user.password, salt, (err, hash) => {
-      logger.info('*** User.SCHEMA.save password hashed', hash)
+      logger.info('*** User.SCHEMA.save password hashed', hash);
       user.password = hash;
       next();
     });
@@ -242,33 +259,32 @@ UserSchema.pre('save', function (next) {
   //   });
 });
 
-UserSchema.methods.changeStatus = function (status, callback) {
+UserSchema.methods.changeStatus = function f(status, callback) {
   // Change status of the user
   return this.update(
     {
-      $set: { status: status }
+      $set: { status }
     },
     callback
   );
+};
 
-}
-
-//Compare password
-UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-  if (!!candidatePassword) {
+// Compare password
+UserSchema.methods.comparePassword = function f(candidatePassword, callback) {
+  if (candidatePassword) {
     bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
       if (err) {
         return callback(err);
       }
 
-      callback(null, isMatch);
+      return callback(null, isMatch);
     });
   } else {
     callback(new Error('Missing password'));
   }
 };
 
-UserSchema.methods.incLoginAttempts = function (callback) {
+UserSchema.methods.incLoginAttempts = function f(callback) {
   // if we have a previous lock that has expired, restart at 1
   if (this.lockUntil && this.lockUntil < Date.now()) {
     return this.update(
@@ -280,7 +296,7 @@ UserSchema.methods.incLoginAttempts = function (callback) {
     );
   }
   // otherwise we're incrementing
-  var updates = { $inc: { loginAttempts: 1 } };
+  const updates = { $inc: { loginAttempts: 1 } };
   // lock the account if we've reached max attempts and it's not locked already
   if (this.loginAttempts + 1 >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
     updates.$set = { lockUntil: Date.now() + LOCK_TIME };
@@ -289,37 +305,43 @@ UserSchema.methods.incLoginAttempts = function (callback) {
 };
 
 // expose enum on the model, and provide an internal convenience reference
-var reasons = (UserSchema.statics.failedLogin = {
-  NOT_FOUND: 0,
-  PASSWORD_INCORRECT: 1,
-  MAX_ATTEMPTS: 2,
-  ACCOUNT_NOT_ACTIVE: 3
+const reasons = (UserSchema.statics.failedLogin =
+{
+  NOT_FOUND: 0, PASSWORD_INCORRECT: 1, MAX_ATTEMPTS: 2, ACCOUNT_NOT_ACTIVE: 3
 });
 
-UserSchema.statics.getAuthenticated = function (username, password, applicationId, callback) {
+UserSchema.statics.getAuthenticated = function f(
+  username,
+  password,
+  applicationId,
+  callback
+) {
+  const query = { username };
 
-  var query = { username: username };
-
-  if (!!applicationId) {
+  if (applicationId) {
     query.applicationId = applicationId;
   }
 
   this.findOne(query)
     .populate({
       path: 'wishlists',
-      select: '_id name preferences statusId privacy items dateExpire dateCreated items',
+      select:
+        '_id name preferences statusId privacy items dateExpire dateCreated items',
       match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
           path: 'items',
           match: { statusId: { $ne: 'deleted' } },
-          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder userId dateCreated'
+          select:
+            '_id name categoryId price quantity url notes purchased image statusId sortOrder userId dateCreated'
         },
         {
           path: 'follows',
-          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
+          select:
+            '_id userId notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
           match: { statusId: { $ne: 'deleted' } }
-        }]
+        }
+      ]
     })
     .populate({
       path: 'wishlistItemCategories',
@@ -327,7 +349,8 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
     })
     .populate({
       path: 'wishlistFollows',
-      select: '_id dateCreated notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
+      select:
+        '_id dateCreated notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
       match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
@@ -336,14 +359,14 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
         }
       ]
     })
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return callback(null, null, reasons.NOT_FOUND);
       }
 
       if (user.isLocked) {
         // just increment login attempts if account is already locked
-        return user.incLoginAttempts(function (err) {
+        return user.incLoginAttempts((err) => {
           if (err) {
             return callback(err);
           }
@@ -351,12 +374,12 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
         });
       }
 
-      //Determine if user is in active status
+      // Determine if user is in active status
       if (user.status !== 'active') {
         return callback(null, null, reasons.ACCOUNT_NOT_ACTIVE);
       }
 
-      user.comparePassword(password, function (err, isMatch) {
+      user.comparePassword(password, (err, isMatch) => {
         if (err) {
           return callback(err);
         }
@@ -368,62 +391,63 @@ UserSchema.statics.getAuthenticated = function (username, password, applicationI
             return callback(null, user);
           }
           // reset attempts and lock info
-          var updates = {
+          const updates = {
             $set: { loginAttempts: 0 },
             $unset: { lockUntil: 1 }
           };
 
-          return user.update(updates, function (err) {
-            if (err) {
-              return callback(err);
+          return user.update(updates, (errUser) => {
+            if (errUser) {
+              return callback(errUser);
             }
             return callback(null, user);
           });
         }
 
         // password is incorrect, so increment login attempts before responding
-        user.incLoginAttempts(function (err) {
-          if (err) {
-            return callback(err);
+        user.incLoginAttempts((errLogin) => {
+          if (errLogin) {
+            return callback(errLogin);
           }
           return callback(null, null, reasons.PASSWORD_INCORRECT);
         });
       });
     })
-    .catch(error => {
-      return callback(error);
-    });
+    .catch((error) => callback(error));
 };
 
-UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
-  var socialUser_ = traverseUser(socialUser);
-  var query = { email: socialUser.email };
+UserSchema.statics.getSociallyAuthenticated = function f(socialUser, callback) {
+  const socialUser_ = traverseUser(socialUser);
+  const query = { email: socialUser.email };
 
-  if (!!socialUser.applicationId) {
+  if (socialUser.applicationId) {
     query.applicationId = socialUser.applicationId;
   }
 
-  this.findOneAndUpdate(query, socialUser_,
-    {
-      upsert: true,
-      new: true,
-      //rawResult: true
-    })
+  this.findOneAndUpdate(query, socialUser_, {
+    upsert: true,
+    new: true
+    // rawResult: true
+  })
     .populate({
       path: 'wishlists',
-      select: '_id name preferences statusId privacy items dateExpire dateCreated items',
+      select:
+        '_id name preferences statusId privacy items dateExpire dateCreated items',
       match: { statusId: { $ne: 'deleted' } },
       populate: [
         {
           path: 'items',
           match: { statusId: { $ne: 'deleted' } },
-          select: '_id name categoryId price quantity url notes purchased image statusId sortOrder userId dateCreated'
+          select:
+            '_id name categoryId price quantity url notes purchased image statusId sortOrder userId dateCreated'
         },
         {
           path: 'follows',
-          select: '_id userId notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
+          select:
+            '_id userId notifiedOnAddItem notifiedOnRemoveItem notifiedOnCompletion',
           match: { statusId: { $ne: 'deleted' } }
-        }]
+        }
+      ]
     })
     .populate({
       path: 'wishlistItemCategories',
@@ -440,7 +464,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
         }
       ]
     })
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return callback(null, null, reasons.NOT_FOUND);
       }
@@ -448,7 +472,7 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
       // check if the account is currently locked
       if (user.isLocked) {
         // just increment login attempts if account is already locked
-        return user.incLoginAttempts(function (err) {
+        return user.incLoginAttempts((err) => {
           if (err) {
             return callback(err);
           }
@@ -456,27 +480,33 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
         });
       }
 
-      //Determine if user is in active status
-      if (user.status !== 'active' && user.status !== 'pending' && user.status !== 'awaitingPassword') {
-        //reasons.ACCOUNT_NOT_ACTIVE
+      // Determine if user is in active status
+      if (
+        user.status !== 'active' &&
+        user.status !== 'pending' &&
+        user.status !== 'awaitingPassword'
+      ) {
+        // reasons.ACCOUNT_NOT_ACTIVE
         return callback(null, null, 'Account not active');
       }
 
       /**
        * When socially authenticating we will not check password
        * Typically the user will have already been authenticated
-       * through another platform so no password is present 
+       * through another platform so no password is present
        * or necessary
        */
       if (user.status === 'pending') {
         // if user status is pending and currently inserted
         // change status to awaitingPassword (from user)
-        user.status = 'awaitingPassword'
-        user.changeStatus(user.status, function (err) {
+        // eslint-disable-next-line no-param-reassign
+        user.status = 'awaitingPassword';
+        user.changeStatus(user.status, (err) => {
           if (err) {
             return callback(err);
           }
-          //SUCCESSFUL : Move on
+          // SUCCESSFUL : Move on
+          return true;
         });
       }
 
@@ -486,24 +516,21 @@ UserSchema.statics.getSociallyAuthenticated = function (socialUser, callback) {
       }
 
       // reset attempts and lock info
-      var updates = {
+      const updates = {
         $set: { loginAttempts: 0 },
         $unset: { lockUntil: 1 }
       };
 
-      return user.update(updates, function (err) {
+      return user.update(updates, (err) => {
         if (err) {
           return callback(err);
         }
         return callback(null, user);
       });
-
     })
-    .catch(error => {
-      return callback(error);
-    });
+    .catch((error) => callback(error));
 };
-//Compound index
-//UserSchema.index({username: 1, email: 1 });
+// Compound index
+// UserSchema.index({username: 1, email: 1 });
 
 module.exports = mongoose.model('User', UserSchema, 'users');

@@ -1,21 +1,20 @@
-'use strict';
-
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
-const BasicStrategy = require('passport-http').BasicStrategy;
+const { BasicStrategy } = require('passport-http');
 const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
-const ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
+const { ExtractJwt } = require('passport-jwt');
+const ClientPasswordStrategy =
+  require('passport-oauth2-client-password').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
+const util = require('util');
 const userRepo = require('../../database/repositories/account/user.repository');
 const tokenRepo = require('../../database/repositories/auth/token.repository');
 const clientRepo = require('../../database/repositories/auth/client.repository');
-const util = require('util');
 const httpSign = require('../signers/http-sign');
 const logger = require('../../../lib/winston.logger');
 
-var JWTopts = {}
+const JWTopts = {};
 JWTopts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 JWTopts.secretOrKey = 'secret';
 JWTopts.issuer = 'api.maras.co';
@@ -68,7 +67,7 @@ function verifyClient(req, clientId, clientSecret, done) {
     throw new Error('Client required');
   }
 
-  var origin = req.headers.origin;
+  const { origin } = req.headers;
 
   clientRepo.verify(clientId, clientSecret, origin, (err, client, reason) => {
     if (err) {
@@ -81,10 +80,9 @@ function verifyClient(req, clientId, clientSecret, done) {
       client.requestBody = req.body;
       client.origin = origin;
       return done(null, client);
-    } else {
-      logger.debug(`*** verify [Client] denied ${reason}`);
-      return done(null, false, reason);
     }
+    logger.debug(`*** verify [Client] denied ${reason}`);
+    return done(null, false, reason);
   });
 }
 
@@ -94,31 +92,34 @@ passport.use(
   new ClientPasswordStrategy({ passReqToCallback: true }, verifyClient)
 );
 
-passport.use(new JwtStrategy(JWTopts, function (jwt_payload, done) {
-  tokenRepo.byToken({ id: jwt_payload.sub }, function (err, user) {
-    if (err) {
-      return done(err, false);
-    }
-    if (user) {
-      return done(null, user);
-    } else {
+passport.use(
+  new JwtStrategy(JWTopts, ((jwtPayload, done) => {
+    tokenRepo.byToken({ id: jwtPayload.sub }, (err, user) => {
+      if (err) {
+        return done(err, false);
+      }
+      if (user) {
+        return done(null, user);
+      }
       return done(null, false);
       // or you could create a new account
-    }
-  });
-}));
-
-passport.use(new FacebookStrategy({
-  clientID: 'FACEBOOK_APP_ID',
-  clientSecret: 'FACEBOOK_APP_SECRET',
-  callbackURL: "http://localhost:3002/auth/facebook/callback"
-},
-  function (accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-      return cb(err, user);
     });
-  }
-));
+  }))
+);
+
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: 'FACEBOOK_APP_ID',
+      clientSecret: 'FACEBOOK_APP_SECRET',
+      callbackURL: 'http://localhost:3002/auth/facebook/callback'
+    },
+    // eslint-disable-next-line no-unused-vars
+    ((accessToken, refreshToken, profile, cb) => {
+      // User.findOrCreate({ facebookId: profile.id }, (err, user) => cb(err, user));
+    })
+  )
+);
 /**
  * BearerStrategy
  *
@@ -128,10 +129,10 @@ passport.use(new FacebookStrategy({
  */
 passport.use(
   'user-bearer',
-  new BearerStrategy(function (accessToken, done) {
+  new BearerStrategy((accessToken, done) => {
+    const accessTokenHash = httpSign.decode(accessToken);
 
-    var accessTokenHash = httpSign.decode(accessToken);
-
+    // eslint-disable-next-line consistent-return
     tokenRepo.byToken(accessTokenHash, (error, token) => {
       if (error) {
         return done(error);
@@ -142,39 +143,37 @@ passport.use(
       }
 
       if (new Date() > token.dateExpire) {
-        tokenRepo.delete(token._id, function (err, token) {
+        tokenRepo.delete(token._id, (err) => {
           done(err);
         });
+      } else if (token.userId) {
+        userRepo.get(token.userId, (err, user) => {
+          if (err) {
+            return done(err);
+          }
+
+          if (!user) {
+            return done(null, false);
+          }
+
+          // To keep this example simple, restricted scopes are not implemented,
+          // and this is just for illustrative purposes.
+          return done(null, user, { scope: '*' });
+        });
       } else {
-        if (token.userId) {
-          userRepo.get(token.userId, (error, user) => {
-            if (error) {
-              return done(error);
-            }
-
-            if (!user) {
-              return done(null, false);
-            }
-
-            // To keep this example simple, restricted scopes are not implemented,
-            // and this is just for illustrative purposes.
-            done(null, user, { scope: '*' });
-          });
-        } else {
-          // The request came from a client only since userId is null,
-          // therefore the client is passed back instead of a user.
-          clientRepo.byClientId(token.clientId, (error, client) => {
-            if (error) {
-              return done(error);
-            }
-            if (!client) {
-              return done(null, false);
-            }
-            // To keep this example simple, restricted scopes are not implemented,
-            // and this is just for illustrative purposes.
-            done(null, client, { scope: '*' });
-          });
-        }
+        // The request came from a client only since userId is null,
+        // therefore the client is passed back instead of a user.
+        clientRepo.byClientId(token.clientId, (err, client) => {
+          if (err) {
+            return done(err);
+          }
+          if (!client) {
+            return done(null, false);
+          }
+          // To keep this example simple, restricted scopes are not implemented,
+          // and this is just for illustrative purposes.
+          return done(null, client, { scope: '*' });
+        });
       }
     });
   })

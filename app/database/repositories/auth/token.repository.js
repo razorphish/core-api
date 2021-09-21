@@ -1,7 +1,6 @@
 // Token Repository
 const logger = require('../../../../lib/winston.logger');
 const TokenModel = require('../../models/auth/token.model');
-const ObjectId = require('mongoose').Types.ObjectId;
 
 /**
  * This callback type is called `repositoryCallback` and is displayed as a global symbol.
@@ -19,22 +18,22 @@ class TokenRepository {
    * Constructor for token
    */
   constructor() {
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [Token].repository';
   }
 
   /**
- * Gets all tokens
- * @param {function} callback Callback function for all
- */
+   * Gets all tokens
+   * @param {function} callback Callback function for all
+   */
   all(callback) {
     logger.debug(`${this._classInfo}.all()`);
 
     TokenModel.find()
-      .then(data => {
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.all::find`, error);
         callback(error);
       });
@@ -52,8 +51,11 @@ class TokenRepository {
       .then((docs) => {
         callback(null, docs);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.byToken(${accessToken})::findOne`, error);
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.byToken(${accessToken})::findOne`,
+          error
+        );
         return callback(error);
       });
   }
@@ -61,8 +63,7 @@ class TokenRepository {
   byTokenWithUser(accessToken, callback) {
     logger.debug(`${this._classInfo}.byTokenWithUser(${accessToken})`);
 
-    TokenModel
-      .findOne({ value: accessToken })
+    TokenModel.findOne({ value: accessToken })
       .populate({
         path: 'userId',
         select: 'firstName lastName email homePhone avatar'
@@ -70,8 +71,11 @@ class TokenRepository {
       .then((docs) => {
         callback(null, docs);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.byTokenWithUser(${accessToken})::findOne`, error);
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.byTokenWithUser(${accessToken})::findOne`,
+          error
+        );
         return callback(error);
       });
   }
@@ -84,16 +88,13 @@ class TokenRepository {
   byUserId(userId, callback) {
     logger.debug(`${this._classInfo}.byUserId(${userId})`);
 
-    TokenModel
-      .find(
-        {
-          userId: userId
-        }
-      )
+    TokenModel.find({
+      userId
+    })
       .then((docs) => {
         callback(null, docs);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.byUserId(${userId})::find`, error);
         return callback(error);
       });
@@ -107,16 +108,13 @@ class TokenRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    TokenModel
-      .deleteOne(
-        {
-          _id: id
-        }
-      )
+    TokenModel.deleteOne({
+      _id: id
+    })
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.delete(${id})::remove`, error);
         return callback(error, null);
       });
@@ -130,17 +128,17 @@ class TokenRepository {
   deleteByTokenHash(tokenHash, callback) {
     logger.debug(`${this._classInfo}.deleteByTokenHash(${tokenHash})`);
 
-    TokenModel
-      .deleteOne(
-        {
-          value: { $in: tokenHash }
-        }
-      )
+    TokenModel.deleteOne({
+      value: { $in: tokenHash }
+    })
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.deleteByTokenHash(${tokenHash})::remove`, error);
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.deleteByTokenHash(${tokenHash})::remove`,
+          error
+        );
         return callback(error, null);
       });
   }
@@ -153,17 +151,17 @@ class TokenRepository {
   deleteByUserId(userId, callback) {
     logger.debug(`${this._classInfo}.deleteByUserId(${userId})`);
 
-    TokenModel
-      .deleteMany(
-        {
-          userId: userId
-        }
-      )
+    TokenModel.deleteMany({
+      userId
+    })
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.deleteByUserId(${userId})::remove`, error);
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.deleteByUserId(${userId})::remove`,
+          error
+        );
         return callback(error, null);
       });
   }
@@ -175,10 +173,7 @@ class TokenRepository {
   details(callback) {
     logger.debug(`${this._classInfo}.details()`);
 
-    TokenModel
-      .find(
-        {}
-      )
+    TokenModel.find({})
       .populate({
         path: 'userId',
         select: 'firstName lastName email username status'
@@ -186,8 +181,8 @@ class TokenRepository {
       .then((docs) => {
         callback(null, docs);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.details(${id})::find`, error);
+      .catch((error) => {
+        logger.error(`${this._classInfo}.details()::find`, error);
         return callback(error);
       });
   }
@@ -200,10 +195,7 @@ class TokenRepository {
   detailsById(id, callback) {
     logger.debug(`${this._classInfo}.detailsById(${id})`);
 
-    TokenModel
-      .findById(
-        id
-      )
+    TokenModel.findById(id)
       .populate({
         path: 'userId',
         select: 'firstName lastName email username status'
@@ -211,10 +203,10 @@ class TokenRepository {
       .then((docs) => {
         callback(null, docs);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.detailsById(${id})::findById`, error);
         return callback(error);
-      })
+      });
   }
 
   /**
@@ -225,38 +217,36 @@ class TokenRepository {
   detailsByToken(accessToken, callback) {
     logger.debug(`${this._classInfo}.detailsByToken(${accessToken})`);
 
-    TokenModel
-      .findOne(
-        {
-          value: accessToken
-        }
-      )
+    TokenModel.findOne({
+      value: accessToken
+    })
       .populate({
         path: 'userId',
         select: 'firstName lastName email username status'
       })
       .then((docs) => {
         callback(null, docs);
-      }).catch(error => {
-        logger.error(`${this._classInfo}.detailsByToken(${id})::findOne`, error);
-        return callback(error);
       })
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.detailsByToken()::findOne`,
+          error
+        );
+        return callback(error);
+      });
   }
 
   /**
    * Gets all tokens with User Info by a user's id
-   * @param {object} userId User Id 
+   * @param {object} userId User Id
    * @param {function} callback Callback function for success/fail
    */
   detailsByUserId(userId, callback) {
     logger.debug(`${this._classInfo}.detailsByUserId(${userId})`);
 
-    TokenModel
-      .find(
-        {
-          userId: userId
-        }
-      )
+    TokenModel.find({
+      userId
+    })
       .populate({
         path: 'userId',
         select: 'firstName lastName email username status'
@@ -264,8 +254,11 @@ class TokenRepository {
       .then((docs) => {
         callback(null, docs);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.detailsByUserId(${userId})::find`, error);
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.detailsByUserId(${userId})::find`,
+          error
+        );
         return callback(error);
       });
   }
@@ -278,14 +271,11 @@ class TokenRepository {
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
 
-    TokenModel
-      .findById(
-        id
-      )
+    TokenModel.findById(id)
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.get(${id})::findById`, error);
         return callback(error);
       });
@@ -299,7 +289,7 @@ class TokenRepository {
   insert(token, callback) {
     logger.debug(`${this._classInfo}.insert()`, token);
 
-    var model = new TokenModel(token);
+    const model = new TokenModel(token);
 
     model.save((err, data) => {
       if (err) {
@@ -307,7 +297,7 @@ class TokenRepository {
         return callback(err);
       }
 
-      callback(null, data);
+      return callback(null, data);
     });
   }
 
@@ -322,14 +312,11 @@ class TokenRepository {
   search(query, callback) {
     logger.debug(`${this._classInfo}.search(${query})`);
 
-    TokenModel
-      .findOne(
-        query,
-      )
+    TokenModel.findOne(query)
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.search(${query})::findOne`, error);
         return callback(error);
       });
@@ -345,15 +332,15 @@ class TokenRepository {
   update(id, token, callback) {
     logger.debug(`${this._classInfo}.update(${id})`);
 
-    TokenModel.findOneAndUpdate(
-      { _id: id },
-      token,
-      { new: true })
-      .then(data => {
+    TokenModel.findOneAndUpdate({ _id: id }, token, { new: true })
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
-        logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, error);
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.update(${id})::findOneAndUpdate`,
+          error
+        );
         return callback(error);
       });
   }

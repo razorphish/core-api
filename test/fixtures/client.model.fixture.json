@@ -1,40 +1,38 @@
 {
-    "collections": {
-        "clients": [
-            {
-                "name": "@marasco/core-web-ui",
-                "clientId": "core-web-ui",
-                "clientSecret": "353b992ef5abd23cfc349228970b550616161458",
-                "isTrusted": true,
-                "applicationType": "ClientConfidential",
-                "redirectUrl": "/redirect",
-                "tokenProtocol": "http",
-                "allowedOrigins": [
-                    "http://localhost:4200",
-                    "http://admin.marasco.co",
-                    "http://localhost:8100",
-                    "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm",
-                    "https://admin.marasco.co",
-                    "https://app.marasco.co",
-                    "http://localhost:60000",
-                    "http://localhost:60001",
-                    "file://"
-                ],
-                "tokenLifeTime": 30,
-                "refreshTokenLifeTime": 259200
-            },
-            {
-                "name": "@marasco/core-mobile-ui",
-                "clientId": "core-web-mobile",
-                "clientSecret": "353b992ef5abd23cfc349228970b550616161458",
-                "isTrusted": false,
-                "applicationType": "Native",
-                "allowedOrigins": [
-                    "http://localhost:8100"
-                ],
-                "tokenLifeTime": 30,
-                "refreshTokenLifeTime": 259200
-            }
-        ]
-    }
+  "collections": {
+    "clients": [
+      {
+        "name": "@marasco/core-web-ui",
+        "clientId": "core-web-ui",
+        "clientSecret": "353b992ef5abd23cfc349228970b550616161458",
+        "isTrusted": true,
+        "applicationType": "ClientConfidential",
+        "redirectUrl": "/redirect",
+        "tokenProtocol": "http",
+        "allowedOrigins": [
+          "http://localhost:4200",
+          "http://admin.marasco.co",
+          "http://localhost:8100",
+          "chrome-extension://aejoelaoggembcahagimdiliamlcdmfm",
+          "https://admin.marasco.co",
+          "https://app.marasco.co",
+          "http://localhost:60000",
+          "http://localhost:60001",
+          "file://"
+        ],
+        "tokenLifeTime": 30,
+        "refreshTokenLifeTime": 259200
+      },
+      {
+        "name": "@marasco/core-mobile-ui",
+        "clientId": "core-web-mobile",
+        "clientSecret": "353b992ef5abd23cfc349228970b550616161458",
+        "isTrusted": false,
+        "applicationType": "Native",
+        "allowedOrigins": ["http://localhost:8100"],
+        "tokenLifeTime": 30,
+        "refreshTokenLifeTime": 259200
+      }
+    ]
+  }
 }

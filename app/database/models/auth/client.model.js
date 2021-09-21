@@ -7,7 +7,11 @@ const httpSign = require('../../../security/signers/http-sign');
 const logger = require('../../../../lib/winston.logger');
 
 const ClientSchema = new Schema({
-  applicationId: { type: Schema.Types.ObjectId, required: true, ref: 'Application' },
+  applicationId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Application'
+  },
   name: { type: String, required: true },
   clientId: { type: String, required: true, index: { unique: true } },
   clientSecret: { type: String, required: true },
@@ -18,7 +22,12 @@ const ClientSchema = new Schema({
     required: true
   },
   redirectUrl: { type: String, required: true, default: '/home' },
-  tokenProtocol: { type: String, enum: ['http', 'jwt'], required: true, default: 'http' },
+  tokenProtocol: {
+    type: String,
+    enum: ['http', 'jwt'],
+    required: true,
+    default: 'http'
+  },
   allowedOrigins: { type: [String], required: true },
   tokenLifeTime: { type: Number, required: true },
   refreshTokenLifeTime: { type: Number, required: true },
@@ -83,7 +92,10 @@ ClientSchema.statics.getVerified = function (
     var originDisabled = true;
 
     for (var i = 0; i < client.allowedOrigins.length; i++) {
-      logger.info('*** Client.SCHEMA.getVerified origin', client.allowedOrigins[i])
+      logger.info(
+        '*** Client.SCHEMA.getVerified origin',
+        client.allowedOrigins[i]
+      );
       if (client.allowedOrigins[i] === '*') {
         originDisabled = false;
       }
@@ -110,12 +122,12 @@ ClientSchema.statics.getVerified = function (
   });
 };
 
-ClientSchema.virtual('origin').set( (value) => {
+ClientSchema.virtual('origin').set((value) => {
   this._origin = value;
 });
 
-ClientSchema.virtual('origin').get( () => {
+ClientSchema.virtual('origin').get(() => {
   return this._origin;
-})
+});
 
 module.exports = mongoose.model('Client', ClientSchema, 'clients');

@@ -1,17 +1,15 @@
-'use strict';
+const oauth2orize = require('oauth2orize');
+const jwtBearer = require('oauth2orize-jwt-bearer').Exchange;
+const passport = require('passport');
+const crypto = require('crypto');
+const userRepo = require('../database/repositories/account/user.repository');
+const tokenRepo = require('../database/repositories/auth/token.repository');
+const clientRepo = require('../database/repositories/auth/client.repository');
+const logger = require('../../lib/winston.logger');
+const httpSign = require('../security/signers/http-sign');
+const jwtSign = require('../security/signers/jwt-sign');
 
-const oauth2orize = require('oauth2orize'),
-    jwtBearer = require('oauth2orize-jwt-bearer').Exchange,
-    passport = require('passport'),
-    userRepo = require('../../app/database/repositories/account/user.repository'),
-    tokenRepo = require('../../app/database/repositories/auth/token.repository'),
-    clientRepo = require('../../app/database/repositories/auth/client.repository'),
-    crypto = require('crypto'),
-    logger = require('../../lib/winston.logger'),
-    httpSign = require('../security/signers/http-sign'),
-    jwt_sign = require('../security/signers/jwt-sign');
-
-const oAuthProvider = 'oAuth2'
+const oAuthProvider = 'oAuth2';
 
 // Create OAuth 2.0 server
 const server = oauth2orize.createServer();
@@ -36,12 +34,12 @@ const server = oauth2orize.createServer();
 server.serializeClient((client, done) => done(null, client.id));
 
 server.deserializeClient((clientId, done) => {
-    clientRepo.byClientId(clientId, (error, client) => {
-        if (error) {
-            return done(error);
-        }
-        return done(null, client);
-    });
+  clientRepo.byClientId(clientId, (error, client) => {
+    if (error) {
+      return done(error);
+    }
+    return done(null, client);
+  });
 });
 
 // Exchange the client id and password/secret for an access token. The callback accepts the
@@ -50,37 +48,35 @@ server.deserializeClient((clientId, done) => {
 // application issues an access token on behalf of the client who authorized the code.
 
 server.exchange(
-    oauth2orize.exchange.clientCredentials((client, scope, done) => {
-        // Validate the client
-        clientRepo.byClientId(client.clientId, (error, localClient) => {
-            if (error) {
-                return done(error);
-            }
-            if (!localClient) {
-                return done(null, false);
-            }
+  oauth2orize.exchange.clientCredentials((client, scope, done) => {
+    // Validate the client
+    clientRepo.byClientId(client.clientId, (error, localClient) => {
+      if (error) {
+        return done(error);
+      }
 
-            var accessTokenHash = httpSign.decode(client.clientSecret);
+      if (!localClient) {
+        return done(null, false);
+      }
 
-            if (localClient.clientSecret !== accessTokenHash) {
-                return done(null, false);
-            }
-            // Everything validated, return the token
-            const token = httpSign.getUid(256);
+      const accessTokenHash = httpSign.decode(client.clientSecret);
 
-            // Pass in a null for user id since there is no user with this grant type
-            tokenRepo.insert(token, (error) => {
-                if (error) {
-                    return done(error);
-                }
+      if (localClient.clientSecret !== accessTokenHash) {
+        return done(null, false);
+      }
+      // Everything validated, return the token
+      const token = httpSign.getUid(256);
 
-                return done(
-                    null,
-                    token, { test: 'test' }
-                );
-            });
-        });
-    })
+      // Pass in a null for user id since there is no user with this grant type
+      tokenRepo.insert(token, (err) => {
+        if (err) {
+          return done(err);
+        }
+
+        return done(null, token, { test: 'test' });
+      });
+    });
+  })
 );
 
 // Exchange user id and password for access tokens. The callback accepts the
@@ -89,121 +85,167 @@ server.exchange(
 // application issues an access token on behalf of the user who authorized the code.
 
 server.exchange(
-    oauth2orize.exchange.password((client, username, password, scope, done) => {
-        logger.info('*** userRepo.authenticate [Exchange:Password]');
+  oauth2orize.exchange.password((client, username, password, scope, done) => {
+    logger.info('*** userRepo.authenticate [Exchange:Password]');
 
-        userRepo.authenticate(
-            username,
-            password,
-            client.requestBody.socialUser || null,
-            { applicationId: client.requestBody.applicationId },
-                (err, user, reason) => {
-                if(err) {
-                    logger.error(
-                        `*** userRepo.authenticate [auth] user:${user}, reason:${reason}`,
-                        err
-                    );
-                    return done(err, false);
-                } else {
-                    if(user) {
-                        //logger.verbose('*** userRepo.authenticate [auth] user', user);
-                        logger.debug('*** userRepo.authenticate [auth] ok', reason);
+    userRepo.authenticate(
+      username,
+      password,
+      client.requestBody.socialUser || null,
+      { applicationId: client.requestBody.applicationId },
+      (err, user, reason) => {
+        if (err) {
+          logger.error(
+            `*** userRepo.authenticate [auth] user:${user}, reason:${reason}`,
+            err
+          );
+          return done(err, false);
+        }
+        if (user) {
+          // logger.verbose('*** userRepo.authenticate [auth] user', user);
+          logger.debug('*** userRepo.authenticate [auth] ok', reason);
 
-                        // Everything validated, return the token
-                        const token = httpSign.token(
-                            user.id, 'access_token', client.tokenLifeTime, scope, null, null, null,
-                            client.requestBody.forceRefresh, client.origin);
-                        const refreshToken = httpSign.token(
-                            user.id, 'refresh_token', client.refreshTokenLifeTime, scope, null, null, null,
-                            client.requestBody.forceRefresh, client.origin);
+          // Everything validated, return the token
+          const token = httpSign.token(
+            user.id,
+            'access_token',
+            client.tokenLifeTime,
+            scope,
+            null,
+            null,
+            null,
+            client.requestBody.forceRefresh,
+            client.origin
+          );
+          const refreshToken = httpSign.token(
+            user.id,
+            'refresh_token',
+            client.refreshTokenLifeTime,
+            scope,
+            null,
+            null,
+            null,
+            client.requestBody.forceRefresh,
+            client.origin
+          );
 
-
-                        tokenRepo.insert(token, (error) => {
-                            if (error) {
-                                return done(error);
-                            }
-
-                            //AM BUG
-                            //Save client refresh token
-                            //userRepo.updateToken(user.id, refreshToken, (err, resp) => {
-                                //Let's do nothing as user will just NOT
-                                //have a refresh token for the time being
-                            //});
-                            tokenRepo.insert(refreshToken, (error, result) => {
-
-                            });
-
-                            //user.refreshToken = refreshToken.value_;
-
-                            return done(
-                                null,
-                                token.value_,
-                                refreshToken.value_,
-                                mergeParam(user, refreshToken.value_, token.dateExpire, token.expiresIn, oAuthProvider)
-                            );
-                        });
-                    } else {
-                        logger.debug('*** userRepo.authenticate [Auth] DENIED', reason);
-                        return done(null, false);
-                    }
-                }
-            });
-    })
-);
-
-server.exchange('urn:ietf:params:oauth:grant-type:jwt-bearer',
-    jwtBearer(function (client, data, signature, done) {
-
-        //load file system so you can grab the public key to read.
-        var fs = require('fs');
-        var path = require('path');
-        var publicKey = path.resolve(process.cwd() + '/app/security/verifiers/public.pem');
-        var privateKey = path.resolve(process.cwd() + '/app/security/verifiers/private.pem');
-
-        //load PEM format public key as string, should be clients public key
-        var pub = fs.readFileSync(publicKey).toString();
-
-        var verifier = crypto.createVerify("RSA-SHA256");
-
-        //logger.info('*** token [Exchange:JWT Client]', client);
-        //logger.info('*** token [Exchange:JWT Data]', data);
-        //logger.info('*** token [Exchange:JWT Signature]', signature)
-        //logger.info('*** token [Exchange:JWT Pub]', pub)
-
-        //verifier.update takes in a string of the data that is encrypted in the signature  
-        //verifier.update(JSON.stringify(data));
-
-        verifier.update(data);
-
-        if (verifier.verify(pub, signature, 'base64')) {
-            //base64url decode data 
-            var b64string = data;
-            var buf = new Buffer.from(b64string, 'base64').toString('ascii');
-            console.log(buf.split('}{')[1])
-
-            var Options = {
-                issuer: 'www.maras.co',
-                subject: 'auth_token',
-                audience: client._id.toString() // this should be provided by client
+          tokenRepo.insert(token, (error) => {
+            if (error) {
+              return done(error);
             }
 
-            //var token = jwt_sign.sign({ 'token_type': 'jwt', 'expires_in': 3600, 'mouse': 'dead' }, Options);
-            var token = jwt_sign.token(client._id.toString(), 'jwt_bearer_token', '30', '*', 'bearer', 'oAuth2', 'jwt', Options)
-            var refreshToken = jwt_sign.token(client._id.toString(), 'jwt_bearer_refresh_token', '30', '*', 'bearer', 'oAuth2', 'jwt', Options)
-            var expiresIn = client.tokenLifeTime * 60;
-            var expirationDate = new Date(
-                new Date().getTime() + expiresIn * 1000
-            ).toUTCString();
-
-            done(null, token, mergeJWTParam(refreshToken, expirationDate, expiresIn, 'jwt'))
-            // AccessToken.create(client, scope, function (err, accessToken) {
-            //     if (err) { return done(err); }
-            //     done(null, accessToken);
+            // AM BUG
+            // Save client refresh token
+            // userRepo.updateToken(user.id, refreshToken, (err, resp) => {
+            // Let's do nothing as user will just NOT
+            // have a refresh token for the time being
             // });
+            tokenRepo.insert(refreshToken, (error, result) => { });
+
+            // user.refreshToken = refreshToken.value_;
+
+            return done(
+              null,
+              token.value_,
+              refreshToken.value_,
+              mergeParam(
+                user,
+                refreshToken.value_,
+                token.dateExpire,
+                token.expiresIn,
+                oAuthProvider
+              )
+            );
+          });
         } else {
-            console.log('FAIL BIGLY')
+          logger.debug('*** userRepo.authenticate [Auth] DENIED', reason);
+          return done(null, false);
         }
-    }));
+      }
+    );
+  })
+);
+
+server.exchange(
+  'urn:ietf:params:oauth:grant-type:jwt-bearer',
+  jwtBearer((client, data, signature, done) => {
+    // load file system so you can grab the public key to read.
+    const fs = require('fs');
+    const path = require('path');
+    const publicKey = path.resolve(
+      `${process.cwd()}/app/security/verifiers/public.pem`
+    );
+    const privateKey = path.resolve(
+      `${process.cwd()}/app/security/verifiers/private.pem`
+    );
+
+    // load PEM format public key as string, should be clients public key
+    const pub = fs.readFileSync(publicKey).toString();
+
+    const verifier = crypto.createVerify('RSA-SHA256');
+
+    // logger.info('*** token [Exchange:JWT Client]', client);
+    // logger.info('*** token [Exchange:JWT Data]', data);
+    // logger.info('*** token [Exchange:JWT Signature]', signature)
+    // logger.info('*** token [Exchange:JWT Pub]', pub)
+
+    // verifier.update takes in a string of the data that is encrypted in the signature
+    // verifier.update(JSON.stringify(data));
+
+    verifier.update(data);
+
+    if (verifier.verify(pub, signature, 'base64')) {
+      // base64url decode data
+      const b64string = data;
+      const buf = new Buffer.from(b64string, 'base64').toString('ascii');
+      console.log(buf.split('}{')[1]);
+
+      const Options = {
+        issuer: 'www.maras.co',
+        subject: 'auth_token',
+        audience: client._id.toString() // this should be provided by client
+      };
+
+      // var token = jwt_sign.sign({ 'token_type': 'jwt', 'expires_in': 3600, 'mouse': 'dead' }, Options);
+      const token = jwtSign.token(
+        client._id.toString(),
+        'jwt_bearer_token',
+        '30',
+        '*',
+        'bearer',
+        'oAuth2',
+        'jwt',
+        Options
+      );
+      const refreshToken = jwtSign.token(
+        client._id.toString(),
+        'jwt_bearer_refresh_token',
+        '30',
+        '*',
+        'bearer',
+        'oAuth2',
+        'jwt',
+        Options
+      );
+      const expiresIn = client.tokenLifeTime * 60;
+      const expirationDate = new Date(
+        new Date().getTime() + expiresIn * 1000
+      ).toUTCString();
+
+      done(
+        null,
+        token,
+        mergeJWTParam(refreshToken, expirationDate, expiresIn, 'jwt')
+      );
+      // AccessToken.create(client, scope, function (err, accessToken) {
+      //     if (err) { return done(err); }
+      //     done(null, accessToken);
+      // });
+    } else {
+      console.log('FAIL BIGLY');
+    }
+  })
+);
 /*
  * `refresh_token` is the access token that will be sent to the client.  if the server chooses to
  * implement support for this functionality.  Any additional `params` will be
@@ -211,128 +253,143 @@ server.exchange('urn:ietf:params:oauth:grant-type:jwt-bearer',
  * `err` set in idomatic Node.js fashion.
  * */
 server.exchange(
-    oauth2orize.exchange.refreshToken(function (
-        client,
-        refreshToken,
+  oauth2orize.exchange.refreshToken((
+    client,
+    refreshToken,
+    scope,
+    done
+  ) => {
+    logger.info('*** token [Exchange:Refresh Token]');
+
+    if (!refreshToken) {
+      throw new Error('Refresh token required');
+    }
+
+    // Validate the token
+    const refreshTokenHash = httpSign.decode(refreshToken);
+
+    // Client Validated, now lets check User
+    tokenRepo.byTokenWithUser(refreshTokenHash, (err, refreshTokenResult) => {
+      if (err) {
+        return done(err);
+      }
+
+      // Make sure user was returned, if not refresh token invalid
+      // or has been revoked.  Either way, access will be denied
+      // user will be forced to login again
+      if (!refreshTokenResult) {
+        logger.debug('*** token [Exchange:Refresh Token] REVOKED');
+        return done(null, false);
+      }
+
+      // Check for refresh token expiration
+      if (new Date() > refreshTokenResult.dateExpire) {
+        logger.debug('*** token [Exchange:Refresh Token] NOT EXPIRED');
+        // Force user to login
+        return done(null, false);
+      }
+
+      // User has implied that they have opted out of refreshtoken (Stay signed in)
+      if (!refreshTokenResult.forceRefresh) {
+        logger.debug(
+          '*** token [Exchange:Refresh Token] USER DOES NOT REQUIRE REFRESH'
+        );
+        // Force user to login
+        return done(null, false);
+      }
+
+      // NOW everything checks out
+      // lets issue new access token, and for good measure a new refresh
+      logger.debug('*** token [Exchange:Refresh Token] OK');
+
+      // Everything validated, return the token
+      // const newAccessToken = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
+
+      const newAccessToken = httpSign.token(
+        refreshTokenResult.userId,
+        'access_token',
+        client.tokenLifeTime,
         scope,
-        done
-    ) {
+        null,
+        null,
+        null,
+        true,
+        refreshTokenResult.origin
+      );
 
-        logger.info('*** token [Exchange:Refresh Token]');
-
-        if (!refreshToken) {
-            throw new Error('Refresh token required');
+      tokenRepo.insert(newAccessToken, (error) => {
+        if (error) {
+          return done(error);
         }
 
-        // Validate the token
-        var refreshTokenHash = httpSign.decode(refreshToken);
-
-        // Client Validated, now lets check User
-        tokenRepo.byTokenWithUser(refreshTokenHash, (err, refreshTokenResult) => {
-            if (err) {
-                return done(err);
-            }
-
-            //Make sure user was returned, if not refresh token invalid
-            //or has been revoked.  Either way, access will be denied
-            //user will be forced to login again
-            if (!refreshTokenResult) {
-                logger.debug('*** token [Exchange:Refresh Token] REVOKED');
-                return done(null, false);
-            }
-
-            //Check for refresh token expiration
-            if (new Date() > refreshTokenResult.dateExpire) {
-                logger.debug('*** token [Exchange:Refresh Token] NOT EXPIRED');
-                //Force user to login
-                return done(null, false);
-            }
-
-            //User has implied that they have opted out of refreshtoken (Stay signed in)
-            if (!refreshTokenResult.forceRefresh) {
-                logger.debug('*** token [Exchange:Refresh Token] USER DOES NOT REQUIRE REFRESH');
-                //Force user to login
-                return done(null, false);
-            }
-
-            //NOW everything checks out
-            //lets issue new access token, and for good measure a new refresh
-            logger.debug('*** token [Exchange:Refresh Token] OK');
-
-            // Everything validated, return the token
-            //const newAccessToken = httpSign.token(user.id, 'access_token', client.tokenLifeTime, scope);
-
-            const newAccessToken = httpSign.token(
-                refreshTokenResult.userId, 'access_token', client.tokenLifeTime, scope, null, null, null,
-                true, refreshTokenResult.origin);
-
-            tokenRepo.insert(newAccessToken, (error) => {
-                if (error) {
-                    return done(error);
-                }
-
-                return done(
-                    null,
-                    newAccessToken.value_,
-                    refreshToken,
-                    mergeParam(refreshTokenResult.userId, refreshToken, newAccessToken.dateExpire, newAccessToken.expiresIn, oAuthProvider)
-                );
-            });
-        });
-    })
+        return done(
+          null,
+          newAccessToken.value_,
+          refreshToken,
+          mergeParam(
+            refreshTokenResult.userId,
+            refreshToken,
+            newAccessToken.dateExpire,
+            newAccessToken.expiresIn,
+            oAuthProvider
+          )
+        );
+      });
+    });
+  })
 );
 
 function mergeParam(user, refreshToken, expires, expiresIn, signInProvider) {
-    let issuedAtTime = new Date().toUTCString();
-    var u = {
-        '.issued': issuedAtTime,
-        '.expires': expires,
-        expires_in: expiresIn,
-        expirationTime: expires,
-        issuedAtTime: issuedAtTime,
-        signInProvider: signInProvider,
-        user: {
-            _id: user.id,
-            username: user.username,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            homePhone: user.homePhone,
-            avatar: user.avatar,
-            roles: user.roles || [],
-            addresses: user.addresses || [],
-            twitter: user.twitter,
-            facebook: user.facebook,
-            instagram: user.instagram,
-            devices: user.devices || [],
-            refreshToken: refreshToken,
-            wishlists: user.wishlists,
-            wishlistItemCategories: user.wishlistItemCategories,
-            wishlistFollows: user.wishlistFollows
-        }
-    };
-
-    if (user.status === 'awaitingPassword') {
-        u.user.status = user.status;
+  const issuedAtTime = new Date().toUTCString();
+  const u = {
+    '.issued': issuedAtTime,
+    '.expires': expires,
+    expires_in: expiresIn,
+    expirationTime: expires,
+    issuedAtTime,
+    signInProvider,
+    user: {
+      _id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      homePhone: user.homePhone,
+      avatar: user.avatar,
+      roles: user.roles || [],
+      addresses: user.addresses || [],
+      twitter: user.twitter,
+      facebook: user.facebook,
+      instagram: user.instagram,
+      devices: user.devices || [],
+      refreshToken,
+      wishlists: user.wishlists,
+      wishlistItemCategories: user.wishlistItemCategories,
+      wishlistFollows: user.wishlistFollows
     }
-    return u;
+  };
+
+  if (user.status === 'awaitingPassword') {
+    u.user.status = user.status;
+  }
+  return u;
 }
 
 function mergeJWTParam(refreshToken, expires, expiresIn, signInProvider) {
-    let issuedAtTime = new Date().toUTCString();
-    var u = {
-        '.issued': issuedAtTime,
-        '.expires': expires,
-        expires_in: expiresIn,
-        expirationTime: expires,
-        issuedAtTime: issuedAtTime,
-        signInProvider: signInProvider,
-        user: {
-            refreshToken: refreshToken
-        }
-    };
+  const issuedAtTime = new Date().toUTCString();
+  const u = {
+    '.issued': issuedAtTime,
+    '.expires': expires,
+    expires_in: expiresIn,
+    expirationTime: expires,
+    issuedAtTime,
+    signInProvider,
+    user: {
+      refreshToken
+    }
+  };
 
-    return u;
+  return u;
 }
 
 // Token endpoint.
@@ -342,9 +399,9 @@ function mergeJWTParam(refreshToken, expires, expiresIn, signInProvider) {
 // exchange middleware will be invoked to handle the request. Clients must
 // authenticate when making requests to this endpoint.
 exports.token = [
-    passport.authenticate(['basic', 'oauth2-client-password'], {
-        session: false
-    }),
-    server.token(),
-    server.errorHandler()
+  passport.authenticate(['basic', 'oauth2-client-password'], {
+    session: false
+  }),
+  server.token(),
+  server.errorHandler()
 ];

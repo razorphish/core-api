@@ -13,12 +13,12 @@ class ClientSeeder {
   seed() {
     logger.info(`${this._classInfo}.seed()`);
 
-    var items = [
+    const items = [
       {
         applicationId: '5c4b1303fc13ae60b4000003',
         name: '@marasco/admin-web-ui',
         clientId: 'admin-web-ui',
-        clientSecret: '353b992ef5abd23cfc349228970b550616161458', 
+        clientSecret: '353b992ef5abd23cfc349228970b550616161458',
         isTrusted: true,
         applicationType: 'ClientConfidential',
         allowedOrigins: [
@@ -29,10 +29,11 @@ class ClientSeeder {
         ],
         tokenLifeTime: 30,
         refreshTokenLifeTime: 259200,
-        hash: 'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
-        'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
-        'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
-        'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF'
+        hash:
+          'E89fZK0oQnEuMWuqRhpNZG5ObexOw81RdnWHnSIuQVjaei3bag4kq' +
+          'nSyPXIrAi5gpYQcPU98leY1J5eL1sQUrUCRjS3SdZlMK1vSSv1kORtDqaxdYslVMe8uCBxk4Np' +
+          'PkwFkiWB8ywHnAjXBZpRdXHry8Aj19KS7XQUvi3DVW953MqCJgipQm76Lw8rNfAl1oQMyjPyBV' +
+          'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF'
       },
       {
         applicationId: '5c4b1303fc13ae60b4000001',
@@ -124,16 +125,18 @@ class ClientSeeder {
       }
     ];
 
-    var l = items.length,
-      i;
+    const l = items.length;
+    let i;
 
     Client.deleteMany({});
 
+    // eslint-disable-next-line no-plusplus
     for (i = 0; i < l; i++) {
-      //var tokenHash = crypto.createHash('sha1').update(items[i].clientSecret).digest('hex');
-      //console.log(`about to insert client: ${items[i].clientId} with secret: ${items[i].clientSecret}`);
+      // var tokenHash = crypto.createHash('sha1').update(items[i].clientSecret).digest('hex');
+      // console.log(`about to insert
+      // client: ${items[i].clientId} with secret: ${items[i].clientSecret}`);
 
-      var item = new Client({
+      const item = new Client({
         applicationId: items[i].applicationId,
         name: items[i].name,
         clientId: items[i].clientId,
@@ -146,13 +149,13 @@ class ClientSeeder {
         hash: items[i].hash
       });
 
-      item.save((err, item) => {
-        //logger.verbose(`${this._classInfo}.seed()`, item);
+      item.save((err, itemSaved) => {
+        // logger.verbose(`${this._classInfo}.seed()`, item);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(`${this._classInfo}.seed() OK`, item.name);
+          logger.debug(`${this._classInfo}.seed() OK`, itemSaved.name);
         }
       });
     }

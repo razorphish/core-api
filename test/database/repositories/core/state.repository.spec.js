@@ -140,7 +140,6 @@
 //     //             });
 //     //         });
 
-
 //     //         it('update should respond with *** [State].repository.update(123456789123)::findById forced error', function (done) {
 //     //             State.update('123456789123', {}, (error, result) => {
 //     //                 expect(error).to.exist;

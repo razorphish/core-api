@@ -22,13 +22,11 @@ authRoutes = require('./app/routes/oAuth2');
 //Antonio
 //Instantiate libraries
 
-
 //====================================
 
 (app = express()), (port = 3002);
 
 class Server {
-
   constructor() {
     this.initViewEngine();
     this.initCors();
@@ -42,7 +40,7 @@ class Server {
   }
 
   start() {
-    module.exports = app.listen(port, err => {
+    module.exports = app.listen(port, (err) => {
       logger.debug(
         '[%s] Listening on http://localhost:%d',
         process.env.NODE_ENV,
@@ -50,7 +48,7 @@ class Server {
       );
     });
   }
-  
+
   /**
    * @description Initialize Cors Engine
    * @author Antonio Marasco
@@ -176,9 +174,12 @@ class Server {
     // });
     //process.setMaxListeners(0);
 
-    process.on('uncaughtException', err => {
+    process.on('uncaughtException', (err) => {
       if (err) {
-        logger.error('---------========APPLICATION ERROR========---------', err);
+        logger.error(
+          '---------========APPLICATION ERROR========---------',
+          err
+        );
       }
     });
   }
@@ -235,7 +236,8 @@ class Server {
     webPush.setVapidDetails(
       `mailto:${webPushConfig.email}`,
       webPushConfig.publicKey,
-      webPushConfig.privateKey);
+      webPushConfig.privateKey
+    );
   }
 }
 

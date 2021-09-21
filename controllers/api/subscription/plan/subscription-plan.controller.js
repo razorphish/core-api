@@ -1,10 +1,9 @@
-'use strict';
 /**
  * [SubscriptionPlan] Api
  */
 
-const repo = require('../../../../app/database/repositories/subscription/subscription-plan.repository');
 const passport = require('passport');
+const repo = require('../../../../app/database/repositories/subscription/subscription-plan.repository');
 const utils = require('../../../../lib/utils');
 const logger = require('../../../../lib/winston.logger');
 
@@ -14,7 +13,6 @@ const logger = require('../../../../lib/winston.logger');
  * @author Antonio Marasco
  */
 class SubscriptionPlanController {
-
   /**
    * Constructor for [SubscriptionPlan] Category
    * @param {router} router Node router framework
@@ -77,10 +75,9 @@ class SubscriptionPlanController {
       this.delete.bind(this)
     );
 
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [SubscriptionPlan].controller';
     this._routeName = '/api/subscription/plan';
-
   }
 
   /**
@@ -90,7 +87,7 @@ class SubscriptionPlanController {
    * @example GET /api/subscription/plan
    * @returns {pointer} res.json
    */
-  all(request, response, next) {
+  all(request, response) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
     repo.all((error, result) => {
@@ -105,20 +102,20 @@ class SubscriptionPlanController {
   }
 
   /**
- * Gets all {subscriptionPlan}s
- * @param {Request} [request] Request object
- * @param {Response} response Response
- * @example GET /api/subscription/plan/:id/details
- * @returns {pointer} res.json
- */
-  allDetails(request, response, next) {
+   * Gets all {subscriptionPlan}s
+   * @param {Request} [request] Request object
+   * @param {Response} response Response
+   * @example GET /api/subscription/plan/:id/details
+   * @returns {pointer} res.json
+   */
+  allDetails(request, response) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
     repo.allDetails((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
         response.status(500).json(error);
-        //next(error);
+        // next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
         response.json(result);
@@ -137,15 +134,18 @@ class SubscriptionPlanController {
   allPaged(request, response) {
     logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
 
-    const topVal = request.params.top,
-      skipVal = request.params.skip,
-      top = isNaN(topVal) ? 10 : +topVal,
-      skip = isNaN(skipVal) ? 0 : +skipVal;
+    const topVal = request.params.top;
+    const skipVal = request.params.skip;
+    const top = Number.isNan(topVal) ? 10 : +topVal;
+    const skip = Number.isNan(skipVal) ? 0 : +skipVal;
 
     repo.allPaged(skip, top, (error, result) => {
-      //response.setHeader('X-InlineCount', result.count);
+      // response.setHeader('X-InlineCount', result.count);
       if (error) {
-        logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.allPaged() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
@@ -162,7 +162,7 @@ class SubscriptionPlanController {
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
     repo.delete(id, (error, result) => {
@@ -183,7 +183,7 @@ class SubscriptionPlanController {
    * @example GET /api/subscription/plan/:id
    */
   get(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
 
     repo.get(id, (error, result) => {
@@ -198,18 +198,21 @@ class SubscriptionPlanController {
   }
 
   /**
- * Gets a single {subscriptionPlan} details
- * @param {string} id Entity id
- * @param {requestCallback} callback Handles the response
- * @example getDetails('123456789', (error, data) => {})
- */
+   * Gets a single {subscriptionPlan} details
+   * @param {string} id Entity id
+   * @param {requestCallback} callback Handles the response
+   * @example getDetails('123456789', (error, data) => {})
+   */
   getDetails(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.getDetails(${id}) [${this._routeName}]`);
 
     repo.getDetails(id, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.getDetails() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.getDetails() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.getDetails() [${this._routeName}] OK`);
@@ -245,12 +248,16 @@ class SubscriptionPlanController {
    * @example PUT /api/subscription/plan/:id
    */
   update(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
 
     repo.update(id, request.body, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
+        logger.error(
+          `${this._classInfo}.update() [${this._routeName}]`,
+          error,
+          request.body
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);

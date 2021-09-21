@@ -1,72 +1,72 @@
 {
-    "collections": {
-        "users": [
-            {
-                "refreshToken": {
-                    "userId": "59e8e689ea1ea07ca6e6ef96",
-                    "loginProvider": "oAuth2",
-                    "name": "refresh_token",
-                    "scope": "*",
-                    "type": "bearer",
-                    "expiresIn": 15552000,
-                    "value": "77dd93db3f1455022d0a6f701c9bbd00e8b678f3"
-                },
-                "firstName": "Antonio",
-                "lastName": "Marasco",
-                "email": "david@maras.co",
-                "email_lower": "david@maras.co",
-                "username": "david@maras.co",
-                "username_lower": "david@maras.co",
-                "password":"$2a$10$aa9Lb0M4uqzW43Ex9v6cyORa/SyFwEoDdqxgZ.HmR7Zw/SO1n9kB.",
-                "status": "active",
-                "avatar": "",
-                "salt": "aa9Lb0M4uqzW43Ex9v6cyO",
-                "roles": [
-                    {
-                        "_id": "59af3138fc13ae21640000c8",
-                        "name": "Guest",
-                        "normalizedName": "GUEST"
-                    },
-                    {
-                        "_id": "59af3138fc13ae21640000ca",
-                        "name": "Admin",
-                        "normalizedName": "ADMIN"
-                    },
-                    {
-                        "_id": "59af3138fc13ae21640000c9",
-                        "name": "User",
-                        "normalizedName": "USER"
-                    }
-                ],
-                "account": {
-                    "_id": "59af3138fc13ae21640000ca",
-                    "statusId": "active"
-                }
-            },
-            {
-                "userId": "59e8e689ea1ea07ca6e6ef96",
-                "firstName": "Diego",
-                "lastName": "Marasco",
-                "email": "diego@maras.co",
-                "email_lower": "diego@maras.co",
-                "username": "diego@maras.co",
-                "username_lower": "diego@maras.co",
-                "password": "Letme1n!",
-                "status": "active",
-                "avatar": "",
-                "salt": "1NC7owXUlUj",
-                "roles": [
-                    {
-                        "_id": "59af3138fc13ae21640000c9",
-                        "name": "User",
-                        "normalizedName": "USER"
-                    }
-                ],
-                "account": {
-                    "_id": "59e8e689ea1ea07ca6e6ef96",
-                    "statusId": "active"
-                }
-            }
-        ]
-    }
+  "collections": {
+    "users": [
+      {
+        "refreshToken": {
+          "userId": "59e8e689ea1ea07ca6e6ef96",
+          "loginProvider": "oAuth2",
+          "name": "refresh_token",
+          "scope": "*",
+          "type": "bearer",
+          "expiresIn": 15552000,
+          "value": "77dd93db3f1455022d0a6f701c9bbd00e8b678f3"
+        },
+        "firstName": "Antonio",
+        "lastName": "Marasco",
+        "email": "david@maras.co",
+        "email_lower": "david@maras.co",
+        "username": "david@maras.co",
+        "username_lower": "david@maras.co",
+        "password": "$2a$10$aa9Lb0M4uqzW43Ex9v6cyORa/SyFwEoDdqxgZ.HmR7Zw/SO1n9kB.",
+        "status": "active",
+        "avatar": "",
+        "salt": "aa9Lb0M4uqzW43Ex9v6cyO",
+        "roles": [
+          {
+            "_id": "59af3138fc13ae21640000c8",
+            "name": "Guest",
+            "normalizedName": "GUEST"
+          },
+          {
+            "_id": "59af3138fc13ae21640000ca",
+            "name": "Admin",
+            "normalizedName": "ADMIN"
+          },
+          {
+            "_id": "59af3138fc13ae21640000c9",
+            "name": "User",
+            "normalizedName": "USER"
+          }
+        ],
+        "account": {
+          "_id": "59af3138fc13ae21640000ca",
+          "statusId": "active"
+        }
+      },
+      {
+        "userId": "59e8e689ea1ea07ca6e6ef96",
+        "firstName": "Diego",
+        "lastName": "Marasco",
+        "email": "diego@maras.co",
+        "email_lower": "diego@maras.co",
+        "username": "diego@maras.co",
+        "username_lower": "diego@maras.co",
+        "password": "Letme1n!",
+        "status": "active",
+        "avatar": "",
+        "salt": "1NC7owXUlUj",
+        "roles": [
+          {
+            "_id": "59af3138fc13ae21640000c9",
+            "name": "User",
+            "normalizedName": "USER"
+          }
+        ],
+        "account": {
+          "_id": "59e8e689ea1ea07ca6e6ef96",
+          "statusId": "active"
+        }
+      }
+    ]
+  }
 }

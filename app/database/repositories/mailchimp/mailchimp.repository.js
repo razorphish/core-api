@@ -1,17 +1,13 @@
-const mongoose = require('mongoose'),
-  Schema = mongoose.Schema,
-  MailChimpModel = require('../../models/mailchimp/mailchimp.model'),
-  mailChimpConfig = require('./configLoader').mailChimp,
-  mailChimp = require('mailchimp-api-3');
+const MailChimpModel = require('../../models/mailchimp/mailchimp.model');
 
 /**
-* MailChimp Repository
-*/
+ * MailChimp Repository
+ */
 class MailChimpRepository {
   /**
- * Gets all MailChimps in db
- * @param {function} callback Callback function for fail/success 
- */
+   * Gets all MailChimps in db
+   * @param {function} callback Callback function for fail/success
+   */
   all(callback) {
     console.log('*** MailChimp.repository.all()');
 
@@ -24,20 +20,20 @@ class MailChimpRepository {
           return callback(err);
         }
 
-        callback(null, {
-          count: count,
-          data: data
+        return callback(null, {
+          count,
+          data
         });
       });
     });
   }
 
   /**
- * Gets all MailChimps paged
- * @param {number} skip Page number
- * @param {number} top Number of items per page
- * @param {function} callback Callback function
- */
+   * Gets all MailChimps paged
+   * @param {number} skip Page number
+   * @param {number} top Number of items per page
+   * @param {function} callback Callback function
+   */
   allPaged(skip, top, callback) {
     console.log('*** MailChimp.Repository.allPaged');
 
@@ -47,7 +43,7 @@ class MailChimpRepository {
         return callback(err);
       }
 
-      var count = itemCount;
+      const count = itemCount;
       console.log(`Skip: ${skip} Top: ${top}`);
       console.log(`MailChimp count: ${count}`);
 
@@ -64,8 +60,8 @@ class MailChimpRepository {
           }
 
           callback(null, {
-            count: count,
-            data: data
+            count,
+            data
           });
         });
     });
@@ -78,8 +74,8 @@ class MailChimpRepository {
   byUserId(userId, callback) {
     console.log('*** MailChimp.repository.byUserId');
 
-    var query = {
-      userId: userId
+    const query = {
+      userId
     };
 
     MailChimpModel.find(query, (err, data) => {
@@ -93,10 +89,10 @@ class MailChimpRepository {
   }
 
   /**
- * Delete a MailChimp by id
- * @param {string} id Id of MailChimp
- * @param {function} callback function on success/fail
- */
+   * Delete a MailChimp by id
+   * @param {string} id Id of MailChimp
+   * @param {function} callback function on success/fail
+   */
   delete(id, callback) {
     console.log('*** MailChimp.repository.delete');
     MailChimpModel.deleteOne(
@@ -114,10 +110,10 @@ class MailChimpRepository {
   }
 
   /**
- * Gets MailChimp by Id
- * @param {ObjectId} id - Id of MailChimp
- * @param {function} callback - callback function
- */
+   * Gets MailChimp by Id
+   * @param {ObjectId} id - Id of MailChimp
+   * @param {function} callback - callback function
+   */
   get(id, callback) {
     console.log('*** MailChimp.repository.get');
     MailChimpModel.findById(id, (err, data) => {
@@ -131,7 +127,7 @@ class MailChimpRepository {
   }
 
   /**
-   * Inserts a MailChimp into db  
+   * Inserts a MailChimp into db
    * @param {object} body Object that contain MailChimp info
    * @param {function} callback Callback function success/fail
    */
@@ -139,8 +135,8 @@ class MailChimpRepository {
     console.log('*** MailChimp.repository.insert');
 
     if (body.constructor === Array) {
-      let asyncData = [];
-      let asyncTasks = this.asyncInsertMailChimps(body, (err, data) => {
+      const asyncData = [];
+      const asyncTasks = this.asyncInsertMailChimps(body, (err, data) => {
         if (err) {
           callback(err);
         } else {
@@ -148,7 +144,7 @@ class MailChimpRepository {
         }
       });
       async.parallel(asyncTasks, (err, data) => {
-        //Handle individual errors, insertions, if applicable
+        // Handle individual errors, insertions, if applicable
         if (err) {
           callback(err);
         } else {
@@ -156,7 +152,7 @@ class MailChimpRepository {
         }
       });
     } else {
-      var model = new MailChimpModel();
+      const model = new MailChimpModel();
       console.log(body);
 
       model.name = body.name;
@@ -175,11 +171,11 @@ class MailChimpRepository {
   }
 
   /**
- * Returns summary (limited number of fields) in a recordset
- * @param {number} skip Number of items per page 
- * @param {number} top Return top number
- * @param {function} callback Callback function to calling user 
- */
+   * Returns summary (limited number of fields) in a recordset
+   * @param {number} skip Number of items per page
+   * @param {number} top Return top number
+   * @param {function} callback Callback function to calling user
+   */
   summary(skip, top, callback) {
     console.log('*** MailChimp.Repository.summary');
     MailChimpModel.count((err, itemCount) => {
@@ -188,7 +184,7 @@ class MailChimpRepository {
         return callback(err);
       }
 
-      var count = itemCount;
+      const count = itemCount;
       console.log(`MailChimp count: ${count}`);
 
       MailChimpModel.find(
@@ -208,8 +204,8 @@ class MailChimpRepository {
           }
 
           callback(null, {
-            count: count,
-            data: data
+            count,
+            data
           });
         });
     });
@@ -240,19 +236,19 @@ class MailChimpRepository {
           return callback(err);
         }
 
-        //returns MailChimp data
+        // returns MailChimp data
         callback(null, data);
       });
     });
   }
 
-  /////Private Methods ////////////////////////////////////////////////////////
+  /// //Private Methods ////////////////////////////////////////////////////////
   asyncInsertMailChimps(body, callback) {
-    let asyncTasks = [];
+    const asyncTasks = [];
 
-    body.forEach(item => {
-      asyncTasks.push(function(callback) {
-        var model = new MailChimpModel();
+    body.forEach((item) => {
+      asyncTasks.push((callback) => {
+        const model = new MailChimpModel();
         console.log(item);
 
         model.name = item.name;
@@ -274,10 +270,10 @@ class MailChimpRepository {
   }
 
   asyncUpdateMailChimps(body, callback) {
-    let asyncTasks = [];
+    const asyncTasks = [];
 
-    body.forEach(mailChimp => {
-      asyncTasks.push(function(callback) {
+    body.forEach((mailChimp) => {
+      asyncTasks.push((callback) => {
         MailChimps.findById(id, (err, item) => {
           if (err) {
             console.log(`*** MailChimps.repository.update error ${err}`);
@@ -294,7 +290,7 @@ class MailChimpRepository {
               return callback(err);
             }
 
-            //returns MailChimp data
+            // returns MailChimp data
             callback(null, data);
           });
         });

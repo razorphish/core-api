@@ -1,5 +1,4 @@
 // Client Repository
-const mongoose = require('mongoose');
 const ClientModel = require('../../models/auth/client.model');
 const logger = require('../../../../lib/winston.logger');
 const httpSign = require('../../../security/signers/http-sign');
@@ -22,7 +21,7 @@ class ClientRepository {
    * Constructor for client
    */
   constructor() {
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [Client].repository';
   }
 
@@ -38,11 +37,12 @@ class ClientRepository {
       {},
       {
         hash: 0
-      })
-      .then(data => {
+      }
+    )
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.all::find`, error);
         callback(error);
       });
@@ -58,27 +58,23 @@ class ClientRepository {
   allPaged(skip, top, callback) {
     logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-    ClientModel
-      .find({},
-        null,
-        {
-          skip: skip,
-          select: {
-            password: 0,
-            salt: 0,
-            refreshToken: 0,
-            loginAttempts: 0,
-            lockUntil: 0,
-            hash: 0
-          },
-          top: top,
-          sort: { name: 1 }
-        }
-      )
+    ClientModel.find({}, null, {
+      skip,
+      select: {
+        password: 0,
+        salt: 0,
+        refreshToken: 0,
+        loginAttempts: 0,
+        lockUntil: 0,
+        hash: 0
+      },
+      top,
+      sort: { name: 1 }
+    })
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, error);
         return callback(error, null);
       });
@@ -95,16 +91,16 @@ class ClientRepository {
 
     ClientModel.findOne(
       {
-        clientId: clientId
+        clientId
       },
       {
         hash: 0
-      })
-      .then(data => {
-
+      }
+    )
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(
           `${this._classInfo}.getByClientId(${clientId})::findOne`,
           error
@@ -124,7 +120,8 @@ class ClientRepository {
     ClientModel.deleteOne(
       {
         _id: id
-      }, {
+      },
+      {
         hash: 0
       },
       (err, data) => {
@@ -132,12 +129,12 @@ class ClientRepository {
           logger.error(`${this._classInfo}.delete(${id})::remove`, err);
           return callback(err, null);
         }
-        callback(null, data);
+        return callback(null, data);
       }
     );
   }
 
-    /**
+  /**
    * Gets a single item with details
    * @param {object} id Id of entity
    * @param {function} callback Callback function for success/fail
@@ -151,7 +148,7 @@ class ClientRepository {
         return callback(err);
       }
       // get client Id
-      callback(null, data);
+      return callback(null, data);
     });
   }
 
@@ -163,16 +160,20 @@ class ClientRepository {
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
 
-    ClientModel.findById(id, {
-      hash: 0
-    }, (err, data) => {
-      if (err) {
-        logger.error(`${this._classInfo}.get(${id})::findById`, err);
-        return callback(err);
+    ClientModel.findById(
+      id,
+      {
+        hash: 0
+      },
+      (err, data) => {
+        if (err) {
+          logger.error(`${this._classInfo}.get(${id})::findById`, err);
+          return callback(err);
+        }
+        // get client Id
+        return callback(null, data);
       }
-      // get client Id
-      callback(null, data);
-    });
+    );
   }
 
   /**
@@ -183,8 +184,8 @@ class ClientRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new ClientModel(body);
-    //encode hash
+    const model = new ClientModel(body);
+    // encode hash
     model.clientSecret = httpSign.decode(model.hash);
 
     model.save((err, data) => {
@@ -193,7 +194,7 @@ class ClientRepository {
         return callback(err);
       }
 
-      callback(null, data);
+      return callback(null, data);
     });
   }
 
@@ -205,14 +206,14 @@ class ClientRepository {
   refreshToken(id, callback) {
     logger.debug(`${this._classInfo}.refreshToken(${id})`);
 
-    let hash = httpSign.getUid(256);
+    const hash = httpSign.getUid(256);
 
-    let clientSecret = httpSign.decode(hash);
+    const clientSecret = httpSign.decode(hash);
 
-    let body = {
-      clientSecret: clientSecret,
-      hash: hash
-    }
+    const body = {
+      clientSecret,
+      hash
+    };
 
     ClientModel.findOneAndUpdate(
       { _id: id },
@@ -223,15 +224,16 @@ class ClientRepository {
       (err, item) => {
         if (err) {
           logger.error(`${this._classInfo}.refreshToken(${id})::findById`, err);
-          return callback(error);
+          return callback(err);
         }
 
-        //returns User data
-        callback(null, {
+        // returns User data
+        return callback(null, {
           hash: item.hash,
           clientSecret: item.clientSecret
         });
-      });
+      }
+    );
   }
 
   /**
@@ -249,13 +251,17 @@ class ClientRepository {
       { new: true },
       (err, result) => {
         if (err) {
-          logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, err);
-          return callback(error);
+          logger.error(
+            `${this._classInfo}.update(${id})::findOneAndUpdate`,
+            err
+          );
+          return callback(err);
         }
 
-        //returns data
-        callback(null, result);
-      });
+        // returns data
+        return callback(null, result);
+      }
+    );
   }
 
   /**
@@ -288,18 +294,16 @@ class ClientRepository {
           logger.debug(
             `${this._classInfo}.verify(${clientId}, ${clientSecret}, ${origin}) OK`
           );
-          callback(null, client);
-          return;
-        } else {
-          logger.debug(
-            `${this._classInfo}.verify(${clientId}, ${clientSecret}, ${origin}) FAIL. Add ${origin} to db`
-          );
-          callback(null, null, reason);
-          return;
+          return callback(null, client);
         }
 
-        //If desired, analyze reason
-        //var reasons = client.failedVerification;
+        logger.debug(
+          `${this._classInfo}.verify(${clientId}, ${clientSecret}, ${origin}) FAIL. Add ${origin} to db`
+        );
+        return callback(null, null, reason);
+
+        // If desired, analyze reason
+        // var reasons = client.failedVerification;
       }
     );
   }

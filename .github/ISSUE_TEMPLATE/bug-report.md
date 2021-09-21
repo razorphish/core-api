@@ -1,9 +1,9 @@
 ---
 name: Bug report
 about: Report a bug in @marasco/fhirhose
-title: ""
+title: ''
 labels: bug
-assignees: ""
+assignees: ''
 ---
 
 **Describe the bug** A clear and concise description of what the bug is.

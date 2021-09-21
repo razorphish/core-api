@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const ExecutionSchema = new Schema({
   started: { type: Date, required: false },
   completed: { type: Date, required: false },
-  kickoff: { type: Date, required: true },
+  kickoff: { type: Date, required: true }
 });
 
 const JobSchema = new Schema(
@@ -25,8 +25,17 @@ const JobSchema = new Schema(
     activityStatusId: {
       type: String,
       required: true,
-      enum: ['ready', 'processing', 'paused', 'fail', 'terminated', 'executed', 'restarted', 'completed'],
-      default: 'active',
+      enum: [
+        'ready',
+        'processing',
+        'paused',
+        'fail',
+        'terminated',
+        'executed',
+        'restarted',
+        'completed'
+      ],
+      default: 'active'
     },
     execution: { type: ExecutionSchema },
     meta: { type: Schema.Types.Mixed, required: false },
@@ -35,7 +44,7 @@ const JobSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      uppercase: true,
+      uppercase: true
     },
     statusId: {
       type: String,
@@ -47,9 +56,9 @@ const JobSchema = new Schema(
         'pending',
         'archived',
         'suspended',
-        'deleted',
+        'deleted'
       ],
-      default: 'active',
+      default: 'active'
     },
 
     // Dates
@@ -58,8 +67,8 @@ const JobSchema = new Schema(
   },
   {
     toJSON: {
-      virtuals: true,
-    },
+      virtuals: true
+    }
   }
 );
 

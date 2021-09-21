@@ -16,200 +16,200 @@ const logger = require('../../../../lib/winston.logger');
  * @class Application Repository
  */
 class ApplicationRepository {
-    /**
-     * Constructor for client
-     */
-    constructor() {
-        //Logging Info
-        this._classInfo = '*** [Account].repository';
-    }
+  /**
+   * Constructor for client
+   */
+  constructor() {
+    // Logging Info
+    this._classInfo = '*** [Account].repository';
+  }
 
-    /**
-     * Gets all Applications
-     * @param {requestCallback} callback Handles the response
-     * @example all((error, data) => {})
-     */
-    all(callback) {
-        logger.debug(`${this._classInfo}.all()`);
+  /**
+   * Gets all Applications
+   * @param {requestCallback} callback Handles the response
+   * @example all((error, data) => {})
+   */
+  all(callback) {
+    logger.debug(`${this._classInfo}.all()`);
 
-        model.find()
-            .then(data => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.all::find`, error);
-                callback(error);
-            });
-    }
+    model
+      .find()
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.all::find`, error);
+        callback(error);
+      });
+  }
 
-    /**
-     * Gets all applications with details
-     * @param {requestCallback} callback Handles the response
-     * @example all((error, data) => {})
-     */
-    allDetails(callback) {
-        logger.debug(`${this._classInfo}.allDetails()`);
+  /**
+   * Gets all applications with details
+   * @param {requestCallback} callback Handles the response
+   * @example all((error, data) => {})
+   */
+  allDetails(callback) {
+    logger.debug(`${this._classInfo}.allDetails()`);
 
-        model.find({})
-            .populate({
-                path: 'settings',
-                select: 'notifications emailNotifications'
-            })
-            .then(data => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.allDetails::find`, error);
-                callback(error);
-            });
-    }
+    model
+      .find({})
+      .populate({
+        path: 'settings',
+        select: 'notifications emailNotifications'
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.allDetails::find`, error);
+        callback(error);
+      });
+  }
 
-    /**
-     * Gets all Applications paginated
-     * @param {number} [skip=10] Page number
-     * @param {number} [top=10] Per Page
-     * @param {requestCallback} callback Handles the response
-     * @example allPaged(2, 10, (error, data) => {} )
-     */
-    allPaged(skip, top, callback) {
-        logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
+  /**
+   * Gets all Applications paginated
+   * @param {number} [skip=10] Page number
+   * @param {number} [top=10] Per Page
+   * @param {requestCallback} callback Handles the response
+   * @example allPaged(2, 10, (error, data) => {} )
+   */
+  allPaged(skip, top, callback) {
+    logger.debug(`${this._classInfo}.allPaged(${skip}, ${top})`);
 
-        model
-            .find({},
-                null,
-                {
-                    skip: skip,
-                    select: {
-                        password: 0,
-                        salt: 0,
-                        refreshToken: 0,
-                        loginAttempts: 0,
-                        lockUntil: 0
-                    },
-                    top: top,
-                    sort: { lastName: 1 }
-                }
-            )
-            .populate({
-                path: 'settings',
-                select: 'notifications emailNotifications'
-            })
-            .then((data) => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, error);
-                return callback(error, null);
-            });
-    }
+    model
+      .find({}, null, {
+        skip,
+        select: {
+          password: 0,
+          salt: 0,
+          refreshToken: 0,
+          loginAttempts: 0,
+          lockUntil: 0
+        },
+        top,
+        sort: { lastName: 1 }
+      })
+      .populate({
+        path: 'settings',
+        select: 'notifications emailNotifications'
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.allPaged(${skip}, ${top})`, error);
+        return callback(error, null);
+      });
+  }
 
-    /**
-     * Delete Application by id
-     * @param {string} id Application Id
-     * @param {requestCallback} callback Handles the response
-     * @example delete('123456789', (error, data) => {})
-     */
-    delete(id, callback) {
-        logger.debug(`${this._classInfo}.delete(${id})`);
+  /**
+   * Delete Application by id
+   * @param {string} id Application Id
+   * @param {requestCallback} callback Handles the response
+   * @example delete('123456789', (error, data) => {})
+   */
+  delete(id, callback) {
+    logger.debug(`${this._classInfo}.delete(${id})`);
 
-        model.deleteOne({ _id: id })
-            .then((data) => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.delete(${id})::remove`, error);
-                return callback(error);
-            });
-    }
+    model
+      .deleteOne({ _id: id })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.delete(${id})::remove`, error);
+        return callback(error);
+      });
+  }
 
-    /**
-     * Gets a single Application
-     * @param {string} id Application id
-     * @param {requestCallback} callback Handles the response
-     * @example get('123456789', (error, data) => {})
-     */
-    get(id, callback) {
-        logger.debug(`${this._classInfo}.get(${id})`);
+  /**
+   * Gets a single Application
+   * @param {string} id Application id
+   * @param {requestCallback} callback Handles the response
+   * @example get('123456789', (error, data) => {})
+   */
+  get(id, callback) {
+    logger.debug(`${this._classInfo}.get(${id})`);
 
-        model.findById(id)
-            .then(data => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.get(${id})`, error);
-                return callback(error);
-            })
-    }
+    model
+      .findById(id)
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.get(${id})`, error);
+        return callback(error);
+      });
+  }
 
-    /**
-    * Gets a single application details
-    * @param {string} id application id
-    * @param {requestCallback} callback Handles the response
-    * @example get('123456789', (error, data) => {})
-    */
-    getDetails(id, callback) {
-        logger.debug(`${this._classInfo}.getDetails(${id})`);
+  /**
+   * Gets a single application details
+   * @param {string} id application id
+   * @param {requestCallback} callback Handles the response
+   * @example get('123456789', (error, data) => {})
+   */
+  getDetails(id, callback) {
+    logger.debug(`${this._classInfo}.getDetails(${id})`);
 
-        model.findById(
-            id,
-            null,
-            {
-            })
-            .populate({
-                path: 'settings',
-                select: 'applicationId notifications emailNotifications'
-            })
-            .then(data => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.getDetails(${id})`, error);
-                return callback(error);
-            });
-    }
+    model
+      .findById(id, null, {})
+      .populate({
+        path: 'settings',
+        select: 'applicationId notifications emailNotifications'
+      })
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.getDetails(${id})`, error);
+        return callback(error);
+      });
+  }
 
-    /**
-     * Inserts Application
-     * @param {object} body Application data
-     * @param {requestCallback} callback Handles the response
-     * @example insert({property: value}, (error, data) => {})
-     */
-    insert(body, callback) {
-        logger.debug(`${this._classInfo}.insert()`, body);
+  /**
+   * Inserts Application
+   * @param {object} body Application data
+   * @param {requestCallback} callback Handles the response
+   * @example insert({property: value}, (error, data) => {})
+   */
+  insert(body, callback) {
+    logger.debug(`${this._classInfo}.insert()`, body);
 
-        model.create(body)
-            .then(data => {
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.insert()::save`, error);
-                callback(error);
-            });
-    }
+    model
+      .create(body)
+      .then((data) => {
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(`${this._classInfo}.insert()::save`, error);
+        callback(error);
+      });
+  }
 
-    /**
-     * Updates Application
-     * @param {string} id Application id
-     * @param {object} body Application data
-     * @param {requestCallback} callback Handles the response
-     * @example update('1234', {body:data}, (error, data) => {})
-     */
-    update(id, body, callback) {
-        logger.debug(`${this._classInfo}.update(${id})`);
-        body.dateModified = Date.now();
-        model.findOneAndUpdate(
-            { _id: id },
-            body,
-            { new: true })
-            .then(data => {
-                //returns Application data
-                callback(null, data);
-            })
-            .catch(error => {
-                logger.error(`${this._classInfo}.update(${id})::findOneAndUpdate`, error);
-                return callback(error);
-            });
-    }
+  /**
+   * Updates Application
+   * @param {string} id Application id
+   * @param {object} body Application data
+   * @param {requestCallback} callback Handles the response
+   * @example update('1234', {body:data}, (error, data) => {})
+   */
+  update(id, body, callback) {
+    logger.debug(`${this._classInfo}.update(${id})`);
+    body.dateModified = Date.now();
+    model
+      .findOneAndUpdate({ _id: id }, body, { new: true })
+      .then((data) => {
+        // returns Application data
+        callback(null, data);
+      })
+      .catch((error) => {
+        logger.error(
+          `${this._classInfo}.update(${id})::findOneAndUpdate`,
+          error
+        );
+        return callback(error);
+      });
+  }
 }
 
 module.exports = new ApplicationRepository();

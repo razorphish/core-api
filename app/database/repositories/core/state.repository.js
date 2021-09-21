@@ -10,7 +10,7 @@ class StateRepository {
    * Constructor for state
    */
   constructor() {
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [State].repository';
   }
 
@@ -22,13 +22,13 @@ class StateRepository {
     logger.debug(`${this._classInfo}.all()`);
 
     StateModel.find()
-      .then(data => {
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.all()::find`, error);
         return callback(error, null);
-      })
+      });
   }
 
   /**
@@ -39,31 +39,30 @@ class StateRepository {
   delete(id, callback) {
     logger.debug(`${this._classInfo}.delete(${id})`);
 
-    StateModel.deleteOne(
-      {
-        _id: id
-      })
-      .then(data => {
+    StateModel.deleteOne({
+      _id: id
+    })
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.delete(${id})::remove`, error);
         return callback(error, null);
       });
   }
 
   /**
- * Gets a single item
- * @param {object} id Id of entity
- * @param {function} callback Callback function for success/fail
- */
+   * Gets a single item
+   * @param {object} id Id of entity
+   * @param {function} callback Callback function for success/fail
+   */
   get(id, callback) {
     logger.debug(`${this._classInfo}.get(${id})`);
     StateModel.findById(id)
-      .then(data => {
+      .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.get(${id})::findById`, error);
         return callback(error);
       });
@@ -77,7 +76,7 @@ class StateRepository {
   insert(body, callback) {
     logger.debug(`${this._classInfo}.insert()`, body);
 
-    var model = new StateModel(body);
+    const model = new StateModel(body);
 
     logger.verbose(`${this._classInfo}.insert()::model`, model);
 
@@ -87,7 +86,7 @@ class StateRepository {
         return callback(err);
       }
 
-      callback(null, data);
+      return callback(null, data);
     });
   }
 
@@ -103,21 +102,20 @@ class StateRepository {
     StateModel.findById(id, (err, item) => {
       if (err) {
         logger.error(`${this._classInfo}.update(${id})::findById`, err);
-        return callback(error);
+        return callback(err);
       }
 
-      Object.assign(item, body).save((err, data) => {
-        if (err) {
-          logger.error(`${this._classInfo}.update(${id})::save`, err);
-          return callback(err);
+      Object.assign(item, body).save((error, data) => {
+        if (error) {
+          logger.error(`${this._classInfo}.update(${id})::save`, error);
+          return callback(error);
         }
 
-        //returns User data
-        callback(null, data);
+        // returns User data
+        return callback(null, data);
       });
     });
   }
-
 }
 
 module.exports = new StateRepository();

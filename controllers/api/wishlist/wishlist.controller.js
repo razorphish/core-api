@@ -1,13 +1,12 @@
-'use strict';
 /**
  * Wishlist Api
  */
 
-const repo = require('../../../app/database/repositories/wishlist/wishlist.repository');
 const passport = require('passport');
+const webPush = require('web-push');
+const repo = require('../../../app/database/repositories/wishlist/wishlist.repository');
 const utils = require('../../../lib/utils');
 const logger = require('../../../lib/winston.logger');
-const webPush = require('web-push');
 
 /**
  * WishlistApi Controller
@@ -15,7 +14,6 @@ const webPush = require('web-push');
  * @author Antonio Marasco
  */
 class WishlistController {
-
   /**
    * Constructor for Wishlist
    * @param {router} router Node router framework
@@ -39,14 +37,14 @@ class WishlistController {
     router.get(
       '/search/:name',
       passport.authenticate('user-bearer', { session: false }),
-      //utils.isInRole('admin'),
+      // utils.isInRole('admin'),
       this.byName.bind(this)
     );
 
     router.get(
       '/sync/:userId',
       passport.authenticate('user-bearer', { session: false }),
-      //utils.isInRole('admin'),
+      // utils.isInRole('admin'),
       this.byUserId.bind(this)
     );
 
@@ -60,7 +58,7 @@ class WishlistController {
     router.get(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
-      //utils.isInRole(['admin', 'user']),
+      // utils.isInRole(['admin', 'user']),
       this.get.bind(this)
     );
 
@@ -71,27 +69,21 @@ class WishlistController {
       this.getDetails.bind(this)
     );
 
-    router.post(
-      '/:id/notification',
-      this.insertNotification.bind(this)
-    );
+    router.post('/:id/notification', this.insertNotification.bind(this));
 
-    router.post(
-      '/:id/notification/push',
-      this.pushNotification.bind(this)
-    );
+    router.post('/:id/notification/push', this.pushNotification.bind(this));
 
     router.post(
       '/',
       passport.authenticate('user-bearer', { session: false }),
-      //utils.isInRole('admin'),
+      // utils.isInRole('admin'),
       this.insert.bind(this)
     );
 
     router.put(
       '/:id',
       passport.authenticate('user-bearer', { session: false }),
-      //utils.isInRole(['admin', 'user']),
+      // utils.isInRole(['admin', 'user']),
       this.update.bind(this)
     );
 
@@ -102,10 +94,9 @@ class WishlistController {
       this.delete.bind(this)
     );
 
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [wishlist].controller';
     this._routeName = '/api/wishlist';
-
   }
 
   /**
@@ -115,14 +106,14 @@ class WishlistController {
    * @example GET /api/wishlist
    * @returns {pointer} res.json
    */
-  all(request, response, next) {
+  all(request, response) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
     repo.all((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
         response.status(500).json(error);
-        //next(error);
+        // next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
         response.json(result);
@@ -137,14 +128,14 @@ class WishlistController {
    * @example GET /api/wishlist
    * @returns {pointer} res.json
    */
-  allDetails(request, response, next) {
+  allDetails(request, response) {
     logger.info(`${this._classInfo}.all() [${this._routeName}]`);
 
     repo.allDetails((error, result) => {
       if (error) {
         logger.error(`${this._classInfo}.all() [${this._routeName}]`, error);
         response.status(500).json(error);
-        //next(error);
+        // next(error);
       } else {
         logger.debug(`${this._classInfo}.all() [${this._routeName}] OK`);
         response.json(result);
@@ -163,15 +154,18 @@ class WishlistController {
   allPaged(request, response) {
     logger.info(`${this._classInfo}.allPaged() [${this._routeName}]`);
 
-    const topVal = request.params.top,
-      skipVal = request.params.skip,
-      top = isNaN(topVal) ? 10 : +topVal,
-      skip = isNaN(skipVal) ? 0 : +skipVal;
+    const topVal = request.params.top;
+    const skipVal = request.params.skip;
+    const top = Number.isNan(topVal) ? 10 : +topVal;
+    const skip = Number.isNan(skipVal) ? 0 : +skipVal;
 
     repo.allPaged(skip, top, (error, result) => {
-      //response.setHeader('X-InlineCount', result.count);
+      // response.setHeader('X-InlineCount', result.count);
       if (error) {
-        logger.error(`${this._classInfo}.allPaged() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.allPaged() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.allPaged() [${this._routeName}] OK`);
@@ -189,24 +183,26 @@ class WishlistController {
    * @memberof WishlistController
    */
   byName(request, response) {
-
-    const name = request.params.name;
+    const { name } = request.params;
     logger.info(`${this._classInfo}.byName(${name}) [${this._routeName}]`);
 
-    let query = {
+    const query = {
       name: { $regex: name, $options: 'i' },
       statusId: { $eq: 'active' },
       privacy: { $eq: 'public' }
-    }
+    };
 
-    let fieldSelect = {
+    const fieldSelect = {
       name: 1,
-      _id: 1,
-    }
+      _id: 1
+    };
 
     repo.search(query, fieldSelect, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.byName(${name}) [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.byName(${name}) [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.byName() [${this._routeName}] OK`);
@@ -224,19 +220,21 @@ class WishlistController {
    * @memberof WishlistController
    */
   byUserId(request, response) {
-
-    const userId = request.params.userId;
+    const { userId } = request.params;
     logger.info(`${this._classInfo}.byUserId(${userId}) [${this._routeName}]`);
 
-    let query = {
+    const query = {
       userId: { $regex: userId, $options: 'i' },
       statusId: { $eq: 'active' },
       privacy: { $eq: 'public' }
-    }
+    };
 
     repo.byUserId(query, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.byUserId(${userId}) [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.byUserId(${userId}) [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.byUserId() [${this._routeName}] OK`);
@@ -253,7 +251,7 @@ class WishlistController {
    * @returns {status: true|false} via res pointer
    */
   delete(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.delete(${id}) [${this._routeName}]`);
 
     repo.delete(id, (error, result) => {
@@ -274,7 +272,7 @@ class WishlistController {
    * @example GET /api/wishlist/:id
    */
   get(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.get(${id}) [${this._routeName}]`);
 
     repo.get(id, (error, result) => {
@@ -295,12 +293,15 @@ class WishlistController {
    * @example getDetails('123456789', (error, data) => {})
    */
   getDetails(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.getDetails(${id}) [${this._routeName}]`);
 
     repo.getDetails(id, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.getDetails() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.getDetails() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.getDetails() [${this._routeName}] OK`);
@@ -330,20 +331,25 @@ class WishlistController {
   }
 
   /**
- * Inserts/Subscribes a notification for a wishlist
- * @param {Request} request Request object
- * @param {Response} response Response
- * @example POST /api/wishlist
- */
+   * Inserts/Subscribes a notification for a wishlist
+   * @param {Request} request Request object
+   * @param {Response} response Response
+   * @example POST /api/wishlist
+   */
   insertNotification(request, response) {
     logger.info(`${this._classInfo}.insertNotification() [${this._routeName}]`);
 
     repo.insertNotification(request.body, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.insertNotification() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.insertNotification() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.insertNotification() [${this._routeName}] OK`);
+        logger.debug(
+          `${this._classInfo}.insertNotification() [${this._routeName}] OK`
+        );
         response.json(result);
       }
     });
@@ -356,27 +362,33 @@ class WishlistController {
    * @example POST /api/wishlist
    */
   pushNotification(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.pushNotification() [${this._routeName}]`);
 
     repo.getDetails(id, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
+        logger.error(
+          `${this._classInfo}.pushNotification() [${this._routeName}]`,
+          error
+        );
         response.status(500).json(error);
       } else {
-        logger.debug(`${this._classInfo}.pushNotification() [${this._routeName}] OK`);
+        logger.debug(
+          `${this._classInfo}.pushNotification() [${this._routeName}] OK`
+        );
 
         const payload = JSON.stringify({
           title: result.name
         });
 
-        result.notifications.forEach(subscription => {
-
-          webPush.sendNotification(subscription, payload)
-            .catch((error) => {
-              logger.error(`${this._classInfo}.pushNotification() [${this._routeName}]`, error);
-              response.status(500).json(error);
-            });
+        result.notifications.forEach((subscription) => {
+          webPush.sendNotification(subscription, payload).catch((err) => {
+            logger.error(
+              `${this._classInfo}.pushNotification() [${this._routeName}]`,
+              err
+            );
+            response.status(500).json(err);
+          });
         });
 
         response.status(201).json({});
@@ -391,12 +403,16 @@ class WishlistController {
    * @example PUT /api/wishlist/:id
    */
   update(request, response) {
-    const id = request.params.id;
+    const { id } = request.params;
     logger.info(`${this._classInfo}.update(${id}) [${this._routeName}]`);
 
     repo.update(id, request.body, (error, result) => {
       if (error) {
-        logger.error(`${this._classInfo}.update() [${this._routeName}]`, error, request.body);
+        logger.error(
+          `${this._classInfo}.update() [${this._routeName}]`,
+          error,
+          request.body
+        );
         response.status(500).json(error);
       } else {
         logger.debug(`${this._classInfo}.update() [${this._routeName}] OK`);

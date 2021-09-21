@@ -1,8 +1,9 @@
 // [Job] Repository
+// eslint-disable-next-line import/no-extraneous-dependencies
+const moment = require('moment');
 const model = require('../../models/job/job.model');
 const logger = require('../../../../lib/winston.logger');
 const utils = require('../../../../lib/utils');
-const moment = require('moment');
 
 /**
  * This callback type is called `requestCallback` a
@@ -23,7 +24,7 @@ class JobRepository {
    * Constructor for client
    */
   constructor() {
-    //Logging Info
+    // Logging Info
     this._classInfo = '*** [Job].repository';
   }
 
@@ -39,7 +40,7 @@ class JobRepository {
       .find(
         {},
         {
-          accountId: 0,
+          accountId: 0
         }
       )
       .then((data) => {
@@ -63,12 +64,12 @@ class JobRepository {
       .find(
         {},
         {
-          accountId: 0,
+          accountId: 0
         }
       )
       .populate({
         path: 'userId',
-        select: '_id firstName lastName email username',
+        select: '_id firstName lastName email username'
       })
       .then((data) => {
         callback(null, data);
@@ -91,12 +92,12 @@ class JobRepository {
 
     model
       .find({}, null, {
-        skip: skip,
+        skip,
         //   select: {
         //     password: 0
         //   },
-        top: top,
-        sort: { lastName: 1 },
+        top,
+        sort: { lastName: 1 }
       })
       .then((data) => {
         callback(null, data);
@@ -122,34 +123,34 @@ class JobRepository {
       query = {};
     }
 
-    let kickoff = moment.utc();
+    const kickoff = moment.utc();
 
-    let conditions = Object.assign({
-      name: name,
+    const conditions = {
+      name,
       activityStatusId: 'ready',
       status: 'active',
-      'execution.kickoff': { $gte: kickoff }
-    }, query || {});
+      'execution.kickoff': { $gte: kickoff },
+      ...query || {}
+    };
 
-    model.find(
-      conditions
-    )
+    model
+      .find(conditions)
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.byName::find`, error);
         callback(error);
       });
   }
 
   /**
- * Gets a {job} by name
- * @param {string} name Name to get {job} by
- * @param {Object} query query parameters for additional filtering
- * @param {requestCallback} callback Handles the response
- * @example byApplicationId('application_id', (error, data) => {})
- */
+   * Gets a {job} by name
+   * @param {string} name Name to get {job} by
+   * @param {Object} query query parameters for additional filtering
+   * @param {requestCallback} callback Handles the response
+   * @example byApplicationId('application_id', (error, data) => {})
+   */
   byUserId(name, query, callback) {
     logger.debug(`${this._classInfo}.byName(${name})`);
 
@@ -158,22 +159,22 @@ class JobRepository {
       query = {};
     }
 
-    let kickoff = moment.utc();
+    const kickoff = moment.utc();
 
-    let conditions = Object.assign({
-      name: name,
+    const conditions = {
+      name,
       activityStatusId: 'ready',
       status: 'active',
-      'execution.kickoff': { $gte: kickoff }
-    }, query || {});
+      'execution.kickoff': { $gte: kickoff },
+      ...query || {}
+    };
 
-    model.find(
-      conditions
-    )
+    model
+      .find(conditions)
       .then((data) => {
         callback(null, data);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.error(`${this._classInfo}.byName::find`, error);
         callback(error);
       });
@@ -233,8 +234,8 @@ class JobRepository {
     model
       .findById(id, null, {
         select: {
-          accountId: 1,
-        },
+          accountId: 1
+        }
       })
       .then((data) => {
         callback(null, data);
@@ -258,7 +259,7 @@ class JobRepository {
       .findById(id, null, {})
       .populate({
         path: 'userId',
-        select: '_id firstName lastName email username',
+        select: '_id firstName lastName email username'
       })
       .then((data) => {
         callback(null, data);
@@ -302,7 +303,7 @@ class JobRepository {
     model
       .findOneAndUpdate({ _id: id }, job, { new: true })
       .then((data) => {
-        //returns entity data
+        // returns entity data
         callback(null, data);
       })
       .catch((error) => {
@@ -326,7 +327,7 @@ class JobRepository {
     model
       .updateMany(filter, update)
       .then((data) => {
-        //returns entity data
+        // returns entity data
         callback(null, data);
       })
       .catch((error) => {

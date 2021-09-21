@@ -12,7 +12,7 @@ class UserFeeder {
   seed() {
     logger.info(`${this._classInfo}.seed()`);
 
-    var users = [
+    const users = [
       {
         _id: '597e782cfc13ae628f00000d',
         applicationId: '5c4b1303fc13ae60b4000003',
@@ -53,13 +53,14 @@ class UserFeeder {
       }
     ];
 
-    var l = users.length,
-      i;
+    const l = users.length;
+    let i;
 
     User.deleteMany({});
 
+    // eslint-disable-next-line no-plusplus
     for (i = 0; i < l; i++) {
-      var user = new User({
+      const user = new User({
         _id: users[i]._id,
         firstName: users[i].firstName,
         lastName: users[i].lastName,
@@ -81,15 +82,15 @@ class UserFeeder {
         applicationId: users[i].applicationId
       });
 
-      user.save((err, user) => {
-        //logger.verbose(`${this._classInfo}.seed()`, user);
+      user.save((err, userSaved) => {
+        // logger.verbose(`${this._classInfo}.seed()`, userSaved);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
           logger.debug(
             `${this._classInfo}.seed() OK`,
-            `${user.email} ${user.username}`
+            `${userSaved.email} ${userSaved.username}`
           );
         }
       });

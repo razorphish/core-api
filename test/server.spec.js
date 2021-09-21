@@ -33,7 +33,6 @@ let should = chai.should();
 
 //     describe('/::Main page', () => {
 
-
 //         it('should return 200', function (done) {
 //             http.get(url, function (res) {
 //                 expect(res.statusCode).to.equal(200);
@@ -69,7 +68,6 @@ let should = chai.should();
 //     //             });
 //     //     });
 //     // })
-
 
 //     after(() => {
 //         server.close();

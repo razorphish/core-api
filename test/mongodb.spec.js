@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 // NPM install mongoose and chai. Make sure mocha is globally
 // installed
 process.env.NODE_ENV = 'test';
@@ -17,7 +17,9 @@ describe('Database Tests', function () {
   //Before starting the test, create a sandboxed database connection
   //Once a connection is established invoke done()
   before(function (done) {
-    mongoose.connect('mongodb://127.0.0.1/mydb_test', { useNewUrlParser: true });
+    mongoose.connect('mongodb://127.0.0.1/mydb_test', {
+      useNewUrlParser: true
+    });
     const db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error'));
     db.once('open', function () {
@@ -39,16 +41,22 @@ describe('Database Tests', function () {
       var wrongSave = Name({
         notName: 'Not Mike'
       });
-      wrongSave.save(err => {
-        if (err) { return done(); }
+      wrongSave.save((err) => {
+        if (err) {
+          return done();
+        }
         throw new Error('Should generate error!');
       });
     });
     it('Should retrieve data from test database', function (done) {
       //Look up the 'Mike' object previously saved.
       Name.find({ name: 'Mike' }, (err, name) => {
-        if (err) { throw err; }
-        if (name.length === 0) { throw new Error('No data!'); }
+        if (err) {
+          throw err;
+        }
+        if (name.length === 0) {
+          throw new Error('No data!');
+        }
         done();
       });
     });
