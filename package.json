@@ -41,7 +41,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "sinon": "^7.2.0",
-    "sinon-mongoose": "^2.2.1"
+    "sinon-mongoose": "^2.3.0"
   },
   "dependencies": {
     "apn": "^2.2.0",
