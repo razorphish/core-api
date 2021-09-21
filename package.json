@@ -60,7 +60,7 @@
     "handlebars-helpers": "^0.7.5",
     "handlebars-layouts": "^3.1.4",
     "jsonwebtoken": "^8.4.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.21",
     "mailchimp-api-3": "0.0.9",
     "mailchimp-api-v3": "^1.12.1",
     "mandrill-api": "^1.0.45",
