@@ -46,7 +46,7 @@
 		"chai-http": "^4.3.0",
 		"chai-spies": "^1.0.0",
 		"concurrently": "^4.0.1",
-		"coveralls": "^3.0.2",
+		"coveralls": "^3.1.1",
 		"cz-conventional-changelog": "^3.3.0",
 		"eslint": "^7.32.0",
 		"eslint-config-airbnb-base": "^14.2.1",
