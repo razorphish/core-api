@@ -75,7 +75,7 @@
 		"express": "^4.16.4",
 		"express-handlebars": "^5.3.3",
 		"handlebars": "^4.7.7",
-		"handlebars-helpers": "^0.7.5",
+		"handlebars-helpers": "^0.10.0",
 		"handlebars-layouts": "^3.1.4",
 		"jsonwebtoken": "^8.4.0",
 		"lodash": "^4.17.21",
