@@ -83,7 +83,7 @@
 		"mailchimp-api-v3": "^1.12.1",
 		"mandrill-api": "^1.0.45",
 		"mongoose": "^5.7.5",
-		"mongoose-type-email": "^1.0.10",
+		"mongoose-type-email": "^1.1.2",
 		"morgan": "^1.10.0",
 		"oauth2orize": "^1.8.0",
 		"oauth2orize-jwt-bearer": "^0.2.0",
