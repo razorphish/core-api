@@ -130,7 +130,7 @@ class JobRepository {
       activityStatusId: 'ready',
       status: 'active',
       'execution.kickoff': { $gte: kickoff },
-      ...query || {}
+      ...(query || {})
     };
 
     model
@@ -166,7 +166,7 @@ class JobRepository {
       activityStatusId: 'ready',
       status: 'active',
       'execution.kickoff': { $gte: kickoff },
-      ...query || {}
+      ...(query || {})
     };
 
     model

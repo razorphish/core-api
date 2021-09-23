@@ -12,38 +12,32 @@ class WishlistCategoryFeeder {
   seed() {
     logger.info(`${this._classInfo}.seed()`);
 
-    const wishlistCategories = [
+    const items = [
       {
         userId: '597e782cfc13ae628f00000d',
         name: 'Miscellaneous'
       }
     ];
 
-    const l = wishlistCategories.length;
-    let i;
-
     WishlistCategory.deleteMany({});
 
     // eslint-disable-next-line no-plusplus
-    for (i = 0; i < l; i++) {
-      const wishlistCategory = new WishlistCategory({
-        name: wishlistCategories[i].name,
-        userId: wishlistCategories[i].userId
+    items.forEach((item) => {
+      const model = new WishlistCategory({
+        name: item.name,
+        userId: item.userId
       });
 
-      wishlistCategory.save((err) => {
+      model.save((err) => {
         // logger.verbose(`${this._classInfo}.seed()`, user);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(
-            `${this._classInfo}.seed() OK`,
-            `${wishlistCategory.name}`
-          );
+          logger.debug(`${this._classInfo}.seed() OK ${model.name}`);
         }
       });
-    }
+    });
   }
 }
 

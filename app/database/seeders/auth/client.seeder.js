@@ -125,40 +125,37 @@ class ClientSeeder {
       }
     ];
 
-    const l = items.length;
-    let i;
-
     Client.deleteMany({});
 
     // eslint-disable-next-line no-plusplus
-    for (i = 0; i < l; i++) {
-      // var tokenHash = crypto.createHash('sha1').update(items[i].clientSecret).digest('hex');
+    items.forEach((item) => {
+      // var tokenHash = crypto.createHash('sha1').update(item.clientSecret).digest('hex');
       // console.log(`about to insert
-      // client: ${items[i].clientId} with secret: ${items[i].clientSecret}`);
+      // client: ${item.clientId} with secret: ${item.clientSecret}`);
 
-      const item = new Client({
-        applicationId: items[i].applicationId,
-        name: items[i].name,
-        clientId: items[i].clientId,
-        clientSecret: items[i].clientSecret,
-        isTrusted: items[i].isTrusted,
-        applicationType: items[i].applicationType,
-        allowedOrigins: items[i].allowedOrigins,
-        tokenLifeTime: items[i].tokenLifeTime,
-        refreshTokenLifeTime: items[i].refreshTokenLifeTime,
-        hash: items[i].hash
+      const model = new Client({
+        applicationId: item.applicationId,
+        name: item.name,
+        clientId: item.clientId,
+        clientSecret: item.clientSecret,
+        isTrusted: item.isTrusted,
+        applicationType: item.applicationType,
+        allowedOrigins: item.allowedOrigins,
+        tokenLifeTime: item.tokenLifeTime,
+        refreshTokenLifeTime: item.refreshTokenLifeTime,
+        hash: item.hash
       });
 
-      item.save((err, itemSaved) => {
+      model.save((err, _) => {
         // logger.verbose(`${this._classInfo}.seed()`, item);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(`${this._classInfo}.seed() OK`, itemSaved.name);
+          logger.debug(`${this._classInfo}.seed() OK ${_.name}`);
         }
       });
-    }
+    });
   }
 }
 

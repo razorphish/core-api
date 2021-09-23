@@ -80,30 +80,27 @@ class ApplicationFeeder {
       }
     ];
 
-    const l = items.length;
-    let i;
-
     Model.deleteMany({});
 
     // eslint-disable-next-line no-plusplus
-    for (i = 0; i < l; i++) {
-      const item = new Model({
-        _id: items[i]._id,
-        name: items[i].name,
-        statusId: items[i].statusId,
-        url: items[i].url
+    items.forEach((item) => {
+      const model = new Model({
+        _id: item._id,
+        name: item.name,
+        statusId: item.statusId,
+        url: item.url
       });
 
-      item.save((err, user) => {
+      model.save((err, _) => {
         // logger.verbose(`${this._classInfo}.seed()`, user);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(`${this._classInfo}.seed() OK`, `${user.name}`);
+          logger.debug(`${this._classInfo}.seed() OK ${_.name}`);
         }
       });
-    }
+    });
   }
 }
 

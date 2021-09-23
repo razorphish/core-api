@@ -10,7 +10,10 @@ module.exports = {
     return module.exports.sign(accessToken);
   },
   decode: (token) => {
-    const accessTokenHash = crypto.createHash('sha1').update(token).digest('hex');
+    const accessTokenHash = crypto
+      .createHash('sha1')
+      .update(token)
+      .digest('hex');
 
     return accessTokenHash;
   },
@@ -53,5 +56,4 @@ module.exports = {
         */
     // No option to check just that it exists
     !!token
-
 };

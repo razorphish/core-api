@@ -1,4 +1,4 @@
-const WishlistAppSettings = require('../../models/wishlist/wishlist-app-settings.model');
+const WishlistAppSettingsModel = require('../../models/wishlist/wishlist-app-settings.model');
 const logger = require('../../../../lib/winston.logger');
 
 class WishlistAppSettingsFeeder {
@@ -12,7 +12,7 @@ class WishlistAppSettingsFeeder {
   seed() {
     logger.info(`${this._classInfo}.seed()`);
 
-    const wishlistAppSettings = [
+    const items = [
       {
         _id: '5c62fe02fc13ae04c4000064',
         emailNotifications: [
@@ -103,32 +103,26 @@ class WishlistAppSettingsFeeder {
       }
     ];
 
-    const l = wishlistAppSettings.length;
-    let i;
-
-    WishlistAppSettings.deleteMany({});
+    WishlistAppSettingsModel.deleteMany({});
 
     // eslint-disable-next-line no-plusplus
-    for (i = 0; i < l; i++) {
-      const wishlistAppSetting = new WishlistAppSettings({
-        _id: wishlistAppSettings[i]._id,
-        notifications: wishlistAppSettings[i].notifications,
-        emailNotifications: wishlistAppSettings[i].emailNotifications
+    items.forEach((item) => {
+      const model = new WishlistAppSettingsModel({
+        _id: item._id,
+        notifications: item.notifications,
+        emailNotifications: item.emailNotifications
       });
 
-      wishlistAppSetting.save((err) => {
+      model.save((err) => {
         // logger.verbose(`${this._classInfo}.seed()`, user);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(
-            `${this._classInfo}.seed() OK`,
-            `${wishlistAppSetting._id}`
-          );
+          logger.debug(`${this._classInfo}.seed() OK ${model._id}`);
         }
       });
-    }
+    });
   }
 }
 

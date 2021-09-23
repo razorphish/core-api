@@ -13,7 +13,7 @@ class RoleSeeder {
   seed() {
     logger.info(`${this._classInfo}.seed()`);
 
-    const roles = [
+    const items = [
       {
         _id: '5c48caeffc13ae064600000a',
         name: 'SuperAdmin',
@@ -41,27 +41,24 @@ class RoleSeeder {
       }
     ];
 
-    const l = roles.length;
-    let i;
-
     Role.deleteMany({});
 
     // eslint-disable-next-line no-plusplus
-    for (i = 0; i < l; i++) {
-      const role = new Role({
-        _id: roles[i]._id,
-        name: roles[i].name,
-        normalizedName: roles[i].name
+    items.forEach((item) => {
+      const model = new Role({
+        _id: item._id,
+        name: item.name,
+        normalizedName: item.name
       });
 
-      role.save((err, roleSaved) => {
+      model.save((err, roleSaved) => {
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(`${this._classInfo}.seed() OK`, `Role: ${roleSaved.name}`);
+          logger.debug(`${this._classInfo}.seed() OK Role: ${roleSaved.name}`);
         }
       });
-    }
+    });
   }
 }
 

@@ -234,8 +234,9 @@ class WishlistItemController {
                 response.status(500).send(error);
               } else {
                 // wishlist-item-removed
-                const payload =
-                  data.emailNotifications.find((element) => element.name === WISHLIST_ITEM_REMOVED);
+                const payload = data.emailNotifications.find(
+                  (element) => element.name === WISHLIST_ITEM_REMOVED
+                );
 
                 // eslint-disable-next-line no-plusplus
                 for (let i = 0, len = wishlist.follows.length; i < len; i++) {
@@ -298,14 +299,15 @@ class WishlistItemController {
           // Send device Notifications
           if (wishlist.preferences.notifyOnRemoveItem) {
             // wishlist-item-added
-            const payload =
-              wishlistApp.notifications.find((element) => element.name === WISHLIST_ITEM_REMOVED);
+            const payload = wishlistApp.notifications.find(
+              (element) => element.name === WISHLIST_ITEM_REMOVED
+            );
 
             for (var i = 0, len = wishlist.follows.length; i < len; i++) {
               if (wishlist.follows[i].notifiedOnRemoveItem) {
                 for (
                   var i = 0,
-                  len = wishlist.follows[i].userId.notifications.length;
+                    len = wishlist.follows[i].userId.notifications.length;
                   i < len;
                   i++
                 ) {
@@ -479,8 +481,9 @@ class WishlistItemController {
                 response.status(500).send(error);
               } else {
                 // wishlist-item-added
-                const payload =
-                  data.emailNotifications.find((element) => element.name === WISHLIST_ITEM_ADDED);
+                const payload = data.emailNotifications.find(
+                  (element) => element.name === WISHLIST_ITEM_ADDED
+                );
 
                 for (let i = 0, len = wishlist.follows.length; i < len; i++) {
                   if (wishlist.follows[i].notifiedOnAddItem) {
@@ -547,8 +550,9 @@ class WishlistItemController {
           // Send device Notifications
           if (wishlist.preferences.notifyOnAddItem) {
             // wishlist-item-added
-            const payload =
-              wishlistApp.notifications.find((element) => element.name === WISHLIST_ITEM_ADDED);
+            const payload = wishlistApp.notifications.find(
+              (element) => element.name === WISHLIST_ITEM_ADDED
+            );
 
             if (wishlist.follows) {
               for (var i = 0, len = wishlist.follows.length; i < len; i++) {
@@ -556,7 +560,7 @@ class WishlistItemController {
                   if (wishlist.follows[i].userId.notifications) {
                     for (
                       var i = 0,
-                      len = wishlist.follows[i].userId.notifications.length;
+                        len = wishlist.follows[i].userId.notifications.length;
                       i < len;
                       i++
                     ) {
@@ -752,7 +756,8 @@ class WishlistItemController {
         },
         (updatedWishlistItems, done) => {
           updatedWishlistItems.sort((a, b) =>
-            (a.sortOrder > b.sortOrder ? 1 : b.sortOrder > a.sortOrder ? -1 : 0));
+            a.sortOrder > b.sortOrder ? 1 : b.sortOrder > a.sortOrder ? -1 : 0
+          );
           done(null, updatedWishlistItems);
         }
       ],

@@ -1,15 +1,33 @@
+/* eslint-disable consistent-return */
 const mongoose = require('mongoose');
 const async = require('async');
 
 const { ObjectId } = mongoose.Types;
-const dbConfig = require('../../lib/config.loader').databaseConfig;
-
-const connectionString = `mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.database}${dbConfig.queryOptions}`;
+const config = require('../../lib/config.loader');
 const logger = require('../../lib/winston.logger');
 
 let connection = null;
 
 class Database {
+  constructor() {
+    this.connectionString = '';
+    this.serverless = config.app.hasServerless;
+
+    if (this.serverless) {
+      this.username = config.serverlessDatabaseConfig.username;
+      this.password = config.serverlessDatabaseConfig.password;
+      const _connectionString = config.serverlessDatabaseConfig.connectionString
+        .replace('<username>', this.username)
+        .replace('<password>', this.password)
+        .replace('<database>', config.serverlessDatabaseConfig.database);
+      this.connectionString = _connectionString;
+    } else {
+      this.username = config.databaseConfig.username;
+      this.password = config.databaseConfig.password;
+      this.connectionString = `mongodb://${config.databaseConfig.host}:${config.databaseConfig.port}/${config.databaseConfig.database}${config.databaseConfig.queryOptions}`;
+    }
+  }
+
   /**
    * Close the database
    */
@@ -64,14 +82,14 @@ class Database {
 
     async.each(
       names,
-      (name, done) => {
+      (name, done2) => {
         connection.createCollection(name, (err, collection) => {
           if (err) {
-            return done(err);
+            return done2(err);
           }
 
           // Add fields here that have an ObjectId data type (not _ids)
-          data.collections[name].forEach((item, index) => {
+          data.collections[name].forEach((item) => {
             if (item.userId) {
               item.userId = new ObjectId(item.userId);
             }
@@ -90,24 +108,27 @@ class Database {
 
   open(done) {
     const options = {
-      user: dbConfig.username,
-      pass: dbConfig.password,
-      useNewUrlParser: true
+      useNewUrlParser: true,
+      user: this.username,
+      pass: this.password
     };
 
-    mongoose.connect(connectionString, options, (err) => {
+    mongoose.connect(this.connectionString, options, (err) => {
       if (err) {
         logger.error('mongoose.connect() failed: ', err);
       }
     });
 
-    mongoose.set('useCreateIndex', true);
+    // mongoose.set('useCreateIndex', true);
 
     connection = mongoose.connection;
     mongoose.Promise = global.Promise;
 
     mongoose.connection.on('error', (err) => {
-      logger.error(`Error connecting to MongoDB: ${connectionString}`, err);
+      logger.error(
+        `Error connecting to MongoDB: ${this.connectionString}`,
+        err
+      );
       done(err, false);
     });
 

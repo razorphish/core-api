@@ -147,15 +147,10 @@ describe('Client Repository Tests', () => {
       'cGKGecaevaz5bKulZWKx6m0sFKbNs2eT6FDiOfTuF25IHgKymnnoaCF';
     const origin = 'http://localhost:4200';
 
-    ClientRepository.verify(
-      clientId,
-      clientSecret,
-      origin,
-      (err, client) => {
-        client.name.should.eq('@marasco/core-web-ui');
-        done();
-      }
-    );
+    ClientRepository.verify(clientId, clientSecret, origin, (err, client) => {
+      client.name.should.eq('@marasco/core-web-ui');
+      done();
+    });
   });
 
   it('verify : invalid credentials::Secret incorrect', (done) => {

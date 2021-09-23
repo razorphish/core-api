@@ -81,14 +81,9 @@ describe('User Repository Tests', () => {
   });
 
   it('authenticate : valid credentials', (done) => {
-    User.authenticate(
-      'david@maras.co',
-      'Letme1n!',
-      null,
-      () => {
-        done();
-      }
-    );
+    User.authenticate('david@maras.co', 'Letme1n!', null, () => {
+      done();
+    });
   });
 
   it('authenticate : invalid credentials', (done) => {

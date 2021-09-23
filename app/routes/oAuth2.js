@@ -140,7 +140,7 @@ server.exchange(
             // Let's do nothing as user will just NOT
             // have a refresh token for the time being
             // });
-            tokenRepo.insert(refreshToken, (error, result) => { });
+            tokenRepo.insert(refreshToken, (error, result) => {});
 
             // user.refreshToken = refreshToken.value_;
 
@@ -253,12 +253,7 @@ server.exchange(
  * `err` set in idomatic Node.js fashion.
  * */
 server.exchange(
-  oauth2orize.exchange.refreshToken((
-    client,
-    refreshToken,
-    scope,
-    done
-  ) => {
+  oauth2orize.exchange.refreshToken((client, refreshToken, scope, done) => {
     logger.info('*** token [Exchange:Refresh Token]');
 
     if (!refreshToken) {

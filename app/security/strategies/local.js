@@ -93,7 +93,7 @@ passport.use(
 );
 
 passport.use(
-  new JwtStrategy(JWTopts, ((jwtPayload, done) => {
+  new JwtStrategy(JWTopts, (jwtPayload, done) => {
     tokenRepo.byToken({ id: jwtPayload.sub }, (err, user) => {
       if (err) {
         return done(err, false);
@@ -104,7 +104,7 @@ passport.use(
       return done(null, false);
       // or you could create a new account
     });
-  }))
+  })
 );
 
 passport.use(
@@ -115,9 +115,9 @@ passport.use(
       callbackURL: 'http://localhost:3002/auth/facebook/callback'
     },
     // eslint-disable-next-line no-unused-vars
-    ((accessToken, refreshToken, profile, cb) => {
+    (accessToken, refreshToken, profile, cb) => {
       // User.findOrCreate({ facebookId: profile.id }, (err, user) => cb(err, user));
-    })
+    }
   )
 );
 /**

@@ -228,10 +228,7 @@ class TokenRepository {
         callback(null, docs);
       })
       .catch((error) => {
-        logger.error(
-          `${this._classInfo}.detailsByToken()::findOne`,
-          error
-        );
+        logger.error(`${this._classInfo}.detailsByToken()::findOne`, error);
         return callback(error);
       });
   }

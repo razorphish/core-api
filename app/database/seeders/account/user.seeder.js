@@ -12,7 +12,7 @@ class UserFeeder {
   seed() {
     logger.info(`${this._classInfo}.seed()`);
 
-    const users = [
+    const items = [
       {
         _id: '597e782cfc13ae628f00000d',
         applicationId: '5c4b1303fc13ae60b4000003',
@@ -53,48 +53,42 @@ class UserFeeder {
       }
     ];
 
-    const l = users.length;
-    let i;
-
     User.deleteMany({});
 
     // eslint-disable-next-line no-plusplus
-    for (i = 0; i < l; i++) {
-      const user = new User({
-        _id: users[i]._id,
-        firstName: users[i].firstName,
-        lastName: users[i].lastName,
-        email: users[i].email,
-        email_lower: users[i].email.toLocaleLowerCase,
-        homePhone: users[i].homePhone,
-        username: users[i].username,
-        username_lower: users[i].username.toLocaleLowerCase,
-        password: users[i].password,
-        salt: users[i].salt,
-        avatar: users[i].avatar,
-        addresses: users[i].addresses,
-        roles: users[i].roles,
-        twitter: users[i].twitter,
-        facebook: users[i].facebook,
-        instagram: users[i].instagram,
-        account: users[i].account,
+    items.forEach((user) => {
+      const model = new User({
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        email_lower: user.email.toLocaleLowerCase,
+        homePhone: user.homePhone,
+        username: user.username,
+        username_lower: user.username.toLocaleLowerCase,
+        password: user.password,
+        salt: user.salt,
+        avatar: user.avatar,
+        addresses: user.addresses,
+        roles: user.roles,
+        twitter: user.twitter,
+        facebook: user.facebook,
+        instagram: user.instagram,
+        account: user.account,
         status: 'active',
-        applicationId: users[i].applicationId
+        applicationId: user.applicationId
       });
 
-      user.save((err, userSaved) => {
+      model.save((err, _) => {
         // logger.verbose(`${this._classInfo}.seed()`, userSaved);
 
         if (err) {
           logger.error(`${this._classInfo}.seed()`, err);
         } else {
-          logger.debug(
-            `${this._classInfo}.seed() OK`,
-            `${userSaved.email} ${userSaved.username}`
-          );
+          logger.debug(`${this._classInfo}.seed() OK ${_.email}`);
         }
       });
-    }
+    });
   }
 }
 

@@ -52,7 +52,8 @@ class SubscriptionPlanRepository {
   allDetails(callback) {
     logger.debug(`${this._classInfo}.allDetails()`);
 
-    model.find({})
+    model
+      .find({})
       .populate({
         path: 'applicationId',
         select: '_id name'

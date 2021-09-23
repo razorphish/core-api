@@ -75,13 +75,13 @@ class AuthController {
           const { applicationId } = request.body;
           const query = request.body.email
             ? {
-              email: request.body.email,
-              applicationId
-            }
+                email: request.body.email,
+                applicationId
+              }
             : {
-              username: request.body.username,
-              applicationId
-            };
+                username: request.body.username,
+                applicationId
+              };
 
           userRepo.searchDetails(query, (error, user) => {
             if (error) {
@@ -251,11 +251,9 @@ class AuthController {
               logger.debug(
                 `${this._classInfo}.registerWithEmailPassword() [${this._routeName}]::get() :: MISSING APPLICATION`
               );
-              response
-                .status(404)
-                .send({
-                  error: { message: 'Application is missing or invalid' }
-                });
+              response.status(404).send({
+                error: { message: 'Application is missing or invalid' }
+              });
             } else {
               logger.debug(
                 `${this._classInfo}.registerWithEmailPassword() [${this._routeName}] OK`
@@ -320,11 +318,9 @@ class AuthController {
               logger.debug(
                 `${this._classInfo}.registerWithEmail() [${this._routeName}]::get() :: MISSING APPLICATION`
               );
-              response
-                .status(404)
-                .send({
-                  error: { message: 'Application is missing or invalid' }
-                });
+              response.status(404).send({
+                error: { message: 'Application is missing or invalid' }
+              });
             } else {
               logger.debug(
                 `${this._classInfo}.registerWithEmail() [${this._routeName}] OK`
@@ -438,11 +434,9 @@ class AuthController {
 
               user.save((err, result) => {
                 if (err) {
-                  response
-                    .status(404)
-                    .send({
-                      error: { message: 'Reset Password: Save user failed' }
-                    });
+                  response.status(404).send({
+                    error: { message: 'Reset Password: Save user failed' }
+                  });
                   return done(error);
                 }
 
@@ -543,11 +537,9 @@ class AuthController {
               logger.debug(
                 `${this._classInfo}.verifyResetPasswordToken(${token2}) [${this._routeName}]::get() :: MISSING TOKEN USER`
               );
-              response
-                .status(404)
-                .send({
-                  error: { message: 'Token User is missing or invalid' }
-                });
+              response.status(404).send({
+                error: { message: 'Token User is missing or invalid' }
+              });
             } else {
               done(null, user);
             }

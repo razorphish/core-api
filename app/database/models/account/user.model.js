@@ -47,7 +47,10 @@ const UserSchema = new Schema(
     lastName: { type: String, required: false, trim: true },
     email: { type: String, required: true, trim: true },
     email_lower: {
-      type: String, required: true, trim: true, lowercase: true
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true
     },
     homePhone: { type: String, required: false, trim: true },
     username: {
@@ -305,9 +308,11 @@ UserSchema.methods.incLoginAttempts = function f(callback) {
 };
 
 // expose enum on the model, and provide an internal convenience reference
-const reasons = (UserSchema.statics.failedLogin =
-{
-  NOT_FOUND: 0, PASSWORD_INCORRECT: 1, MAX_ATTEMPTS: 2, ACCOUNT_NOT_ACTIVE: 3
+const reasons = (UserSchema.statics.failedLogin = {
+  NOT_FOUND: 0,
+  PASSWORD_INCORRECT: 1,
+  MAX_ATTEMPTS: 2,
+  ACCOUNT_NOT_ACTIVE: 3
 });
 
 UserSchema.statics.getAuthenticated = function f(

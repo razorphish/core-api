@@ -11,10 +11,6 @@ const WishlistAppSettingsSeeder = require('./seeders/wishlist/wishlist-app-setti
 
 const logger = require('../../lib/winston.logger');
 
-(dbConfig = require('../../lib/config.loader').databaseConfig),
-  (connectionString = `mongodb://${dbConfig.host}/${dbConfig.database}`),
-  (connection = null);
-
 class DBSeeder {
   constructor() {
     // Logging Info
@@ -22,14 +18,23 @@ class DBSeeder {
   }
 
   init() {
+    logger.info('Initializing Seeder');
     mongoose.connection.db
       .listCollections({
-        name: 'clients'
+        name: 'system'
       })
       .next((err, collinfo) => {
+        if (err) {
+          logger.info(err);
+        }
+
         if (!collinfo) {
           logger.info(`${this._classInfo}.seed() -- Initialize Seeder`);
           this.seed();
+        } else {
+          logger.info(
+            `${this._classInfo}.seed() -- Initialization TERMINATED...`
+          );
         }
       });
   }
@@ -62,6 +67,9 @@ class DBSeeder {
       `${this._classInfo}.seed() -- Wishlist Application Settings Seeder`
     );
     WishlistAppSettingsSeeder.seed();
+
+    logger.info(`${this._classInfo}.seed() -- System Collection Created`);
+    mongoose.connection.db.createCollection('system');
   }
 }
 

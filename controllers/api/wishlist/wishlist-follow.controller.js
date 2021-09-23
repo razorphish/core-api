@@ -256,7 +256,9 @@ class WishlistFollowController {
           }
 
           // Determine if device is already recorded
-          const device = user.devices.filter((result) => result.uuid === inputDevice.uuid);
+          const device = user.devices.filter(
+            (result) => result.uuid === inputDevice.uuid
+          );
 
           if (!!device && device.length === 0) {
             // eslint-disable-next-line no-unused-vars
@@ -283,8 +285,9 @@ class WishlistFollowController {
           if (!inputNotification.endpoint) {
             return done(null, wishlistFollow);
           }
-          const notification =
-            user.notifications.filter((notify) => notify.uuid === inputNotification.uuid);
+          const notification = user.notifications.filter(
+            (notify) => notify.uuid === inputNotification.uuid
+          );
 
           if (!!notification && notification.length === 0) {
             userRepo.addNotification(

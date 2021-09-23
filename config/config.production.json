@@ -1,6 +1,7 @@
 {
   "app": {
-    "wishlistPremiere": "5c62fe02fc13ae04c4000064"
+    "wishlistPremiere": "5c62fe02fc13ae04c4000064",
+    "hasServerless": true
   },
   "databaseConfig": {
     "host": "127.0.0.1",
@@ -9,6 +10,12 @@
     "queryOptions": "?authSource=admin",
     "username": "razorphish",
     "password": "RaC0nt@Ur1+2"
+  },
+  "serverlessDatabaseConfig": {
+    "database": "marasco",
+    "username": "razorphish",
+    "password": "RaC0nt@Ur1+2",
+    "connectionString": "mongodb+srv://<username>:<password>@marasco-prod.e2aex.mongodb.net/<database>?retryWrites=true&w=majority"
   },
   "mailchimp": {
     "apiKey": "449fb782f3b40ae6c93c5d46f5da475b-us3",
