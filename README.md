@@ -123,6 +123,7 @@ $ source ~/.bash_profile
 $ vastool user checkaccess amarasco
 #Following command gets rid of _ds_store files on macs
 $ find . -name '.DS_Store' -type f -delete
+$ ssh -p 2222 marasco@162.241.216.221
 ```
 
 ### **EADDRINUSE** error
