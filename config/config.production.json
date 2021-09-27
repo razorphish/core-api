@@ -14,7 +14,7 @@
   "serverlessDatabaseConfig": {
     "database": "marasco",
     "username": "razorphish",
-    "password": "RaC0nt@Ur1+2",
+    "password": "vZakQbGvahQIBCOZ",
     "connectionString": "mongodb+srv://<username>:<password>@marasco-prod.e2aex.mongodb.net/<database>?retryWrites=true&w=majority"
   },
   "mailchimp": {
