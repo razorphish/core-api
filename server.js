@@ -26,7 +26,7 @@ const authRoutes = require('./app/routes/oAuth2');
 
 // eslint-disable-next-line no-unused-expressions
 const app = express();
-const port = 3002;
+const port = 3000;
 
 class Server {
   constructor() {
