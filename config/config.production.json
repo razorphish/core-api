@@ -45,7 +45,7 @@
   },
   "winstonConfig": {
     "file": {
-      "level": "error",
+      "level": "silly",
       "filename": "app.log",
       "handleExceptions": true,
       "json": true,
@@ -55,7 +55,7 @@
       "prettyPrint": true
     },
     "console": {
-      "level": "error",
+      "level": "silly",
       "handleExceptions": false,
       "json": false,
       "colorize": true,
