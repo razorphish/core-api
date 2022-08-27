@@ -104,7 +104,7 @@
     "passport-oauth2-jwt-bearer": "^0.2.0",
     "serve-favicon": "^2.5.0",
     "twitter-node-client": "github:razorphish/TwitterJSClient",
-    "web-push": "^3.4.5",
+    "web-push": "^3.5.0",
     "wepay": "0.0.9",
     "winston": "^3.3.3"
   },
