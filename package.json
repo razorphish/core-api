@@ -47,7 +47,7 @@
   "homepage": "https://github.com/razorphish/core-api#readme",
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
-    "@commitlint/config-conventional": "^13.2.0",
+    "@commitlint/config-conventional": "^17.1.0",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "chai-spies": "^1.0.0",
