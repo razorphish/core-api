@@ -239,8 +239,8 @@ class WishlistItemController {
                 );
 
                 // eslint-disable-next-line no-plusplus
-                for (let i = 0, len = wishlist.follows.length; i < len; i++) {
-                  if (wishlist.follows[i].notifiedOnRemoveItem) {
+                wishlist.follows.forEach((follow) => {
+                  if (follow.notifiedOnRemoveItem) {
                     const htmlContent = payload.html.replace(
                       /##ITEMNAME##/g,
                       itemDeleted.name
@@ -286,7 +286,7 @@ class WishlistItemController {
                       }
                     );
                   }
-                }
+                });
 
                 done(null, wishlist, itemDeleted, data);
               }
@@ -303,20 +303,20 @@ class WishlistItemController {
               (element) => element.name === WISHLIST_ITEM_REMOVED
             );
 
-            for (var i = 0, len = wishlist.follows.length; i < len; i++) {
-              if (wishlist.follows[i].notifiedOnRemoveItem) {
+            wishlist.follows.foreach((follow) => {
+              if (follow.notifiedOnRemoveItem) {
                 for (
-                  var i = 0,
-                    len = wishlist.follows[i].userId.notifications.length;
+                  let i = 0,
+                  len = follow.userId.notifications.length;
                   i < len;
                   i++
                 ) {
                   const pushSubscription = {
-                    endpoint: wishlist.follows[i].userId.notifications.endpoint,
+                    endpoint: follow.userId.notifications.endpoint,
                     keys: {
                       p256dh:
-                        wishlist.follows[i].userId.notifications.keys.p256dh,
-                      auth: wishlist.follows[i].userId.notifications.keys.auth
+                        follow.userId.notifications.keys.p256dh,
+                      auth: follow.userId.notifications.keys.auth
                     }
                   };
 
@@ -360,7 +360,7 @@ class WishlistItemController {
                     });
                 }
               }
-            }
+            });
 
             done(null, itemDeleted);
           } else {
@@ -485,8 +485,8 @@ class WishlistItemController {
                   (element) => element.name === WISHLIST_ITEM_ADDED
                 );
 
-                for (let i = 0, len = wishlist.follows.length; i < len; i++) {
-                  if (wishlist.follows[i].notifiedOnAddItem) {
+                wishlist.follows.forEach((follow) => {
+                  if (follow.notifiedOnAddItem) {
                     const htmlContent = payload.html.replace(
                       /##ITEMNAME##/g,
                       newItem.name
@@ -537,7 +537,7 @@ class WishlistItemController {
                       }
                     );
                   }
-                }
+                });
 
                 done(null, wishlist, newItem, data);
               }
@@ -555,25 +555,25 @@ class WishlistItemController {
             );
 
             if (wishlist.follows) {
-              for (var i = 0, len = wishlist.follows.length; i < len; i++) {
-                if (wishlist.follows[i].notifiedOnAddItem) {
-                  if (wishlist.follows[i].userId.notifications) {
+              wishlist.follows.forEach((follow) => {
+                if (follow.notifiedOnAddItem) {
+                  if (follow.userId.notifications) {
                     for (
-                      var i = 0,
-                        len = wishlist.follows[i].userId.notifications.length;
+                      let i = 0,
+                      len = follow.userId.notifications.length;
                       i < len;
                       i++
                     ) {
                       // Android/Web
-                      if (wishlist.follows[i].userId.notifications.endpoint) {
+                      if (follow.userId.notifications.endpoint) {
                         const pushSubscription = {
                           endpoint:
-                            wishlist.follows[i].userId.notifications.endpoint,
+                            follow.userId.notifications.endpoint,
                           keys: {
                             p256dh:
-                              wishlist.follows[i].userId.notifications.keys
+                              follow.userId.notifications.keys
                                 .p256dh,
-                            auth: wishlist.follows[i].userId.notifications.keys
+                            auth: follow.userId.notifications.keys
                               .auth
                           }
                         };
@@ -618,7 +618,7 @@ class WishlistItemController {
                           });
                       } else {
                         const deviceToken =
-                          wishlist.follows[i].userId.notifications.token;
+                          follow.userId.notifications.token;
 
                         const note = new apnPush.Notification();
                         // Expires 1 hour from now.
@@ -629,14 +629,14 @@ class WishlistItemController {
                         note.payload = { messageFrom: 'Wishlist Premiere' };
                         note.topic = '<your-app-bundle-id>';
 
-                        apnProvider.send(note, deviceToken).then(() => {
-                          // see documentation for an explanation of result
-                        });
+                        // apnProvider.send(note, deviceToken).then(() => {
+                        // see documentation for an explanation of result
+                        // });
                       }
                     }
                   }
                 }
-              }
+              });
             }
 
             done(null, newItem);
@@ -755,9 +755,16 @@ class WishlistItemController {
           });
         },
         (updatedWishlistItems, done) => {
-          updatedWishlistItems.sort((a, b) =>
-            a.sortOrder > b.sortOrder ? 1 : b.sortOrder > a.sortOrder ? -1 : 0
-          );
+          updatedWishlistItems.sort((a, b) => {
+            if (a.sortOrder > b.sortOrder) {
+              return 1;
+            }
+
+            if (b.sortOrder > a.sortOrder) {
+              return -1;
+            }
+            return 0;
+          });
           done(null, updatedWishlistItems);
         }
       ],

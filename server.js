@@ -3,7 +3,6 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 // const hbsHelpers = require('handlebars-helpers');
 const hbsLayouts = require('handlebars-layouts');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const errorhandler = require('errorhandler');
 // const csrf = require('csurf');
@@ -18,13 +17,10 @@ const seeder = require('./app/database/seeder');
 const logger = require('./lib/winston.logger');
 const webPushConfig = require('./lib/config.loader').webPush;
 const authRoutes = require('./app/routes/oAuth2');
-// authRoutesJwt = require('./app/routes/JWT');
-// Antonio
-// Instantiate libraries
+const terminate = require('./lib/exit.handler');
 
+let server;
 //= ===================================
-
-// eslint-disable-next-line no-unused-expressions
 const app = express();
 const port = 3000;
 
@@ -36,19 +32,21 @@ class Server {
     this.initExpressMiddleWare();
     this.initCustomMiddleware();
     this.initDbSeeder();
-    this.initSecureRoutes();
+    this.initRoutes();
     this.initWebPush();
     this.start();
   }
 
   start() {
-    module.exports = app.listen(port, () => {
+    server = app.listen(port, () => {
       logger.debug(
-        '[%s] Listening on http://localhost:%d',
+        '[%s] Maras.co Server Started! Listening on http://localhost:%d',
         process.env.NODE_ENV,
         port
       );
     });
+
+    module.exports = server;
   }
 
   /**
@@ -104,7 +102,7 @@ class Server {
     };
 
     app.use(cors(corsOptions));
-    logger.debug('Cors Initialized');
+    logger.info('...Cors Initialized');
   }
 
   initCustomMiddleware() {
@@ -142,8 +140,8 @@ class Server {
     app.use(favicon(`${__dirname}/public/images/favicon.ico`));
     app.use(express.static(`${__dirname}/public`));
     app.use(morgan('dev'));
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json());
     app.use(errorhandler());
 
     app.use(cookieParser());
@@ -175,15 +173,6 @@ class Server {
     //   next();
     // });
     // process.setMaxListeners(0);
-
-    process.on('uncaughtException', (err) => {
-      if (err) {
-        logger.error(
-          '---------========APPLICATION ERROR========---------',
-          err
-        );
-      }
-    });
   }
 
   initPassport() {
@@ -193,16 +182,17 @@ class Server {
     // Start Local Provider
     // eslint-disable-next-line global-require
     require('./app/security/strategies/local');
+
+    logger.info('...Passport Initialized');
   }
 
   initPublicRoutes() {
-    // AM TODO
     // router.load(app, './publiccontrollers');
     app.post('/oauth/token', authRoutes.token);
     // app.post('/oauth/jwt-token', authRoutesJwt.token);
   }
 
-  initSecureRoutes() {
+  initRoutes() {
     router.reset();
     router.load(app, './controllers');
 
@@ -210,6 +200,22 @@ class Server {
     app.all('/*', (req, res) => {
       res.sendFile(`${__dirname}/public/index.html`);
     });
+
+    logger.info('...Public Routes Initialized');
+  }
+
+  initServerShutdownHandler() {
+    const exitHandler = terminate(server, {
+      coredump: false,
+      timeout: 500
+    });
+
+    process.on('uncaughtException', exitHandler(1, 'Unexpected Error'));
+    process.on('unhandledRejection', exitHandler(1, 'Unhandled Promise'));
+    process.on('SIGTERM', exitHandler(0, 'SIGTERM'));
+    process.on('SIGINT', exitHandler(0, 'SIGINT'));
+
+    logger.info('...Server Shutdown Handler Initialized');
   }
 
   /**
@@ -226,6 +232,8 @@ class Server {
     app.engine('hbs', hbs.engine);
     app.set('view engine', 'hbs');
     hbsLayouts.register(hbs.handlebars, {});
+
+    logger.info('...View Engine Initialized');
   }
 
   /**
@@ -241,8 +249,10 @@ class Server {
       webPushConfig.publicKey,
       webPushConfig.privateKey
     );
+
+    logger.info('...Web Push Initialized');
   }
 }
 
 // eslint-disable-next-line no-unused-vars
-const server = new Server();
+const marascoApiServer = new Server();
