@@ -1,6 +1,6 @@
 {
   "name": "@marasco/core-api",
-  "version": "2.0.3",
+  "version": "0.0.1",
   "description": "Authorization and authentication api",
   "main": "server.js",
   "scripts": {
@@ -65,7 +65,6 @@
     "prettier": "^2.7.1",
     "pretty-quick": "^3.1.3",
     "sinon": "^14.0.0",
-    "sinon-mongoose": "^2.3.0",
     "sinon-test": "^3.1.4",
     "standard-version": "^9.5.0"
   },
