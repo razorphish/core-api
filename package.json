@@ -106,7 +106,7 @@
     "twitter-node-client": "github:razorphish/TwitterJSClient",
     "web-push": "^3.5.0",
     "wepay": "0.0.9",
-    "winston": "^3.3.3"
+    "winston": "^3.8.1"
   },
   "config": {
     "commitizen": {
